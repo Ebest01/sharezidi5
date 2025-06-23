@@ -16,8 +16,17 @@ export const useWebSocket = () => {
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
+    // Ensure we have a valid host
+    const host = window.location.host;
+    if (!host || host === 'undefined' || !host.includes(':')) {
+      console.error('[WebSocket] Invalid host:', host);
+      return;
+    }
+
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const wsUrl = `${protocol}//${host}/ws`;
+    
+    console.log('[WebSocket] Attempting to connect to:', wsUrl);
     
     try {
       wsRef.current = new WebSocket(wsUrl);
@@ -76,12 +85,15 @@ export const useWebSocket = () => {
         }
         
         // Auto-reconnect with exponential backoff
-        if (reconnectAttempts < 5) {
-          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+        if (reconnectAttempts < 3) {
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 10000);
+          console.log(`[WebSocket] Reconnecting in ${delay}ms (attempt ${reconnectAttempts + 1})`);
           reconnectTimeoutRef.current = setTimeout(() => {
             setReconnectAttempts(prev => prev + 1);
             connect();
           }, delay);
+        } else {
+          console.log('[WebSocket] Max reconnection attempts reached');
         }
       };
 
