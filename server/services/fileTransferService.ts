@@ -19,13 +19,14 @@ export class FileTransferService {
     setInterval(() => this.cleanupStaleConnections(), 120000);
   }
 
-  registerUser(userId: string, socket: WebSocket) {
-    console.log(`[FileTransfer] User ${userId} connected`);
+  registerUser(userId: string, socket: WebSocket, deviceName?: string) {
+    console.log(`[FileTransfer] User ${userId} (${deviceName || 'Unknown Device'}) connected`);
     
     this.connectedUsers.set(userId, {
       id: userId,
       socket,
-      lastPing: Date.now()
+      lastPing: Date.now(),
+      deviceName
     });
 
     // Send initial device list to the new user
