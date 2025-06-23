@@ -417,7 +417,12 @@ export class FileTransferService {
   }
 
   private broadcastUserList() {
-    const userList = Array.from(this.connectedUsers.keys());
+    const userList = Array.from(this.connectedUsers.values()).map(user => ({
+      id: user.id,
+      name: this.getDeviceDisplayName(user.deviceName, user.id)
+    }));
+    
+    console.log(`[FileTransfer] Broadcasting device list:`, userList.map(u => `${u.name} (${u.id})`));
     
     for (const userId of this.connectedUsers.keys()) {
       this.sendToUser(userId, 'devices', userList);

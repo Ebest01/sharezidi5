@@ -60,10 +60,9 @@ class WebSocketManager {
         this.reconnectAttempts = 0;
         this.notifySubscribers(true);
         
-        // Register user - use the provided user ID, not a new one
-        this.currentUserId = this.currentUserId || this.generateUserId();
+        // Send register message to update device name
         this.send('register', { 
-          userId: this.currentUserId,
+          userId: userId,
           deviceName: this.getDeviceName()
         });
         
