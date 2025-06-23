@@ -1,0 +1,603 @@
+TEST14 result... >> When the SENDER was at 100%, the RECEIVER was still at 22% >> After the SENDER said success, i tried switching apps and doing something else, the RECEIVER stopped receiving and shoed "[TEST14] Transfer stalled, requesting resume..." and went into this endless loop of "TEST14] Requesting X missing chunks from sender...", this endless loop seems like it can keep going on the whole day, hence wasting resources //
+It appears that the RECEIVER can no longer ping the SENDER after the SENDER says success even thought the receiver is still receiving data
+//////
+////////
+[TEST14] ✅ NEW chunk 4137 stored (933/4153 = 22.5%)
+App.js:329 [TEST14] 🚫 REJECTING duplicate chunk 4137
+App.js:339 [TEST14] ✅ NEW chunk 4138 stored (934/4153 = 22.5%)
+App.js:329 [TEST14] 🚫 REJECTING duplicate chunk 4138
+App.js:339 [TEST14] ✅ NEW chunk 4139 stored (935/4153 = 22.5%)
+App.js:329 [TEST14] 🚫 REJECTING duplicate chunk 4139
+App.js:339 [TEST14] ✅ NEW chunk 4140 stored (936/4153 = 22.5%)
+App.js:329 [TEST14] 🚫 REJECTING duplicate chunk 4140
+App.js:339 [TEST14] ✅ NEW chunk 4141 stored (937/4153 = 22.6%)
+App.js:329 [TEST14] 🚫 REJECTING duplicate chunk 4141
+App.js:339 [TEST14] ✅ NEW chunk 4142 stored (938/4153 = 22.6%)
+App.js:329 [TEST14] 🚫 REJECTING duplicate chunk 4142
+App.js:339 [TEST14] ✅ NEW chunk 4143 stored (939/4153 = 22.6%)
+App.js:329 [TEST14] 🚫 REJECTING duplicate chunk 4143
+App.js:339 [TEST14] ✅ NEW chunk 4144 stored (940/4153 = 22.6%)
+App.js:329 [TEST14] 🚫 REJECTING duplicate chunk 4144
+App.js:339 [TEST14] ✅ NEW chunk 4145 stored (941/4153 = 22.7%)
+App.js:329 [TEST14] 🚫 REJECTING duplicate chunk 4145
+App.js:339 [TEST14] ✅ NEW chunk 4146 stored (942/4153 = 22.7%)
+App.js:329 [TEST14] 🚫 REJECTING duplicate chunk 4146
+App.js:339 [TEST14] ✅ NEW chunk 4147 stored (943/4153 = 22.7%)
+App.js:329 [TEST14] 🚫 REJECTING duplicate chunk 4147
+App.js:339 [TEST14] ✅ NEW chunk 4148 stored (944/4153 = 22.7%)
+App.js:329 [TEST14] 🚫 REJECTING duplicate chunk 4148
+App.js:339 [TEST14] ✅ NEW chunk 4149 stored (945/4153 = 22.8%)
+App.js:329 [TEST14] 🚫 REJECTING duplicate chunk 4149
+App.js:339 [TEST14] ✅ NEW chunk 4150 stored (946/4153 = 22.8%)
+App.js:329 [TEST14] 🚫 REJECTING duplicate chunk 4150
+App.js:339 [TEST14] ✅ NEW chunk 4151 stored (947/4153 = 22.8%)
+App.js:329 [TEST14] 🚫 REJECTING duplicate chunk 4151
+App.js:339 [TEST14] ✅ NEW chunk 4152 stored (948/4153 = 22.8%)
+App.js:329 [TEST14] 🚫 REJECTING duplicate chunk 4152
+App.js:1896 [TEST14] ⚠️ Transfer stalled for 16008ms
+App.js:1882 [TEST14] Requesting 3205 missing chunks from sender...
+overrideMethod @ hook.js:608
+(anonymous) @ App.js:1882
+Oe @ App.js:1897
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+(anonymous) @ App.js:158
+T.emit @ index.js:136
+emitEvent @ socket.js:538
+onevent @ socket.js:525
+onpacket @ socket.js:495
+T.emit @ index.js:136
+(anonymous) @ manager.js:209
+Promise.then
+(anonymous) @ globals.js:4
+ondecoded @ manager.js:208
+T.emit @ index.js:136
+add @ index.js:146
+ondata @ manager.js:195
+T.emit @ index.js:136
+_onPacket @ socket.js:259
+T.emit @ index.js:136
+onPacket @ transport.js:99
+onData @ transport.js:91
+ws.onmessage @ websocket.js:48Understand this warning
+App.js:1896 [TEST14] ⚠️ Transfer stalled for 21017ms
+App.js:1882 [TEST14] Requesting 3205 missing chunks from sender...
+overrideMethod @ hook.js:608
+(anonymous) @ App.js:1882
+Oe @ App.js:1897
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+(anonymous) @ App.js:158
+T.emit @ index.js:136
+emitEvent @ socket.js:538
+onevent @ socket.js:525
+onpacket @ socket.js:495
+T.emit @ index.js:136
+(anonymous) @ manager.js:209
+Promise.then
+(anonymous) @ globals.js:4
+ondecoded @ manager.js:208
+T.emit @ index.js:136
+add @ index.js:146
+ondata @ manager.js:195
+T.emit @ index.js:136
+_onPacket @ socket.js:259
+T.emit @ index.js:136
+onPacket @ transport.js:99
+onData @ transport.js:91
+ws.onmessage @ websocket.js:48Understand this warning
+App.js:1896 [TEST14] ⚠️ Transfer stalled for 26026ms
+App.js:1882 [TEST14] Requesting 3205 missing chunks from sender...
+overrideMethod @ hook.js:608
+(anonymous) @ App.js:1882
+Oe @ App.js:1897
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+(anonymous) @ App.js:158
+T.emit @ index.js:136
+emitEvent @ socket.js:538
+onevent @ socket.js:525
+onpacket @ socket.js:495
+T.emit @ index.js:136
+(anonymous) @ manager.js:209
+Promise.then
+(anonymous) @ globals.js:4
+ondecoded @ manager.js:208
+T.emit @ index.js:136
+add @ index.js:146
+ondata @ manager.js:195
+T.emit @ index.js:136
+_onPacket @ socket.js:259
+T.emit @ index.js:136
+onPacket @ transport.js:99
+onData @ transport.js:91
+ws.onmessage @ websocket.js:48Understand this warning
+App.js:1896 [TEST14] ⚠️ Transfer stalled for 31041ms
+App.js:1882 [TEST14] Requesting 3205 missing chunks from sender...
+overrideMethod @ hook.js:608
+(anonymous) @ App.js:1882
+Oe @ App.js:1897
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+(anonymous) @ App.js:158
+T.emit @ index.js:136
+emitEvent @ socket.js:538
+onevent @ socket.js:525
+onpacket @ socket.js:495
+T.emit @ index.js:136
+(anonymous) @ manager.js:209
+Promise.then
+(anonymous) @ globals.js:4
+ondecoded @ manager.js:208
+T.emit @ index.js:136
+add @ index.js:146
+ondata @ manager.js:195
+T.emit @ index.js:136
+_onPacket @ socket.js:259
+T.emit @ index.js:136
+onPacket @ transport.js:99
+onData @ transport.js:91
+ws.onmessage @ websocket.js:48Understand this warning
+App.js:1896 [TEST14] ⚠️ Transfer stalled for 36043ms
+App.js:1882 [TEST14] Requesting 3205 missing chunks from sender...
+overrideMethod @ hook.js:608
+(anonymous) @ App.js:1882
+Oe @ App.js:1897
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+(anonymous) @ App.js:158
+T.emit @ index.js:136
+emitEvent @ socket.js:538
+onevent @ socket.js:525
+onpacket @ socket.js:495
+T.emit @ index.js:136
+(anonymous) @ manager.js:209
+Promise.then
+(anonymous) @ globals.js:4
+ondecoded @ manager.js:208
+T.emit @ index.js:136
+add @ index.js:146
+ondata @ manager.js:195
+T.emit @ index.js:136
+_onPacket @ socket.js:259
+T.emit @ index.js:136
+onPacket @ transport.js:99
+onData @ transport.js:91
+ws.onmessage @ websocket.js:48Understand this warning
+App.js:1896 [TEST14] ⚠️ Transfer stalled for 41053ms
+App.js:1882 [TEST14] Requesting 3205 missing chunks from sender...
+overrideMethod @ hook.js:608
+(anonymous) @ App.js:1882
+Oe @ App.js:1897
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+(anonymous) @ App.js:158
+T.emit @ index.js:136
+emitEvent @ socket.js:538
+onevent @ socket.js:525
+onpacket @ socket.js:495
+T.emit @ index.js:136
+(anonymous) @ manager.js:209
+Promise.then
+(anonymous) @ globals.js:4
+ondecoded @ manager.js:208
+T.emit @ index.js:136
+add @ index.js:146
+ondata @ manager.js:195
+T.emit @ index.js:136
+_onPacket @ socket.js:259
+T.emit @ index.js:136
+onPacket @ transport.js:99
+onData @ transport.js:91
+ws.onmessage @ websocket.js:48Understand this warning
+App.js:1896 [TEST14] ⚠️ Transfer stalled for 46059ms
+App.js:1882 [TEST14] Requesting 3205 missing chunks from sender...
+overrideMethod @ hook.js:608
+(anonymous) @ App.js:1882
+Oe @ App.js:1897
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+(anonymous) @ App.js:158
+T.emit @ index.js:136
+emitEvent @ socket.js:538
+onevent @ socket.js:525
+onpacket @ socket.js:495
+T.emit @ index.js:136
+(anonymous) @ manager.js:209
+Promise.then
+(anonymous) @ globals.js:4
+ondecoded @ manager.js:208
+T.emit @ index.js:136
+add @ index.js:146
+ondata @ manager.js:195
+T.emit @ index.js:136
+_onPacket @ socket.js:259
+T.emit @ index.js:136
+onPacket @ transport.js:99
+onData @ transport.js:91
+ws.onmessage @ websocket.js:48Understand this warning
+App.js:1896 [TEST14] ⚠️ Transfer stalled for 51071ms
+App.js:1882 [TEST14] Requesting 3205 missing chunks from sender...
+overrideMethod @ hook.js:608
+(anonymous) @ App.js:1882
+Oe @ App.js:1897
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+(anonymous) @ App.js:158
+T.emit @ index.js:136
+emitEvent @ socket.js:538
+onevent @ socket.js:525
+onpacket @ socket.js:495
+T.emit @ index.js:136
+(anonymous) @ manager.js:209
+Promise.then
+(anonymous) @ globals.js:4
+ondecoded @ manager.js:208
+T.emit @ index.js:136
+add @ index.js:146
+ondata @ manager.js:195
+T.emit @ index.js:136
+_onPacket @ socket.js:259
+T.emit @ index.js:136
+onPacket @ transport.js:99
+onData @ transport.js:91
+ws.onmessage @ websocket.js:48Understand this warning
+App.js:1896 [TEST14] ⚠️ Transfer stalled for 56077ms
+App.js:1882 [TEST14] Requesting 3205 missing chunks from sender...
+overrideMethod @ hook.js:608
+(anonymous) @ App.js:1882
+Oe @ App.js:1897
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+Oe @ App.js:1905
+setTimeout
+(anonymous) @ App.js:158
+T.emit @ index.js:136
+emitEvent @ socket.js:538
+onevent @ socket.js:525
+onpacket @ socket.js:495
+T.emit @ index.js:136
+(anonymous) @ manager.js:209
+Promise.then
+(anonymous) @ globals.js:4
+ondecoded @ manager.js:208
+T.emit @ index.js:136
+add @ index.js:146
+ondata @ manager.js:195
+T.emit @ index.js:136
+_onPacket @ socket.js:259
+T.emit @ index.js:136
+onPacket @ transport.js:99
+onData @ transport.js:91
+ws.onmessage @ websocket.js:48Understand this warning
