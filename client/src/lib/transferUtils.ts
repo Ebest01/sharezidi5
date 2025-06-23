@@ -29,11 +29,24 @@ export class TransferUtils {
   }
 
   static formatFileName(name: string, maxLength: number = 30): string {
+    if (!name || typeof name !== 'string') return 'Unknown File';
     if (name.length <= maxLength) return name;
-    const ext = name.split('.').pop();
-    const nameWithoutExt = name.substring(0, name.lastIndexOf('.'));
-    const truncated = nameWithoutExt.substring(0, maxLength - ext!.length - 4) + '...';
-    return truncated + '.' + ext;
+    
+    const lastDotIndex = name.lastIndexOf('.');
+    if (lastDotIndex === -1) {
+      // No extension, just truncate
+      return name.substring(0, maxLength - 3) + '...';
+    }
+    
+    const extension = name.substring(lastDotIndex);
+    const nameWithoutExt = name.substring(0, lastDotIndex);
+    
+    if (nameWithoutExt.length <= maxLength - extension.length - 1) {
+      return name;
+    }
+    
+    const truncatedName = nameWithoutExt.substring(0, maxLength - extension.length - 4);
+    return `${truncatedName}...${extension}`;
   }
 
   static getFileIcon(type: string): string {
