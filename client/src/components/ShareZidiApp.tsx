@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useFileTransfer } from '../hooks/useFileTransfer';
 import { TransferSyncMonitor } from './TransferSyncMonitor';
 import { FileSelector } from './FileSelector';
 import { DeviceList } from './DeviceList';
 import { ErrorRecoveryPanel } from './ErrorRecoveryPanel';
+import { ConnectionHelper } from './ConnectionHelper';
 import type { Device } from '@shared/types';
 
 export const ShareZidiApp: React.FC = () => {
   const websocket = useWebSocket();
   const fileTransfer = useFileTransfer(websocket);
+  const [showConnectionHelper, setShowConnectionHelper] = useState(false);
 
   const connectionInfo = {
     effectiveType: (navigator as any).connection?.effectiveType,
@@ -79,6 +81,13 @@ export const ShareZidiApp: React.FC = () => {
                 ID: <span className="text-secondary">{websocket.userId}</span>
               </div>
               <button 
+                onClick={() => setShowConnectionHelper(true)}
+                className="p-2 text-primary hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors mr-2"
+                title="Connect Mobile Device"
+              >
+                <i className="fas fa-qrcode text-sm"></i>
+              </button>
+              <button 
                 onClick={() => window.location.reload()}
                 className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
               >
@@ -119,6 +128,26 @@ export const ShareZidiApp: React.FC = () => {
           onZipAndSend={handleZipAndSend}
         />
 
+        {/* Connection Help Banner when no devices */}
+        {websocket.devices.length === 0 && websocket.isConnected && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center">
+            <div className="text-blue-600 mb-2">
+              <i className="fas fa-mobile-alt text-3xl"></i>
+            </div>
+            <h3 className="text-lg font-semibold text-blue-800 mb-2">Connect Your Mobile Device</h3>
+            <p className="text-blue-700 mb-4">
+              Scan the QR code or enter the URL manually to connect your iPhone, Android, or other devices
+            </p>
+            <button
+              onClick={() => setShowConnectionHelper(true)}
+              className="bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors flex items-center space-x-2 mx-auto"
+            >
+              <i className="fas fa-qrcode"></i>
+              <span>Show Connection Options</span>
+            </button>
+          </div>
+        )}
+
         {/* Error Recovery Panel */}
         <ErrorRecoveryPanel
           transfers={fileTransfer.transfers}
@@ -149,6 +178,12 @@ export const ShareZidiApp: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* Connection Helper Modal */}
+      <ConnectionHelper 
+        isVisible={showConnectionHelper}
+        onClose={() => setShowConnectionHelper(false)}
+      />
     </div>
   );
 };
