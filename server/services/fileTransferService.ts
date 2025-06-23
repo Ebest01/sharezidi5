@@ -29,12 +29,15 @@ export class FileTransferService {
       deviceName
     });
 
-    // Send initial device list to the new user
-    this.sendToUser(userId, 'devices', Array.from(this.connectedUsers.keys()));
-    
-    // Broadcast updated device list to all users
-    this.broadcastUserList();
     this.setupSocketHandlers(userId, socket);
+    
+    // Send registration confirmation first
+    this.sendToUser(userId, 'registered', { userId });
+    
+    // Wait for client to process registration, then send device lists
+    setTimeout(() => {
+      this.broadcastUserList();
+    }, 500);
   }
 
   unregisterUser(userId: string) {
@@ -422,8 +425,14 @@ export class FileTransferService {
     
     console.log(`[FileTransfer] Broadcasting device list:`, userList.map(u => `${u.name} (${u.id})`));
     
+    // Send to all users with retry mechanism
     for (const userId of this.connectedUsers.keys()) {
       this.sendToUser(userId, 'devices', userList);
+      
+      // Send again after delay to ensure delivery
+      setTimeout(() => {
+        this.sendToUser(userId, 'devices', userList);
+      }, 300);
     }
   }
 
