@@ -15,6 +15,28 @@ export const useFileTransfer = (websocket: any) => {
 
   const totalSizeMB = selectedFiles.reduce((total, file) => total + file.size, 0) / (1024 * 1024);
 
+  // Helper function to convert ArrayBuffer to Base64
+  const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  };
+
+  // Helper function to convert Base64 to ArrayBuffer
+  const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
+    const binaryString = atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+  };
+
   const addFiles = useCallback((fileList: FileList) => {
     const newFiles: SelectedFile[] = Array.from(fileList).map(file => {
       const fileSize = file.size || 0;
@@ -243,7 +265,10 @@ export const useFileTransfer = (websocket: any) => {
       if (!receivedChunks.current.has(data.fileId)) {
         receivedChunks.current.set(data.fileId, new Map());
       }
-      receivedChunks.current.get(data.fileId)!.set(data.chunkIndex, data.chunk);
+      
+      // Convert Base64 back to ArrayBuffer
+      const chunkData = typeof data.chunk === 'string' ? base64ToArrayBuffer(data.chunk) : data.chunk;
+      receivedChunks.current.get(data.fileId)!.set(data.chunkIndex, chunkData);
       
       setIncomingTransfers(prev => {
         const newMap = new Map(prev);
@@ -338,6 +363,9 @@ export const useFileTransfer = (websocket: any) => {
           // Ensure chunk is ArrayBuffer
           if (chunk instanceof ArrayBuffer) {
             return chunk;
+          } else if (typeof chunk === 'string') {
+            // Convert Base64 string to ArrayBuffer
+            return base64ToArrayBuffer(chunk);
           } else if (chunk && typeof chunk === 'object' && chunk.data) {
             // Handle case where chunk is wrapped in an object
             return chunk.data;
