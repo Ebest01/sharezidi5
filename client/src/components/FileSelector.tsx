@@ -76,7 +76,7 @@ export const FileSelector: React.FC<FileSelectorProps> = ({
                 </div>
                 <div>
                   <div className="font-medium text-gray-800">
-                    {TransferUtils.formatFileName(file.name)}
+                    {TransferUtils.formatFileName(file?.name || 'Unknown')}
                   </div>
                   <div className="text-sm text-gray-500">
                     {TransferUtils.formatFileSize(file.size)} • Optimized: {file.parallelStreams} streams, {(file.optimizedChunkSize/1024).toFixed(0)}KB chunks
