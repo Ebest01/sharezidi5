@@ -73,6 +73,14 @@ export class FileTransferService {
     user.lastPing = Date.now();
 
     switch (message.type) {
+      case 'register':
+        // Re-register with device name if provided
+        if (message.data?.deviceName) {
+          user.deviceName = message.data.deviceName;
+          console.log(`[FileTransfer] User ${userId} updated device name to ${message.data.deviceName}`);
+          this.broadcastUserList();
+        }
+        break;
       case 'ping':
         this.sendToUser(userId, 'pong', { timestamp: Date.now() });
         break;
