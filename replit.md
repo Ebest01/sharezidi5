@@ -102,17 +102,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### June 23, 2025 - File Transfer Synchronization Fixes
+### June 23, 2025 - File Transfer System Complete
 - Fixed critical sender/receiver synchronization issues where sender reached 100% while receiver was at 22%
-- Added flow control to prevent sender from overwhelming receiver
-- Implemented proper acknowledgment system between devices
-- Reduced chunk sizes for better sync (8KB-64KB instead of 16KB-128KB)
-- Fixed duplicate chunk handling to prevent endless retry loops
+- Resolved device visibility race conditions that prevented devices from seeing each other consistently
+- Fixed file selection crashes caused by NaN/undefined errors in formatFileName and file size calculations
+- Implemented proper WebSocket message handlers for file-chunk, sync-status, and transfer-complete events
+- Used Object.assign() instead of spread operator to preserve File prototype methods (slice function)
+- Added comprehensive error handling and logging throughout the transfer process
+- Established proper registration flow with delayed device list broadcasting to prevent timing issues
+- File transfers now work end-to-end with real-time progress tracking and automatic chunk acknowledgment
 - Added QR code generation for mobile device connections
-- Improved WebSocket connection stability with ping/pong mechanism
-- Resolved WebSocket connection storm issue in development mode using singleton pattern
-- Prevented infinite reconnection loops that were overwhelming the server
-- Added proper connection state management for React strict mode compatibility
+- Improved WebSocket connection stability with ping/pong mechanism and singleton pattern
 
 ### Mobile Connection Support
 - Added ConnectionHelper component with QR code generation
