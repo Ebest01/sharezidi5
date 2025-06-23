@@ -60,9 +60,9 @@ export const FileSelector: React.FC<FileSelectorProps> = ({
         />
       </div>
 
-      {selectedFiles.length > 0 && (
+      {selectedFiles && selectedFiles.length > 0 && (
         <div className="mt-6 space-y-3">
-          {selectedFiles.map((file, index) => (
+          {(selectedFiles || []).map((file, index) => (
             <div key={file.id} className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
