@@ -11,6 +11,7 @@ class WebSocketManager {
   private reconnectAttempts = 0;
   private reconnectTimeout: NodeJS.Timeout | null = null;
   private pingInterval: NodeJS.Timeout | null = null;
+  private currentUserId: string | null = null;
 
   static getInstance(): WebSocketManager {
     if (!WebSocketManager.instance) {
@@ -59,9 +60,10 @@ class WebSocketManager {
         this.reconnectAttempts = 0;
         this.notifySubscribers(true);
         
-        // Register user
+        // Register user - use the provided user ID, not a new one
+        this.currentUserId = this.currentUserId || this.generateUserId();
         this.send('register', { 
-          userId: this.generateUserId(),
+          userId: this.currentUserId,
           deviceName: this.getDeviceName()
         });
         
@@ -190,6 +192,14 @@ class WebSocketManager {
   getReconnectAttempts(): number {
     return this.reconnectAttempts;
   }
+
+  getCurrentUserId(): string | null {
+    return this.currentUserId;
+  }
+
+  setUserId(userId: string): void {
+    this.currentUserId = userId;
+  }
 }
 
 export const useWebSocket = () => {
@@ -202,6 +212,9 @@ export const useWebSocket = () => {
   const stateCallbackRef = useRef<Function>();
 
   useEffect(() => {
+    // Set the user ID in the manager to ensure consistency
+    wsManager.setUserId(userId);
+    
     // Create callback for connection state updates
     stateCallbackRef.current = (connected: boolean) => {
       setIsConnected(connected);
@@ -222,7 +235,7 @@ export const useWebSocket = () => {
         wsManager.unsubscribe(stateCallbackRef.current);
       }
     };
-  }, []);
+  }, [userId]);
 
   const send = useCallback((type: string, data: any) => {
     return wsManager.send(type, data);
