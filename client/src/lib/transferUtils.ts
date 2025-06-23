@@ -37,6 +37,7 @@ export class TransferUtils {
   }
 
   static getFileIcon(type: string): string {
+    if (!type) return 'fas fa-file';
     if (type.startsWith('image/')) return 'fas fa-file-image';
     if (type.startsWith('video/')) return 'fas fa-file-video';
     if (type.startsWith('audio/')) return 'fas fa-file-audio';
@@ -49,6 +50,7 @@ export class TransferUtils {
   }
 
   static getFileIconColor(type: string): string {
+    if (!type) return 'text-gray-600';
     if (type.startsWith('image/')) return 'text-green-600';
     if (type.startsWith('video/')) return 'text-red-600';
     if (type.startsWith('audio/')) return 'text-purple-600';

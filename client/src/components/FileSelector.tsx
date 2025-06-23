@@ -66,13 +66,13 @@ export const FileSelector: React.FC<FileSelectorProps> = ({
             <div key={file.id} className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  file.type.startsWith('image/') ? 'bg-green-100' :
-                  file.type.startsWith('video/') ? 'bg-red-100' :
-                  file.type.startsWith('audio/') ? 'bg-purple-100' :
-                  file.type.includes('pdf') ? 'bg-red-100' :
+                  file.type && file.type.startsWith('image/') ? 'bg-green-100' :
+                  file.type && file.type.startsWith('video/') ? 'bg-red-100' :
+                  file.type && file.type.startsWith('audio/') ? 'bg-purple-100' :
+                  file.type && file.type.includes('pdf') ? 'bg-red-100' :
                   'bg-gray-100'
                 }`}>
-                  <i className={`${TransferUtils.getFileIcon(file.type)} ${TransferUtils.getFileIconColor(file.type)}`}></i>
+                  <i className={`${TransferUtils.getFileIcon(file.type || '')} ${TransferUtils.getFileIconColor(file.type || '')}`}></i>
                 </div>
                 <div>
                   <div className="font-medium text-gray-800">
