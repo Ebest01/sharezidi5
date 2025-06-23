@@ -100,7 +100,24 @@ ShareZidi is a real-time peer-to-peer file sharing application built with React 
 
 Preferred communication style: Simple, everyday language.
 
-## Changelog
+## Recent Changes
 
-Changelog:
-- June 23, 2025. Initial setup
+### June 23, 2025 - File Transfer Synchronization Fixes
+- Fixed critical sender/receiver synchronization issues where sender reached 100% while receiver was at 22%
+- Added flow control to prevent sender from overwhelming receiver
+- Implemented proper acknowledgment system between devices
+- Reduced chunk sizes for better sync (8KB-64KB instead of 16KB-128KB)
+- Fixed duplicate chunk handling to prevent endless retry loops
+- Added QR code generation for mobile device connections
+- Improved WebSocket connection stability with ping/pong mechanism
+
+### Mobile Connection Support
+- Added ConnectionHelper component with QR code generation
+- Automatic network IP detection for local connections
+- Public URL detection for deployed environments
+- Mobile-friendly interface improvements
+
+## Deployment Notes
+- For testing with mobile devices, deployment to public URL is required
+- Development server uses internal IPs not accessible from external devices
+- QR code generation works for both local and deployed environments

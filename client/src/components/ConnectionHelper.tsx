@@ -17,14 +17,42 @@ export const ConnectionHelper: React.FC<ConnectionHelperProps> = ({ isVisible, o
 
   const generateConnectionInfo = async () => {
     try {
-      // Get network info from server
-      const networkResponse = await fetch('/api/network-info');
-      if (networkResponse.ok) {
-        const networkData = await networkResponse.json();
-        setLocalUrls(networkData.urls);
+      const currentUrl = window.location.href;
+      const hostname = window.location.hostname;
+      
+      // Determine if we're on a public domain or local development
+      const isPublicDomain = hostname.includes('.replit.app') || 
+                           hostname.includes('.repl.co') || 
+                           !hostname.includes('localhost') && 
+                           !hostname.includes('127.0.0.1') && 
+                           !hostname.startsWith('192.168.') && 
+                           !hostname.startsWith('10.');
 
-        // Generate QR code for the first available URL
-        const mainUrl = networkData.urls[0] || window.location.href;
+      let urls = [];
+      
+      if (isPublicDomain) {
+        // Use the current public URL
+        urls = [currentUrl];
+      } else {
+        // Try to get network info from server for local development
+        try {
+          const networkResponse = await fetch('/api/network-info');
+          if (networkResponse.ok) {
+            const networkData = await networkResponse.json();
+            urls = [...networkData.urls, currentUrl];
+          } else {
+            urls = [currentUrl];
+          }
+        } catch {
+          urls = [currentUrl];
+        }
+      }
+      
+      setLocalUrls(urls);
+
+      // Generate QR code for the first URL
+      const mainUrl = urls[0];
+      try {
         const qrResponse = await fetch('/api/generate-qr', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -35,15 +63,11 @@ export const ConnectionHelper: React.FC<ConnectionHelperProps> = ({ isVisible, o
           const qrData = await qrResponse.text();
           setQrCodeUrl(qrData);
         }
-      } else {
-        // Fallback to manual URL generation
-        const currentUrl = window.location.href;
-        const urls = [currentUrl];
-        setLocalUrls(urls);
+      } catch (error) {
+        console.log('QR generation failed, continuing without QR code');
       }
     } catch (error) {
       console.error('Failed to generate connection info:', error);
-      // Fallback
       setLocalUrls([window.location.href]);
     }
   };
@@ -108,11 +132,25 @@ export const ConnectionHelper: React.FC<ConnectionHelperProps> = ({ isVisible, o
           <div className="bg-blue-50 rounded-lg p-4">
             <h4 className="font-medium text-blue-800 mb-2">Connection Steps:</h4>
             <ol className="text-sm text-blue-700 space-y-1">
-              <li>1. Make sure your iPhone is on the same WiFi network</li>
-              <li>2. Scan the QR code or enter the URL in Safari</li>
+              <li>1. Deploy this app to get a public URL (click Deploy button)</li>
+              <li>2. Scan the QR code or enter the public URL in Safari</li>
               <li>3. Both devices will appear in each other's device list</li>
               <li>4. Select files and send them between devices</li>
             </ol>
+          </div>
+
+          {/* Deployment Notice */}
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex items-start space-x-2">
+              <i className="fas fa-exclamation-triangle text-yellow-600 mt-0.5"></i>
+              <div>
+                <h4 className="font-medium text-yellow-800 mb-1">Public Access Required</h4>
+                <p className="text-sm text-yellow-700">
+                  The current development server isn't accessible from external devices. 
+                  Deploy the app to get a public URL that works with mobile devices.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Network Info */}
