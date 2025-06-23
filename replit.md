@@ -110,6 +110,9 @@ Preferred communication style: Simple, everyday language.
 - Fixed duplicate chunk handling to prevent endless retry loops
 - Added QR code generation for mobile device connections
 - Improved WebSocket connection stability with ping/pong mechanism
+- Resolved WebSocket connection storm issue in development mode using singleton pattern
+- Prevented infinite reconnection loops that were overwhelming the server
+- Added proper connection state management for React strict mode compatibility
 
 ### Mobile Connection Support
 - Added ConnectionHelper component with QR code generation

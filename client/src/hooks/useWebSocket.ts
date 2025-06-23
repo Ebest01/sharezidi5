@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { Device, TransferProgress, SyncStatus } from '@shared/types';
 
+// Global singleton to prevent multiple connections in development mode
+let globalWebSocket: WebSocket | null = null;
+let globalConnectionState: 'disconnected' | 'connecting' | 'connected' = 'disconnected';
+let globalCallbacks: Map<string, Function> = new Map();
+
 export const useWebSocket = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [devices, setDevices] = useState<Device[]>([]);
@@ -8,15 +13,17 @@ export const useWebSocket = () => {
   const [socketId, setSocketId] = useState<string>('');
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
   
-  const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
   const pingIntervalRef = useRef<NodeJS.Timeout>();
-  const callbacksRef = useRef<Map<string, Function>>(new Map());
+  const mountedRef = useRef(true);
 
   const connect = useCallback(() => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) return;
+    // Prevent multiple connections
+    if (globalConnectionState === 'connected' || globalConnectionState === 'connecting') {
+      setIsConnected(globalConnectionState === 'connected');
+      return;
+    }
 
-    // Ensure we have a valid host
     const host = window.location.host;
     if (!host || host === 'undefined') {
       console.error('[WebSocket] Invalid host:', host);
@@ -27,36 +34,43 @@ export const useWebSocket = () => {
     const wsUrl = `${protocol}//${host}/ws`;
     
     console.log('[WebSocket] Attempting to connect to:', wsUrl);
+    globalConnectionState = 'connecting';
     
     try {
-      wsRef.current = new WebSocket(wsUrl);
+      globalWebSocket = new WebSocket(wsUrl);
       
-      wsRef.current.onopen = () => {
-        console.log('[WebSocket] Connected');
+      globalWebSocket.onopen = () => {
+        console.log('[WebSocket] Connected successfully');
+        globalConnectionState = 'connected';
         setIsConnected(true);
         setReconnectAttempts(0);
         setSocketId(Math.random().toString(36).substring(2, 10));
         
         // Register user immediately
-        if (wsRef.current?.readyState === WebSocket.OPEN) {
-          wsRef.current.send(JSON.stringify({
+        if (globalWebSocket?.readyState === WebSocket.OPEN) {
+          globalWebSocket.send(JSON.stringify({
             type: 'register',
             data: { userId }
           }));
         }
 
+        // Clear any existing ping interval
+        if (pingIntervalRef.current) {
+          clearInterval(pingIntervalRef.current);
+        }
+
         // Start ping interval to keep connection alive
         pingIntervalRef.current = setInterval(() => {
-          if (wsRef.current?.readyState === WebSocket.OPEN) {
-            wsRef.current.send(JSON.stringify({
+          if (globalWebSocket?.readyState === WebSocket.OPEN) {
+            globalWebSocket.send(JSON.stringify({
               type: 'ping',
               data: { timestamp: Date.now() }
             }));
           }
-        }, 30000); // Ping every 30 seconds
+        }, 30000);
       };
 
-      wsRef.current.onmessage = (event) => {
+      globalWebSocket.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data);
           
@@ -66,7 +80,7 @@ export const useWebSocket = () => {
             return;
           }
           
-          const callback = callbacksRef.current.get(message.type);
+          const callback = globalCallbacks.get(message.type);
           if (callback) {
             callback(message.data);
           }
@@ -75,8 +89,9 @@ export const useWebSocket = () => {
         }
       };
 
-      wsRef.current.onclose = () => {
-        console.log('[WebSocket] Disconnected');
+      globalWebSocket.onclose = (event) => {
+        console.log('[WebSocket] Disconnected, code:', event.code);
+        globalConnectionState = 'disconnected';
         setIsConnected(false);
         
         // Clear ping interval
@@ -84,64 +99,90 @@ export const useWebSocket = () => {
           clearInterval(pingIntervalRef.current);
         }
         
-        // Auto-reconnect with exponential backoff
-        if (reconnectAttempts < 3) {
-          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 10000);
-          console.log(`[WebSocket] Reconnecting in ${delay}ms (attempt ${reconnectAttempts + 1})`);
+        // Only reconnect if not intentionally closed and component is still mounted
+        if (mountedRef.current && event.code !== 1000 && event.code !== 1001 && reconnectAttempts < 2) {
+          const delay = Math.min(5000 * Math.pow(2, reconnectAttempts), 20000);
+          console.log(`[WebSocket] Will reconnect in ${delay}ms (attempt ${reconnectAttempts + 1})`);
           reconnectTimeoutRef.current = setTimeout(() => {
-            setReconnectAttempts(prev => prev + 1);
-            connect();
+            if (mountedRef.current) {
+              setReconnectAttempts(prev => prev + 1);
+              connect();
+            }
           }, delay);
-        } else {
-          console.log('[WebSocket] Max reconnection attempts reached');
         }
       };
 
-      wsRef.current.onerror = (error) => {
+      globalWebSocket.onerror = (error) => {
         console.error('[WebSocket] Error:', error);
+        globalConnectionState = 'disconnected';
+        setIsConnected(false);
       };
 
     } catch (error) {
       console.error('[WebSocket] Connection failed:', error);
+      globalConnectionState = 'disconnected';
+      setIsConnected(false);
     }
   }, [userId, reconnectAttempts]);
 
   const disconnect = useCallback(() => {
+    mountedRef.current = false;
+    
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
     }
     if (pingIntervalRef.current) {
       clearInterval(pingIntervalRef.current);
     }
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
+    
+    if (globalWebSocket && globalWebSocket.readyState === WebSocket.OPEN) {
+      globalWebSocket.close(1000, 'Component unmounting');
     }
+    
+    globalWebSocket = null;
+    globalConnectionState = 'disconnected';
     setIsConnected(false);
   }, []);
 
   const send = useCallback((type: string, data: any) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type, data }));
+    if (globalWebSocket?.readyState === WebSocket.OPEN) {
+      globalWebSocket.send(JSON.stringify({ type, data }));
       return true;
     }
     return false;
   }, []);
 
   const on = useCallback((event: string, callback: Function) => {
-    callbacksRef.current.set(event, callback);
+    globalCallbacks.set(event, callback);
   }, []);
 
   const off = useCallback((event: string) => {
-    callbacksRef.current.delete(event);
+    globalCallbacks.delete(event);
   }, []);
 
   useEffect(() => {
-    connect();
+    mountedRef.current = true;
+    
+    // Connect if not already connected
+    if (globalConnectionState === 'disconnected') {
+      const timer = setTimeout(() => {
+        if (mountedRef.current) {
+          connect();
+        }
+      }, 500); // Delay to prevent rapid reconnections
+      
+      return () => clearTimeout(timer);
+    } else if (globalConnectionState === 'connected') {
+      setIsConnected(true);
+    }
+    
     return () => {
-      disconnect();
+      // Don't disconnect on unmount in development mode to prevent connection cycling
+      if (process.env.NODE_ENV === 'production') {
+        disconnect();
+      }
     };
-  }, [connect, disconnect]);
+  }, [connect]);
 
   // Handle device list updates
   useEffect(() => {

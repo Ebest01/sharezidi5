@@ -1,0 +1,239 @@
+[WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+client:536 WebSocket connection to 'wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/?token=i8p9f-_DlG0C' failed: 
+setupWebSocket @ client:536
+(anonymous) @ client:531Understand this error
+client:536 Uncaught (in promise) SyntaxError: Failed to construct 'WebSocket': The URL 'wss://localhost:undefined/?token=i8p9f-_DlG0C' is invalid.
+    at setupWebSocket (client:536:19)
+    at fallback (client:509:16)
+    at WebSocket.<anonymous> (client:555:7)
+setupWebSocket @ client:536
+fallback @ client:509
+(anonymous) @ client:555Understand this error
+useWebSocket.ts:35 [WebSocket] Connected
+12useWebSocket.ts:65 [WebSocket] Received pong
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:117 WebSocket connection to 'wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws' failed: WebSocket is closed before the connection is established.
+(anonymous) @ useWebSocket.ts:117
+(anonymous) @ useWebSocket.ts:142
+safelyCallDestroy @ chunk-373CG7ZK.js?v=c3dcadd4:16746
+commitHookEffectListUnmount @ chunk-373CG7ZK.js?v=c3dcadd4:16873
+commitPassiveUnmountOnFiber @ chunk-373CG7ZK.js?v=c3dcadd4:18230
+commitPassiveUnmountEffects_complete @ chunk-373CG7ZK.js?v=c3dcadd4:18211
+commitPassiveUnmountEffects_begin @ chunk-373CG7ZK.js?v=c3dcadd4:18202
+commitPassiveUnmountEffects @ chunk-373CG7ZK.js?v=c3dcadd4:18167
+flushPassiveEffectsImpl @ chunk-373CG7ZK.js?v=c3dcadd4:19487
+flushPassiveEffects @ chunk-373CG7ZK.js?v=c3dcadd4:19445
+(anonymous) @ chunk-373CG7ZK.js?v=c3dcadd4:19326
+workLoop @ chunk-373CG7ZK.js?v=c3dcadd4:195
+flushWork @ chunk-373CG7ZK.js?v=c3dcadd4:174
+performWorkUntilDeadline @ chunk-373CG7ZK.js?v=c3dcadd4:382Understand this warning
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:101 [WebSocket] Error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+overrideMethod @ hook.js:608
+wsRef.current.onerror @ useWebSocket.ts:101Understand this error
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:117 WebSocket connection to 'wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws' failed: WebSocket is closed before the connection is established.
+(anonymous) @ useWebSocket.ts:117
+(anonymous) @ useWebSocket.ts:142
+safelyCallDestroy @ chunk-373CG7ZK.js?v=c3dcadd4:16746
+commitHookEffectListUnmount @ chunk-373CG7ZK.js?v=c3dcadd4:16873
+commitPassiveUnmountOnFiber @ chunk-373CG7ZK.js?v=c3dcadd4:18230
+commitPassiveUnmountEffects_complete @ chunk-373CG7ZK.js?v=c3dcadd4:18211
+commitPassiveUnmountEffects_begin @ chunk-373CG7ZK.js?v=c3dcadd4:18202
+commitPassiveUnmountEffects @ chunk-373CG7ZK.js?v=c3dcadd4:18167
+flushPassiveEffectsImpl @ chunk-373CG7ZK.js?v=c3dcadd4:19487
+flushPassiveEffects @ chunk-373CG7ZK.js?v=c3dcadd4:19445
+performSyncWorkOnRoot @ chunk-373CG7ZK.js?v=c3dcadd4:18866
+flushSyncCallbacks @ chunk-373CG7ZK.js?v=c3dcadd4:9117
+commitRootImpl @ chunk-373CG7ZK.js?v=c3dcadd4:19430
+commitRoot @ chunk-373CG7ZK.js?v=c3dcadd4:19275
+finishConcurrentRender @ chunk-373CG7ZK.js?v=c3dcadd4:18803
+performConcurrentWorkOnRoot @ chunk-373CG7ZK.js?v=c3dcadd4:18716
+workLoop @ chunk-373CG7ZK.js?v=c3dcadd4:195
+flushWork @ chunk-373CG7ZK.js?v=c3dcadd4:174
+performWorkUntilDeadline @ chunk-373CG7ZK.js?v=c3dcadd4:382Understand this warning
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:101 [WebSocket] Error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+overrideMethod @ hook.js:608
+wsRef.current.onerror @ useWebSocket.ts:101Understand this error
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:117 WebSocket connection to 'wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws' failed: WebSocket is closed before the connection is established.
+(anonymous) @ useWebSocket.ts:117
+(anonymous) @ useWebSocket.ts:142
+safelyCallDestroy @ chunk-373CG7ZK.js?v=c3dcadd4:16746
+commitHookEffectListUnmount @ chunk-373CG7ZK.js?v=c3dcadd4:16873
+commitPassiveUnmountOnFiber @ chunk-373CG7ZK.js?v=c3dcadd4:18230
+commitPassiveUnmountEffects_complete @ chunk-373CG7ZK.js?v=c3dcadd4:18211
+commitPassiveUnmountEffects_begin @ chunk-373CG7ZK.js?v=c3dcadd4:18202
+commitPassiveUnmountEffects @ chunk-373CG7ZK.js?v=c3dcadd4:18167
+flushPassiveEffectsImpl @ chunk-373CG7ZK.js?v=c3dcadd4:19487
+flushPassiveEffects @ chunk-373CG7ZK.js?v=c3dcadd4:19445
+performSyncWorkOnRoot @ chunk-373CG7ZK.js?v=c3dcadd4:18866
+flushSyncCallbacks @ chunk-373CG7ZK.js?v=c3dcadd4:9117
+commitRootImpl @ chunk-373CG7ZK.js?v=c3dcadd4:19430
+commitRoot @ chunk-373CG7ZK.js?v=c3dcadd4:19275
+finishConcurrentRender @ chunk-373CG7ZK.js?v=c3dcadd4:18803
+performConcurrentWorkOnRoot @ chunk-373CG7ZK.js?v=c3dcadd4:18716
+workLoop @ chunk-373CG7ZK.js?v=c3dcadd4:195
+flushWork @ chunk-373CG7ZK.js?v=c3dcadd4:174
+performWorkUntilDeadline @ chunk-373CG7ZK.js?v=c3dcadd4:382Understand this warning
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:101 [WebSocket] Error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+overrideMethod @ hook.js:608
+wsRef.current.onerror @ useWebSocket.ts:101Understand this error
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 4000ms (attempt 3)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 2000ms (attempt 2)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 2000ms (attempt 2)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 2000ms (attempt 2)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 2000ms (attempt 2)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 2000ms (attempt 2)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 2000ms (attempt 2)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 2000ms (attempt 2)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 2000ms (attempt 2)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 2000ms (attempt 2)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 2000ms (attempt 2)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 2000ms (attempt 2)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 2000ms (attempt 2)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 2000ms (attempt 2)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 2000ms (attempt 2)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 2000ms (attempt 2)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 2000ms (attempt 2)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 2000ms (attempt 2)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 2000ms (attempt 2)
+useWebSocket.ts:35 [WebSocket] Connected
+useWebSocket.ts:29 [WebSocket] Attempting to connect to: wss://1fe712b0-981f-4eb3-b5df-636862de5ce2-00-36k3uurtfk390.worf.replit.dev/ws
+useWebSocket.ts:79 [WebSocket] Disconnected
+useWebSocket.ts:90 [WebSocket] Reconnecting in 1000ms (attempt 1)
