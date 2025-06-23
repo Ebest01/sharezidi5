@@ -64,9 +64,8 @@ export const useFileTransfer = (websocket: any) => {
 
   const sendFileChunks = async (file: SelectedFile, deviceId: string, fileInfo: FileInfo) => {
     const chunks = Math.ceil(file.size / file.optimizedChunkSize);
-    const maxConcurrentChunks = file.parallelStreams;
-    const pendingChunks = new Set<number>();
-    let acknowledgedChunks = 0;
+    const acknowledgedChunks = new Set<number>();
+    let sentChunks = 0;
 
     const metrics: TransferMetrics = {
       startTime: Date.now(),
@@ -77,93 +76,93 @@ export const useFileTransfer = (websocket: any) => {
 
     transferMetricsRef.current.set(file.id, metrics);
 
-    for (let chunkIndex = 0; chunkIndex < chunks; chunkIndex++) {
-      // Rate limiting for concurrent chunks
-      while (pendingChunks.size >= maxConcurrentChunks) {
-        await new Promise(resolve => setTimeout(resolve, 10));
-      }
-
-      const start = chunkIndex * file.optimizedChunkSize;
-      const end = Math.min(start + file.optimizedChunkSize, file.size);
-      
-      // Ensure file has slice method (it should since it extends File)
-      if (typeof file.slice !== 'function') {
-        console.error('File object missing slice method:', file);
-        throw new Error('Invalid file object - missing slice method');
-      }
-      
-      const chunk = file.slice(start, end);
-      
-      const arrayBuffer = await chunk.arrayBuffer();
-      
-      // Send chunk
-      const success = websocket.send('file-chunk', {
-        toUserId: deviceId,
-        fileId: file.id,
-        chunkIndex,
-        chunk: arrayBuffer,
-        totalChunks: chunks
-      });
-
-      if (success) {
-        pendingChunks.add(chunkIndex);
-        
-        // Update transfer progress
-        const senderProgress = ((chunkIndex + 1) / chunks) * 100;
-        const key = `${websocket.userId}-${deviceId}-${file.id}`;
-        
-        setTransfers(prev => {
-          const transfer = prev.get(key);
-          if (transfer) {
-            const updated = { ...transfer, sentProgress: senderProgress };
-            return new Map(prev.set(key, updated));
-          }
-          return prev;
-        });
-
-        // Update metrics
-        metrics.bytesTransferred += chunk.size;
-        const elapsed = (Date.now() - metrics.startTime) / 1000;
-        const speedBps = metrics.bytesTransferred / elapsed;
-        metrics.speed = TransferUtils.formatFileSize(speedBps) + '/s';
-        
-        const remainingBytes = file.size - metrics.bytesTransferred;
-        const etaSeconds = remainingBytes / speedBps;
-        metrics.eta = etaSeconds > 0 ? `${Math.ceil(etaSeconds)}s` : 'Complete';
-
-        // Adaptive delay based on connection speed and pending chunks
-        const delay = Math.max(1, Math.min(50, pendingChunks.size * 2));
-        await new Promise(resolve => setTimeout(resolve, delay));
-      } else {
-        console.error('Failed to send chunk, connection lost');
-        break;
-      }
-    }
-
     // Set up chunk acknowledgment handler for this transfer
     const handleChunkAck = (data: any) => {
       if (data.fileId === file.id && data.status === 'received') {
-        acknowledgedChunks++;
-        pendingChunks.delete(data.chunkIndex);
-        console.log(`[FileTransfer] Chunk ${data.chunkIndex} acknowledged, total: ${acknowledgedChunks}/${chunks}`);
+        acknowledgedChunks.add(data.chunkIndex);
+        console.log(`[FileTransfer] Chunk ${data.chunkIndex} acknowledged, total: ${acknowledgedChunks.size}/${chunks}`);
       }
     };
 
     websocket.on('chunk-ack', handleChunkAck);
 
-    // Wait for all chunks to be acknowledged
-    while (acknowledgedChunks < chunks && pendingChunks.size > 0) {
-      await new Promise(resolve => setTimeout(resolve, 100));
+    try {
+      // Send all chunks sequentially with acknowledgment waiting
+      for (let chunkIndex = 0; chunkIndex < chunks; chunkIndex++) {
+        const start = chunkIndex * file.optimizedChunkSize;
+        const end = Math.min(start + file.optimizedChunkSize, file.size);
+        
+        // Ensure file has slice method (it should since it extends File)
+        if (typeof file.slice !== 'function') {
+          console.error('File object missing slice method:', file);
+          throw new Error('Invalid file object - missing slice method');
+        }
+        
+        const chunk = file.slice(start, end);
+        const arrayBuffer = await chunk.arrayBuffer();
+        
+        // Send chunk
+        const success = websocket.send('file-chunk', {
+          toUserId: deviceId,
+          fileId: file.id,
+          chunkIndex,
+          chunk: arrayBuffer,
+          totalChunks: chunks
+        });
+
+        if (success) {
+          sentChunks++;
+          
+          // Update transfer progress
+          const senderProgress = (sentChunks / chunks) * 100;
+          const key = `${websocket.userId}-${deviceId}-${file.id}`;
+          
+          setTransfers(prev => {
+            const transfer = prev.get(key);
+            if (transfer) {
+              const updated = { ...transfer, sentProgress: senderProgress };
+              return new Map(prev.set(key, updated));
+            }
+            return prev;
+          });
+
+          // Update metrics
+          metrics.bytesTransferred += arrayBuffer.byteLength;
+          const elapsed = (Date.now() - metrics.startTime) / 1000;
+          const speedBps = metrics.bytesTransferred / elapsed;
+          metrics.speed = TransferUtils.formatFileSize(speedBps) + '/s';
+          
+          const remainingBytes = file.size - metrics.bytesTransferred;
+          const etaSeconds = remainingBytes / speedBps;
+          metrics.eta = etaSeconds > 0 ? `${Math.ceil(etaSeconds)}s` : 'Complete';
+
+          // Wait for acknowledgment with timeout
+          const startTime = Date.now();
+          while (!acknowledgedChunks.has(chunkIndex) && Date.now() - startTime < 5000) {
+            await new Promise(resolve => setTimeout(resolve, 10));
+          }
+
+          if (!acknowledgedChunks.has(chunkIndex)) {
+            console.warn(`[FileTransfer] Chunk ${chunkIndex} not acknowledged, continuing anyway`);
+          }
+
+          // Small delay between chunks
+          await new Promise(resolve => setTimeout(resolve, 5));
+        } else {
+          console.error('Failed to send chunk, connection lost');
+          break;
+        }
+      }
+
+      // Mark transfer as complete
+      websocket.send('transfer-complete', {
+        toUserId: deviceId,
+        fileId: file.id
+      });
+    } finally {
+      // Clean up the handler
+      websocket.off('chunk-ack');
     }
-
-    // Clean up the handler
-    websocket.off('chunk-ack');
-
-    // Mark transfer as complete
-    websocket.send('transfer-complete', {
-      toUserId: deviceId,
-      fileId: file.id
-    });
   };
 
   const startTransfer = useCallback(async (device: Device, files: SelectedFile[]) => {

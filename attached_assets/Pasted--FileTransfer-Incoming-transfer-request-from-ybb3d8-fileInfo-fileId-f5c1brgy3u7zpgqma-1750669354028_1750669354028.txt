@@ -1,0 +1,19 @@
+[FileTransfer] Incoming transfer request: {from: 'ybb3d8', fileInfo: {…}, fileId: 'f5c1brgy3u7zpgqmaswsr8'}
+Console.js:61 [WebSocket] Received message: file-chunk {from: 'ybb3d8', chunkIndex: 0, chunk: {…}, totalChunks: 818, fileId: 'f5c1brgy3u7zpgqmaswsr8', …}
+Console.js:61 [WebSocket] Received message: sync-status {senderId: 'ybb3d8', receiverId: 'j1no4r', fileId: 'f5c1brgy3u7zpgqmaswsr8', senderProgress: 0.12224938875305623, receiverProgress: 0.12224938875305623, …}
+Console.js:61 [WebSocket] Received message: file-chunk {from: 'ybb3d8', chunkIndex: 1, chunk: {…}, totalChunks: 818, fileId: 'f5c1brgy3u7zpgqmaswsr8', …}
+Console.js:61 [WebSocket] Received message: sync-status {senderId: 'ybb3d8', receiverId: 'j1no4r', fileId: 'f5c1brgy3u7zpgqmaswsr8', senderProgress: 0.24449877750611246, receiverProgress: 0.24449877750611246, …}
+Console.js:61 [WebSocket] Received message: file-chunk {from: 'ybb3d8', chunkIndex: 2, chunk: {…}, totalChunks: 818, fileId: 'f5c1brgy3u7zpgqmaswsr8', …}
+Console.js:61 [WebSocket] Received message: sync-status {senderId: 'ybb3d8', receiverId: 'j1no4r', fileId: 'f5c1brgy3u7zpgqmaswsr8', senderProgress: 0.36674816625916873, receiverProgress: 0.36674816625916873, …}
+Console.js:61 [WebSocket] Received message: file-chunk {from: 'ybb3d8', chunkIndex: 3, chunk: {…}, totalChunks: 818, fileId: 'f5c1brgy3u7zpgqmaswsr8', …}
+Console.js:61 [WebSocket] Received message: sync-status {senderId: 'ybb3d8', receiverId: 'j1no4r', fileId: 'f5c1brgy3u7zpgqmaswsr8', senderProgress: 0.4889975550122249, receiverProgress: 0.4889975550122249, …}
+Console.js:61 [WebSocket] Received message: file-chunk {from: 'ybb3d8', chunkIndex: 4, chunk: {…}, totalChunks: 818, fileId: 'f5c1brgy3u7zpgqmaswsr8', …}
+Console.js:61 [WebSocket] Received message: sync-status {senderId: 'ybb3d8', receiverId: 'j1no4r', fileId: 'f5c1brgy3u7zpgqmaswsr8', senderProgress: 0.6112469437652812, receiverProgress: 0.6112469437652812, …}
+Console.js:61 [WebSocket] Received message: file-chunk {from: 'ybb3d8', chunkIndex: 5, chunk: {…}, totalChunks: 818, fileId: 'f5c1brgy3u7zpgqmaswsr8', …}
+Console.js:61 [WebSocket] Received message: sync-status {senderId: 'ybb3d8', receiverId: 'j1no4r', fileId: 'f5c1brgy3u7zpgqmaswsr8', senderProgress: 0.7334963325183375, receiverProgress: 0.7334963325183375, …}
+Console.js:61 [WebSocket] Received message: file-chunk {from: 'ybb3d8', chunkIndex: 6, chunk: {…}, totalChunks: 818, fileId: 'f5c1brgy3u7zpgqmaswsr8', …}
+Console.js:61 [WebSocket] Received message: sync-status {senderId: 'ybb3d8', receiverId: 'j1no4r', fileId: 'f5c1brgy3u7zpgqmaswsr8', senderProgress: 0.8557457212713936, receiverProgress: 0.8557457212713936, …}
+Console.js:61 [WebSocket] Received message: file-chunk {from: 'ybb3d8', chunkIndex: 7, chunk: {…}, totalChunks: 818, fileId: 'f5c1brgy3u7zpgqmaswsr8', …}
+Console.js:61 [WebSocket] Received message: sync-status {senderId: 'ybb3d8', receiverId: 'j1no4r', fileId: 'f5c1brgy3u7zpgqmaswsr8', senderProgress: 0.9779951100244498, receiverProgress: 0.9779951100244498, …}
+10DataSyncOptimizer:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was receivedUnderstand this error
+2Console.js:61 [WebSocket] Received pong

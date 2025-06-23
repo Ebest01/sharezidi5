@@ -305,10 +305,17 @@ export const useWebSocket = () => {
       }, 100);
     };
 
+    const handleChunkAck = (data: any) => {
+      console.log('[WebSocket] Chunk acknowledged:', data.chunkIndex, 'Status:', data.status);
+      // This acknowledgment is handled by the file transfer logic
+    };
+
     on('devices', handleDevices);
+    on('chunk-ack', handleChunkAck);
 
     return () => {
       off('devices');
+      off('chunk-ack');
     };
   }, [on, off, userId]);
 
