@@ -1,0 +1,21 @@
+[WebSocket] Received message: chunk-ack {chunkIndex: 5, fileId: 'f5c1brgy3u7zpgqmaswsr8', status: 'duplicate'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 6, fileId: 'f5c1brgy3u7zpgqmaswsr8', status: 'received', receiverProgress: 0.8557457212713936}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'ybb3d8', receiverId: 'j1no4r', fileId: 'f5c1brgy3u7zpgqmaswsr8', senderProgress: 0.8557457212713936, receiverProgress: 0.8557457212713936, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 6, fileId: 'f5c1brgy3u7zpgqmaswsr8', status: 'duplicate'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 7, fileId: 'f5c1brgy3u7zpgqmaswsr8', status: 'received', receiverProgress: 0.9779951100244498}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'ybb3d8', receiverId: 'j1no4r', fileId: 'f5c1brgy3u7zpgqmaswsr8', senderProgress: 0.9779951100244498, receiverProgress: 0.9779951100244498, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 7, fileId: 'f5c1brgy3u7zpgqmaswsr8', status: 'duplicate'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: transfer-accepted {fromUserId: 'j1no4r', fileId: 'f5c1brgy3u7zpgqmaswsr8'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: transfer-accepted
+useWebSocket.ts:78 [WebSocket] Received message: transfer-accepted {fromUserId: 'j1no4r', fileId: 'f5c1brgy3u7zpgqmaswsr8'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: transfer-accepted
+useWebSocket.ts:78 [WebSocket] Received message: transfer-accepted {fromUserId: 'j1no4r', fileId: 'f5c1brgy3u7zpgqmaswsr8'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: transfer-accepted
+useWebSocket.ts:78 [WebSocket] Received message: transfer-accepted {fromUserId: 'j1no4r', fileId: 'f5c1brgy3u7zpgqmaswsr8'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: transfer-accepted
+2useWebSocket.ts:74 [WebSocket] Received pong
