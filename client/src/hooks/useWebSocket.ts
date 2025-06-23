@@ -298,6 +298,11 @@ export const useWebSocket = () => {
       
       console.log('[WebSocket] Filtered devices:', filteredDevices);
       setDevices(filteredDevices);
+      
+      // Force React to re-render by creating new array reference
+      setTimeout(() => {
+        setDevices([...filteredDevices]);
+      }, 100);
     };
 
     on('devices', handleDevices);

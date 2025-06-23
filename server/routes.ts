@@ -91,13 +91,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     else if (userAgent.includes('Linux')) deviceName = 'Linux PC';
     
     isRegistered = true;
-    fileTransferService.registerUser(userId, ws, deviceName);
     
-    // Send user their ID immediately
-    ws.send(JSON.stringify({
-      type: 'registered',
-      data: { userId }
-    }));
+    // Register user (this will send registration confirmation)
+    fileTransferService.registerUser(userId, ws, deviceName);
 
     ws.on('message', (data) => {
       try {
