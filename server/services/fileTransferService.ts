@@ -5,6 +5,7 @@ interface ConnectedUser {
   id: string;
   socket: WebSocket;
   lastPing: number;
+  deviceName?: string;
 }
 
 export class FileTransferService {

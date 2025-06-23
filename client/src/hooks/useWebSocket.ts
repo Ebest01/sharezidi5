@@ -60,7 +60,10 @@ class WebSocketManager {
         this.notifySubscribers(true);
         
         // Register user
-        this.send('register', { userId: this.generateUserId() });
+        this.send('register', { 
+          userId: this.generateUserId(),
+          deviceName: this.getDeviceName()
+        });
         
         // Start heartbeat
         this.startPing();
@@ -132,6 +135,20 @@ class WebSocketManager {
 
   private generateUserId(): string {
     return Math.random().toString(36).substring(2, 8);
+  }
+
+  private getDeviceName(): string {
+    const platform = navigator.platform;
+    const userAgent = navigator.userAgent;
+    
+    if (platform.includes('Win')) return 'Windows PC';
+    if (platform.includes('Mac')) return 'Mac';
+    if (/iPad/.test(userAgent)) return 'iPad';
+    if (/iPhone/.test(userAgent)) return 'iPhone';
+    if (/Android/.test(userAgent)) return 'Android Device';
+    if (platform.includes('Linux')) return 'Linux PC';
+    
+    return 'Unknown Device';
   }
 
   send(type: string, data: any): boolean {
@@ -221,14 +238,17 @@ export const useWebSocket = () => {
 
   // Handle device list updates
   useEffect(() => {
-    const handleDevices = (deviceList: string[]) => {
+    const handleDevices = (deviceList: Array<{id: string, name: string}>) => {
       setDevices(
         deviceList
-          .filter(id => id !== userId)
-          .map(id => ({
-            id,
-            name: `Device ${id}`,
-            type: 'pc' as const,
+          .filter(device => device.id !== userId)
+          .map(device => ({
+            id: device.id,
+            name: device.name || `Device ${device.id.substring(0, 6)}`,
+            type: device.name?.includes('iPhone') ? 'mobile' as const :
+                  device.name?.includes('iPad') ? 'tablet' as const :
+                  device.name?.includes('Android') ? 'mobile' as const :
+                  'pc' as const,
             online: true
           }))
       );
