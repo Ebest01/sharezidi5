@@ -18,7 +18,7 @@ export const useWebSocket = () => {
 
     // Ensure we have a valid host
     const host = window.location.host;
-    if (!host || host === 'undefined' || !host.includes(':')) {
+    if (!host || host === 'undefined') {
       console.error('[WebSocket] Invalid host:', host);
       return;
     }
