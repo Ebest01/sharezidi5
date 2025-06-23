@@ -1,0 +1,124 @@
+[WebSocket] Received message: sync-status {senderId: 'okcips', receiverId: 'td2epc', fileId: 'fmx53lygxpni02mgeoe6j', senderProgress: 100, receiverProgress: 100, …}
+Console.js:61 [WebSocket] Received message: transfer-complete {from: 'okcips', fileId: 'fmx53lygxpni02mgeoe6j', fileName: 'Image (7).jpg'}
+Console.js:61 [WebSocket] Received message: transfer-complete {from: 'okcips', fileId: 'fmx53lygxpni02mgeoe6j', fileName: 'Image (7).jpg'}
+Console.js:61 [FileTransfer] Reconstructing file: Image (7).jpg (73 chunks)
+Console.js:61 [FileTransfer] Chunk 0: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 1: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 2: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 3: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 4: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 5: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 6: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 7: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 8: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 9: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 10: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 11: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 12: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 13: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 14: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 15: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 16: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 17: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 18: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 19: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 20: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 21: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 22: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 23: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 24: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 25: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 26: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 27: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 28: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 29: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 30: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 31: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 32: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 33: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 34: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 35: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 36: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 37: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 38: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 39: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 40: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 41: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 42: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 43: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 44: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 45: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 46: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 47: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 48: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 49: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 50: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 51: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 52: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 53: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 54: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 55: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 56: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 57: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 58: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 59: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 60: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 61: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 62: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 63: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 64: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 65: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 66: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 67: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 68: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 69: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 70: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 71: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Chunk 72: {} Type: object Size: unknown
+Console.js:61 [FileTransfer] Invalid chunk data: {}
+Mt.forEach.n.<computed> @ Console.js:61
+(anonymous) @ useFileTransfer.ts:373
+reconstructAndDownloadFile @ useFileTransfer.ts:362
+(anonymous) @ useFileTransfer.ts:339
+basicStateReducer @ chunk-373CG7ZK.js?v=c3dcadd4:11701
+updateReducer @ chunk-373CG7ZK.js?v=c3dcadd4:11792
+updateState @ chunk-373CG7ZK.js?v=c3dcadd4:12019
+useState @ chunk-373CG7ZK.js?v=c3dcadd4:12751
+useState @ chunk-REFQX4J5.js?v=c3dcadd4:1067
+useFileTransfer @ useFileTransfer.ts:9
+ShareZidiApp @ ShareZidiApp.tsx:13
+renderWithHooks @ chunk-373CG7ZK.js?v=c3dcadd4:11546
+updateFunctionComponent @ chunk-373CG7ZK.js?v=c3dcadd4:14580
+beginWork @ chunk-373CG7ZK.js?v=c3dcadd4:15922
+beginWork$1 @ chunk-373CG7ZK.js?v=c3dcadd4:19751
+performUnitOfWork @ chunk-373CG7ZK.js?v=c3dcadd4:19196
+workLoopSync @ chunk-373CG7ZK.js?v=c3dcadd4:19135
+renderRootSync @ chunk-373CG7ZK.js?v=c3dcadd4:19114
+performConcurrentWorkOnRoot @ chunk-373CG7ZK.js?v=c3dcadd4:18676
+workLoop @ chunk-373CG7ZK.js?v=c3dcadd4:195
+flushWork @ chunk-373CG7ZK.js?v=c3dcadd4:174
+performWorkUntilDeadline @ chunk-373CG7ZK.js?v=c3dcadd4:382Understand this error
+Console.js:61 [FileTransfer] Invalid chunk data: {}
+Mt.forEach.n.<computed> @ Console.js:61
+(anonymous) @ useFileTransfer.ts:373
+reconstructAndDownloadFile @ useFileTransfer.ts:362
+(anonymous) @ useFileTransfer.ts:339
+basicStateReducer @ chunk-373CG7ZK.js?v=c3dcadd4:11701
+updateReducer @ chunk-373CG7ZK.js?v=c3dcadd4:11792
+updateState @ chunk-373CG7ZK.js?v=c3dcadd4:12019
+useState @ chunk-373CG7ZK.js?v=c3dcadd4:12751
+useState @ chunk-REFQX4J5.js?v=c3dcadd4:1067
+useFileTransfer @ useFileTransfer.ts:9
+ShareZidiApp @ ShareZidiApp.tsx:13
+renderWithHooks @ chunk-373CG7ZK.js?v=c3dcadd4:11546
+updateFunctionComponent @ chunk-373CG7ZK.js?v=c3dcadd4:14580
+beginWork @ chunk-373CG7ZK.js?v=c3dcadd4:15922
+beginWork$1 @ chunk-373CG7ZK.js?v=c3dcadd4:19751
+performUnitOfWork @ chunk-373CG7ZK.js?v=c3dcadd4:19196
+workLoopSync @ chunk-373CG7ZK.js?v=c3dcadd4:19135
+renderRootSync @ chunk-373CG7ZK.js?v=c3dcadd4:19114
+performConcurrentWorkOnRoot @ chunk-373CG7ZK.js?v=c3dcadd4:18676
+workLoop @ chunk-373CG7ZK.js?v=c3dcadd4:195
+flushWork @ chunk-373CG7ZK.js?v=c3dcadd4:174
+performWorkUntilDeadline @ chunk-373CG7ZK.js?v=c3dcadd4:382Understand this error
+Console.js:61 [FileTransfer] Invalid chunk data: {}

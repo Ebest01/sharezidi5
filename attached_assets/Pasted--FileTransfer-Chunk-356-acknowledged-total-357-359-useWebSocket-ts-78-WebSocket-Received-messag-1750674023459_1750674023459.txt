@@ -1,0 +1,21 @@
+[FileTransfer] Chunk 356 acknowledged, total: 357/359
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 357, fileId: 'a0iq88bgsfknotwbb4yie', status: 'received', receiverProgress: 99.72144846796658}
+useFileTransfer.ts:105 [FileTransfer] Chunk 357 acknowledged, total: 358/359
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'mrqbee', receiverId: 'pk7xyj', fileId: 'a0iq88bgsfknotwbb4yie', senderProgress: 99.72144846796658, receiverProgress: 99.72144846796658, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 357, fileId: 'a0iq88bgsfknotwbb4yie', status: 'duplicate'}
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'mrqbee', receiverId: 'pk7xyj', fileId: 'a0iq88bgsfknotwbb4yie', senderProgress: 99.72144846796658, receiverProgress: 99.72144846796658, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {toUserId: 'mrqbee', chunkIndex: 357, fileId: 'a0iq88bgsfknotwbb4yie', status: 'received', receiverProgress: 99.72144846796658}
+useFileTransfer.ts:105 [FileTransfer] Chunk 357 acknowledged, total: 358/359
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'mrqbee', receiverId: 'pk7xyj', fileId: 'a0iq88bgsfknotwbb4yie', senderProgress: 99.72144846796658, receiverProgress: 99.72144846796658, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {toUserId: 'mrqbee', chunkIndex: 357, fileId: 'a0iq88bgsfknotwbb4yie', status: 'received', receiverProgress: 99.72144846796658}
+useFileTransfer.ts:105 [FileTransfer] Chunk 357 acknowledged, total: 358/359
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 358, fileId: 'a0iq88bgsfknotwbb4yie', status: 'received', receiverProgress: 100}
+useFileTransfer.ts:105 [FileTransfer] Chunk 358 acknowledged, total: 359/359
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'mrqbee', receiverId: 'pk7xyj', fileId: 'a0iq88bgsfknotwbb4yie', senderProgress: 100, receiverProgress: 100, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 358, fileId: 'a0iq88bgsfknotwbb4yie', status: 'duplicate'}
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'mrqbee', receiverId: 'pk7xyj', fileId: 'a0iq88bgsfknotwbb4yie', senderProgress: 100, receiverProgress: 100, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {toUserId: 'mrqbee', chunkIndex: 358, fileId: 'a0iq88bgsfknotwbb4yie', status: 'received', receiverProgress: 100}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'mrqbee', receiverId: 'pk7xyj', fileId: 'a0iq88bgsfknotwbb4yie', senderProgress: 100, receiverProgress: 100, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {toUserId: 'mrqbee', chunkIndex: 358, fileId: 'a0iq88bgsfknotwbb4yie', status: 'received', receiverProgress: 100}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack

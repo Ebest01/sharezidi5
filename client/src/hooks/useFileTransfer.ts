@@ -123,12 +123,15 @@ export const useFileTransfer = (websocket: any) => {
         const chunk = file.slice(start, end);
         const arrayBuffer = await chunk.arrayBuffer();
         
+        // Convert ArrayBuffer to Base64 for JSON transmission
+        const base64Chunk = arrayBufferToBase64(arrayBuffer);
+        
         // Send chunk
         const success = websocket.send('file-chunk', {
           toUserId: deviceId,
           fileId: file.id,
           chunkIndex,
-          chunk: arrayBuffer,
+          chunk: base64Chunk,
           totalChunks: chunks
         });
 
@@ -259,7 +262,7 @@ export const useFileTransfer = (websocket: any) => {
       const transferId = `${data.from}-${websocket.userId}-${data.fileId}`;
       const receivedProgress = ((data.chunkIndex + 1) / data.totalChunks) * 100;
       
-      console.log(`[FileTransfer] Received chunk ${data.chunkIndex}, size:`, data.chunk?.byteLength || 'unknown', 'type:', typeof data.chunk);
+      console.log(`[FileTransfer] Received chunk ${data.chunkIndex}, size:`, data.chunk?.length || 'unknown', 'type:', typeof data.chunk);
       
       // Store the chunk data for file reconstruction
       if (!receivedChunks.current.has(data.fileId)) {
