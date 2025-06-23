@@ -1,0 +1,108 @@
+[WebSocket] Received message: devices (3) [{…}, {…}, {…}]
+Console.js:61 [WebSocket] Received device list: (3) [{…}, {…}, {…}]
+Console.js:61 [WebSocket] Current user ID from manager: ork9j1
+Console.js:61 [WebSocket] Local userId state: ork9j1
+Console.js:61 [WebSocket] Device ork9j1: exclude=true (myId=ork9j1)
+Console.js:61 [WebSocket] Device 4otuio: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Device ltl8xe: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Filtered devices: (2) [{…}, {…}]
+Console.js:61 [WebSocket] Received message: devices (3) [{…}, {…}, {…}]
+Console.js:61 [WebSocket] Received device list: (3) [{…}, {…}, {…}]
+Console.js:61 [WebSocket] Current user ID from manager: ork9j1
+Console.js:61 [WebSocket] Local userId state: ork9j1
+Console.js:61 [WebSocket] Device ork9j1: exclude=true (myId=ork9j1)
+Console.js:61 [WebSocket] Device 4otuio: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Device ltl8xe: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Filtered devices: (2) [{…}, {…}]
+10Console.js:61 [WebSocket] Received pong
+Console.js:61 [WebSocket] Received message: devices (2) [{…}, {…}]
+Console.js:61 [WebSocket] Received device list: (2) [{…}, {…}]
+Console.js:61 [WebSocket] Current user ID from manager: ork9j1
+Console.js:61 [WebSocket] Local userId state: ork9j1
+Console.js:61 [WebSocket] Device ork9j1: exclude=true (myId=ork9j1)
+Console.js:61 [WebSocket] Device 4otuio: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Filtered devices: [{…}]
+Console.js:61 [WebSocket] Received message: devices (2) [{…}, {…}]
+Console.js:61 [WebSocket] Received device list: (2) [{…}, {…}]
+Console.js:61 [WebSocket] Current user ID from manager: ork9j1
+Console.js:61 [WebSocket] Local userId state: ork9j1
+Console.js:61 [WebSocket] Device ork9j1: exclude=true (myId=ork9j1)
+Console.js:61 [WebSocket] Device 4otuio: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Filtered devices: [{…}]
+Console.js:61 [WebSocket] Received message: devices (2) [{…}, {…}]
+Console.js:61 [WebSocket] Received device list: (2) [{…}, {…}]
+Console.js:61 [WebSocket] Current user ID from manager: ork9j1
+Console.js:61 [WebSocket] Local userId state: ork9j1
+Console.js:61 [WebSocket] Device ork9j1: exclude=true (myId=ork9j1)
+Console.js:61 [WebSocket] Device 4otuio: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Filtered devices: [{…}]
+Console.js:61 [WebSocket] Received message: devices (2) [{…}, {…}]
+Console.js:61 [WebSocket] Received device list: (2) [{…}, {…}]
+Console.js:61 [WebSocket] Current user ID from manager: ork9j1
+Console.js:61 [WebSocket] Local userId state: ork9j1
+Console.js:61 [WebSocket] Device ork9j1: exclude=true (myId=ork9j1)
+Console.js:61 [WebSocket] Device 4otuio: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Filtered devices: [{…}]
+8Console.js:61 [WebSocket] Received pong
+Console.js:61 [WebSocket] Received message: devices (3) [{…}, {…}, {…}]
+Console.js:61 [WebSocket] Received device list: (3) [{…}, {…}, {…}]
+Console.js:61 [WebSocket] Current user ID from manager: ork9j1
+Console.js:61 [WebSocket] Local userId state: ork9j1
+Console.js:61 [WebSocket] Device ork9j1: exclude=true (myId=ork9j1)
+Console.js:61 [WebSocket] Device 4otuio: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Device o8oxnn: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Filtered devices: (2) [{…}, {…}]
+Console.js:61 [WebSocket] Received message: devices (3) [{…}, {…}, {…}]
+Console.js:61 [WebSocket] Received device list: (3) [{…}, {…}, {…}]
+Console.js:61 [WebSocket] Current user ID from manager: ork9j1
+Console.js:61 [WebSocket] Local userId state: ork9j1
+Console.js:61 [WebSocket] Device ork9j1: exclude=true (myId=ork9j1)
+Console.js:61 [WebSocket] Device 4otuio: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Device o8oxnn: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Filtered devices: (2) [{…}, {…}]
+4Console.js:61 [WebSocket] Received pong
+Console.js:61 [WebSocket] Received message: devices (2) [{…}, {…}]
+Console.js:61 [WebSocket] Received device list: (2) [{…}, {…}]
+Console.js:61 [WebSocket] Current user ID from manager: ork9j1
+Console.js:61 [WebSocket] Local userId state: ork9j1
+Console.js:61 [WebSocket] Device ork9j1: exclude=true (myId=ork9j1)
+Console.js:61 [WebSocket] Device 4otuio: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Filtered devices: [{…}]
+Console.js:61 [WebSocket] Received message: devices (2) [{…}, {…}]
+Console.js:61 [WebSocket] Received device list: (2) [{…}, {…}]
+Console.js:61 [WebSocket] Current user ID from manager: ork9j1
+Console.js:61 [WebSocket] Local userId state: ork9j1
+Console.js:61 [WebSocket] Device ork9j1: exclude=true (myId=ork9j1)
+Console.js:61 [WebSocket] Device 4otuio: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Filtered devices: [{…}]
+Console.js:61 [WebSocket] Received message: devices (2) [{…}, {…}]
+Console.js:61 [WebSocket] Received device list: (2) [{…}, {…}]
+Console.js:61 [WebSocket] Current user ID from manager: ork9j1
+Console.js:61 [WebSocket] Local userId state: ork9j1
+Console.js:61 [WebSocket] Device ork9j1: exclude=true (myId=ork9j1)
+Console.js:61 [WebSocket] Device 4otuio: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Filtered devices: [{…}]
+Console.js:61 [WebSocket] Received message: devices (2) [{…}, {…}]
+Console.js:61 [WebSocket] Received device list: (2) [{…}, {…}]
+Console.js:61 [WebSocket] Current user ID from manager: ork9j1
+Console.js:61 [WebSocket] Local userId state: ork9j1
+Console.js:61 [WebSocket] Device ork9j1: exclude=true (myId=ork9j1)
+Console.js:61 [WebSocket] Device 4otuio: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Filtered devices: [{…}]
+2Console.js:61 [WebSocket] Received pong
+Console.js:61 [WebSocket] Received message: devices (3) [{…}, {…}, {…}]
+Console.js:61 [WebSocket] Received device list: (3) [{…}, {…}, {…}]
+Console.js:61 [WebSocket] Current user ID from manager: ork9j1
+Console.js:61 [WebSocket] Local userId state: ork9j1
+Console.js:61 [WebSocket] Device ork9j1: exclude=true (myId=ork9j1)
+Console.js:61 [WebSocket] Device 4otuio: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Device vomgnd: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Filtered devices: (2) [{…}, {…}]
+Console.js:61 [WebSocket] Received message: devices (3) [{…}, {…}, {…}]
+Console.js:61 [WebSocket] Received device list: (3) [{…}, {…}, {…}]
+Console.js:61 [WebSocket] Current user ID from manager: ork9j1
+Console.js:61 [WebSocket] Local userId state: ork9j1
+Console.js:61 [WebSocket] Device ork9j1: exclude=true (myId=ork9j1)
+Console.js:61 [WebSocket] Device 4otuio: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Device vomgnd: exclude=false (myId=ork9j1)
+Console.js:61 [WebSocket] Filtered devices: (2) [{…}, {…}]

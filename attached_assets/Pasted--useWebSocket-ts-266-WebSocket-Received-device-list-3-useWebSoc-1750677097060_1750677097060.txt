@@ -1,0 +1,37 @@
+ [{…}, {…}, {…}]
+useWebSocket.ts:266 [WebSocket] Received device list: (3) [{…}, {…}, {…}]
+useWebSocket.ts:268 [WebSocket] Current user ID from manager: 4otuio
+useWebSocket.ts:269 [WebSocket] Local userId state: 4otuio
+useWebSocket.ts:286 [WebSocket] Device ork9j1: exclude=false (myId=4otuio)
+useWebSocket.ts:286 [WebSocket] Device 4otuio: exclude=true (myId=4otuio)
+useWebSocket.ts:286 [WebSocket] Device vomgnd: exclude=false (myId=4otuio)
+useWebSocket.ts:299 [WebSocket] Filtered devices: (2) [{…}, {…}]
+8useWebSocket.ts:74 [WebSocket] Received pong
+useWebSocket.ts:78 [WebSocket] Received message: devices (2) [{…}, {…}]
+useWebSocket.ts:266 [WebSocket] Received device list: (2) [{…}, {…}]
+useWebSocket.ts:268 [WebSocket] Current user ID from manager: 4otuio
+useWebSocket.ts:269 [WebSocket] Local userId state: 4otuio
+useWebSocket.ts:286 [WebSocket] Device ork9j1: exclude=false (myId=4otuio)
+useWebSocket.ts:286 [WebSocket] Device 4otuio: exclude=true (myId=4otuio)
+useWebSocket.ts:299 [WebSocket] Filtered devices: [{…}]
+useWebSocket.ts:78 [WebSocket] Received message: devices (2) [{…}, {…}]
+useWebSocket.ts:266 [WebSocket] Received device list: (2) [{…}, {…}]
+useWebSocket.ts:268 [WebSocket] Current user ID from manager: 4otuio
+useWebSocket.ts:269 [WebSocket] Local userId state: 4otuio
+useWebSocket.ts:286 [WebSocket] Device ork9j1: exclude=false (myId=4otuio)
+useWebSocket.ts:286 [WebSocket] Device 4otuio: exclude=true (myId=4otuio)
+useWebSocket.ts:299 [WebSocket] Filtered devices: [{…}]
+useWebSocket.ts:78 [WebSocket] Received message: devices (2) [{…}, {…}]
+useWebSocket.ts:266 [WebSocket] Received device list: (2) [{…}, {…}]
+useWebSocket.ts:268 [WebSocket] Current user ID from manager: 4otuio
+useWebSocket.ts:269 [WebSocket] Local userId state: 4otuio
+useWebSocket.ts:286 [WebSocket] Device ork9j1: exclude=false (myId=4otuio)
+useWebSocket.ts:286 [WebSocket] Device 4otuio: exclude=true (myId=4otuio)
+useWebSocket.ts:299 [WebSocket] Filtered devices: [{…}]
+useWebSocket.ts:78 [WebSocket] Received message: devices (2) [{…}, {…}]
+useWebSocket.ts:266 [WebSocket] Received device list: (2) [{…}, {…}]
+useWebSocket.ts:268 [WebSocket] Current user ID from manager: 4otuio
+useWebSocket.ts:269 [WebSocket] Local userId state: 4otuio
+useWebSocket.ts:286 [WebSocket] Device ork9j1: exclude=false (myId=4otuio)
+useWebSocket.ts:286 [WebSocket] Device 4otuio: exclude=true (myId=4otuio)
+useWebSocket.ts:299 [WebSocket] Filtered devices: [{…}]
