@@ -1,0 +1,42 @@
+{senderId: '1dhcb1', receiverId: 'ykja7g', fileId: '6bey5kvrethnz27ucyxuuh', senderProgress: 0.24449877750611246, receiverProgress: 0.24449877750611246, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 1, fileId: '6bey5kvrethnz27ucyxuuh', status: 'duplicate'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 2, fileId: '6bey5kvrethnz27ucyxuuh', status: 'received', receiverProgress: 0.36674816625916873}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: '1dhcb1', receiverId: 'ykja7g', fileId: '6bey5kvrethnz27ucyxuuh', senderProgress: 0.36674816625916873, receiverProgress: 0.36674816625916873, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 2, fileId: '6bey5kvrethnz27ucyxuuh', status: 'duplicate'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 3, fileId: '6bey5kvrethnz27ucyxuuh', status: 'received', receiverProgress: 0.4889975550122249}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: '1dhcb1', receiverId: 'ykja7g', fileId: '6bey5kvrethnz27ucyxuuh', senderProgress: 0.4889975550122249, receiverProgress: 0.4889975550122249, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 3, fileId: '6bey5kvrethnz27ucyxuuh', status: 'duplicate'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 4, fileId: '6bey5kvrethnz27ucyxuuh', status: 'received', receiverProgress: 0.6112469437652812}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: '1dhcb1', receiverId: 'ykja7g', fileId: '6bey5kvrethnz27ucyxuuh', senderProgress: 0.6112469437652812, receiverProgress: 0.6112469437652812, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 4, fileId: '6bey5kvrethnz27ucyxuuh', status: 'duplicate'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 5, fileId: '6bey5kvrethnz27ucyxuuh', status: 'received', receiverProgress: 0.7334963325183375}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: '1dhcb1', receiverId: 'ykja7g', fileId: '6bey5kvrethnz27ucyxuuh', senderProgress: 0.7334963325183375, receiverProgress: 0.7334963325183375, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 5, fileId: '6bey5kvrethnz27ucyxuuh', status: 'duplicate'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 6, fileId: '6bey5kvrethnz27ucyxuuh', status: 'received', receiverProgress: 0.8557457212713936}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: '1dhcb1', receiverId: 'ykja7g', fileId: '6bey5kvrethnz27ucyxuuh', senderProgress: 0.8557457212713936, receiverProgress: 0.8557457212713936, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 6, fileId: '6bey5kvrethnz27ucyxuuh', status: 'duplicate'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 7, fileId: '6bey5kvrethnz27ucyxuuh', status: 'received', receiverProgress: 0.9779951100244498}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: '1dhcb1', receiverId: 'ykja7g', fileId: '6bey5kvrethnz27ucyxuuh', senderProgress: 0.9779951100244498, receiverProgress: 0.9779951100244498, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 7, fileId: '6bey5kvrethnz27ucyxuuh', status: 'duplicate'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: transfer-accepted {fromUserId: 'ykja7g', fileId: '6bey5kvrethnz27ucyxuuh'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: transfer-accepted
+useWebSocket.ts:78 [WebSocket] Received message: transfer-accepted {fromUserId: 'ykja7g', fileId: '6bey5kvrethnz27ucyxuuh'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: transfer-accepted
+useWebSocket.ts:78 [WebSocket] Received message: transfer-accepted {fromUserId: 'ykja7g', fileId: '6bey5kvrethnz27ucyxuuh'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: transfer-accepted
+useWebSocket.ts:78 [WebSocket] Received message: transfer-accepted {fromUserId: 'ykja7g', fileId: '6bey5kvrethnz27ucyxuuh'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: transfer-accepted
+8useWebSocket.ts:74 [WebSocket] Received pong

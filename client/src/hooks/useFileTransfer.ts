@@ -140,10 +140,24 @@ export const useFileTransfer = (websocket: any) => {
       }
     }
 
+    // Set up chunk acknowledgment handler for this transfer
+    const handleChunkAck = (data: any) => {
+      if (data.fileId === file.id && data.status === 'received') {
+        acknowledgedChunks++;
+        pendingChunks.delete(data.chunkIndex);
+        console.log(`[FileTransfer] Chunk ${data.chunkIndex} acknowledged, total: ${acknowledgedChunks}/${chunks}`);
+      }
+    };
+
+    websocket.on('chunk-ack', handleChunkAck);
+
     // Wait for all chunks to be acknowledged
     while (acknowledgedChunks < chunks && pendingChunks.size > 0) {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
+
+    // Clean up the handler
+    websocket.off('chunk-ack');
 
     // Mark transfer as complete
     websocket.send('transfer-complete', {
