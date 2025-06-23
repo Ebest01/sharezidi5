@@ -17,15 +17,14 @@ export const useFileTransfer = (websocket: any) => {
       const fileName = file.name || 'Unknown File';
       const fileType = file.type || 'application/octet-stream';
       
-      return {
-        ...file,
-        name: fileName,
-        size: fileSize,
-        type: fileType,
+      // Create a new SelectedFile that extends the original File object
+      const selectedFile = Object.assign(file, {
         id: TransferUtils.generateFileId(),
         optimizedChunkSize: TransferUtils.getOptimalChunkSize(fileSize),
         parallelStreams: TransferUtils.getParallelChunkCount()
-      };
+      }) as SelectedFile;
+      
+      return selectedFile;
     });
     
     setSelectedFiles(prev => [...prev, ...newFiles]);
@@ -157,6 +156,13 @@ export const useFileTransfer = (websocket: any) => {
 
       const start = chunkIndex * file.optimizedChunkSize;
       const end = Math.min(start + file.optimizedChunkSize, file.size);
+      
+      // Ensure file has slice method (it should since it extends File)
+      if (typeof file.slice !== 'function') {
+        console.error('File object missing slice method:', file);
+        throw new Error('Invalid file object - missing slice method');
+      }
+      
       const chunk = file.slice(start, end);
       
       const arrayBuffer = await chunk.arrayBuffer();
