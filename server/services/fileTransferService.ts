@@ -14,8 +14,8 @@ export class FileTransferService {
   private syncStatuses = new Map<string, SyncStatus>();
 
   constructor() {
-    // Clean up stale connections every 30 seconds
-    setInterval(() => this.cleanupStaleConnections(), 30000);
+    // Clean up stale connections every 2 minutes (increased from 30 seconds)
+    setInterval(() => this.cleanupStaleConnections(), 120000);
   }
 
   registerUser(userId: string, socket: WebSocket) {
@@ -27,6 +27,10 @@ export class FileTransferService {
       lastPing: Date.now()
     });
 
+    // Send initial device list to the new user
+    this.sendToUser(userId, 'devices', Array.from(this.connectedUsers.keys()));
+    
+    // Broadcast updated device list to all users
     this.broadcastUserList();
     this.setupSocketHandlers(userId, socket);
   }
@@ -60,13 +64,16 @@ export class FileTransferService {
     });
   }
 
-  private handleMessage(userId: string, message: any) {
+  public handleMessage(userId: string, message: any) {
     const user = this.connectedUsers.get(userId);
     if (!user) return;
 
     user.lastPing = Date.now();
 
     switch (message.type) {
+      case 'ping':
+        this.sendToUser(userId, 'pong', { timestamp: Date.now() });
+        break;
       case 'transfer-request':
         this.handleTransferRequest(userId, message.data);
         break;
@@ -182,16 +189,49 @@ export class FileTransferService {
       return;
     }
 
-    // Update sender progress
-    const senderProgress = ((chunkIndex + 1) / totalChunks) * 100;
-    syncStatus.senderProgress = senderProgress;
+    // Initialize chunk buffer if not exists
+    if (!this.chunkBuffers.has(transferId)) {
+      this.chunkBuffers.set(transferId, new Map());
+    }
+    const chunkBuffer = this.chunkBuffers.get(transferId)!;
+
+    // Check for duplicate chunks
+    if (chunkBuffer.has(chunkIndex)) {
+      console.log(`[FileTransfer] Duplicate chunk ${chunkIndex} rejected for ${transferId}`);
+      syncStatus.duplicatesRejected++;
+      transfer.duplicateChunks++;
+      
+      // Send duplicate acknowledgment
+      this.sendToUser(fromUserId, 'chunk-ack', {
+        chunkIndex,
+        fileId,
+        status: 'duplicate'
+      });
+      return;
+    }
+
+    // Store chunk and update progress
+    chunkBuffer.set(chunkIndex, chunk);
     syncStatus.lastChunkTime = Date.now();
     
+    // Calculate actual progress based on received chunks
+    const receivedChunks = chunkBuffer.size;
+    const receiverProgress = (receivedChunks / totalChunks) * 100;
+    
+    // Update sender progress based on chunk index
+    const senderProgress = Math.min(((chunkIndex + 1) / totalChunks) * 100, 100);
+    
+    syncStatus.senderProgress = senderProgress;
+    syncStatus.receiverProgress = receiverProgress;
+    syncStatus.syncLag = Math.max(0, senderProgress - receiverProgress);
+    
     transfer.sentProgress = senderProgress;
+    transfer.receivedProgress = receiverProgress;
+    
     this.activeTransfers.set(transferId, transfer);
     this.syncStatuses.set(transferId, syncStatus);
 
-    // Forward chunk to receiver
+    // Forward chunk to receiver with proper progress tracking
     const toUser = this.connectedUsers.get(toUserId);
     if (toUser && toUser.socket.readyState === WebSocket.OPEN) {
       this.sendToUser(toUserId, 'file-chunk', {
@@ -200,14 +240,15 @@ export class FileTransferService {
         chunk,
         totalChunks,
         fileId,
-        progress: senderProgress
+        progress: receiverProgress // Send receiver progress, not sender
       });
 
-      // Send acknowledgment back to sender
+      // Send acknowledgment back to sender with receiver status
       this.sendToUser(fromUserId, 'chunk-ack', {
         chunkIndex,
         fileId,
-        status: 'forwarded'
+        status: 'received',
+        receiverProgress: receiverProgress
       });
 
       // Update sync status
@@ -360,7 +401,7 @@ export class FileTransferService {
 
   private cleanupStaleConnections() {
     const now = Date.now();
-    const staleThreshold = 60000; // 1 minute
+    const staleThreshold = 300000; // 5 minutes (increased from 1 minute)
 
     for (const [userId, user] of this.connectedUsers) {
       if (now - user.lastPing > staleThreshold) {

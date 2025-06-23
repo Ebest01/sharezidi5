@@ -10,6 +10,7 @@ export const useWebSocket = () => {
   
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
+  const pingIntervalRef = useRef<NodeJS.Timeout>();
   const callbacksRef = useRef<Map<string, Function>>(new Map());
 
   const connect = useCallback(() => {
@@ -27,13 +28,35 @@ export const useWebSocket = () => {
         setReconnectAttempts(0);
         setSocketId(Math.random().toString(36).substring(2, 10));
         
-        // Register user
-        send('register', { userId });
+        // Register user immediately
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+          wsRef.current.send(JSON.stringify({
+            type: 'register',
+            data: { userId }
+          }));
+        }
+
+        // Start ping interval to keep connection alive
+        pingIntervalRef.current = setInterval(() => {
+          if (wsRef.current?.readyState === WebSocket.OPEN) {
+            wsRef.current.send(JSON.stringify({
+              type: 'ping',
+              data: { timestamp: Date.now() }
+            }));
+          }
+        }, 30000); // Ping every 30 seconds
       };
 
       wsRef.current.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data);
+          
+          // Handle pong response
+          if (message.type === 'pong') {
+            console.log('[WebSocket] Received pong');
+            return;
+          }
+          
           const callback = callbacksRef.current.get(message.type);
           if (callback) {
             callback(message.data);
@@ -46,6 +69,11 @@ export const useWebSocket = () => {
       wsRef.current.onclose = () => {
         console.log('[WebSocket] Disconnected');
         setIsConnected(false);
+        
+        // Clear ping interval
+        if (pingIntervalRef.current) {
+          clearInterval(pingIntervalRef.current);
+        }
         
         // Auto-reconnect with exponential backoff
         if (reconnectAttempts < 5) {
@@ -69,6 +97,9 @@ export const useWebSocket = () => {
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
+    }
+    if (pingIntervalRef.current) {
+      clearInterval(pingIntervalRef.current);
     }
     if (wsRef.current) {
       wsRef.current.close();
