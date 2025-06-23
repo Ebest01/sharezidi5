@@ -268,10 +268,17 @@ export const useWebSocket = () => {
       console.log('[WebSocket] Current user ID from manager:', currentUserId);
       console.log('[WebSocket] Local userId state:', userId);
       
+      // Don't process device list until we have a valid user ID
+      if (!currentUserId && !userId) {
+        console.log('[WebSocket] Skipping device list - no user ID yet');
+        return;
+      }
+      
+      const myUserId = currentUserId || userId;
       const filteredDevices = deviceList
         .filter(device => {
-          const shouldExclude = device.id === currentUserId || device.id === userId;
-          console.log(`[WebSocket] Device ${device.id}: exclude=${shouldExclude} (current=${currentUserId}, local=${userId})`);
+          const shouldExclude = device.id === myUserId;
+          console.log(`[WebSocket] Device ${device.id}: exclude=${shouldExclude} (myId=${myUserId})`);
           return !shouldExclude;
         })
         .map(device => ({
