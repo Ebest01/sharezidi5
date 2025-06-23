@@ -1,0 +1,28 @@
+Console.js:61 [WebSocket] Received message: transfer-request {from: '1dhcb1', fileInfo: {…}, fileId: '6bey5kvrethnz27ucyxuuh'}
+Console.js:61 [FileTransfer] Incoming transfer request: {from: '1dhcb1', fileInfo: {…}, fileId: '6bey5kvrethnz27ucyxuuh'}
+Console.js:61 [WebSocket] Received message: transfer-request {from: '1dhcb1', fileInfo: {…}, fileId: '6bey5kvrethnz27ucyxuuh'}
+Console.js:61 [FileTransfer] Incoming transfer request: {from: '1dhcb1', fileInfo: {…}, fileId: '6bey5kvrethnz27ucyxuuh'}
+Console.js:61 [WebSocket] Received message: file-chunk {from: '1dhcb1', chunkIndex: 0, chunk: {…}, totalChunks: 818, fileId: '6bey5kvrethnz27ucyxuuh', …}
+Console.js:61 [WebSocket] Received message: sync-status {senderId: '1dhcb1', receiverId: 'ykja7g', fileId: '6bey5kvrethnz27ucyxuuh', senderProgress: 0.12224938875305623, receiverProgress: 0.12224938875305623, …}
+Console.js:61 [WebSocket] Received message: file-chunk {from: '1dhcb1', chunkIndex: 1, chunk: {…}, totalChunks: 818, fileId: '6bey5kvrethnz27ucyxuuh', …}
+Console.js:61 [WebSocket] Received message: sync-status {senderId: '1dhcb1', receiverId: 'ykja7g', fileId: '6bey5kvrethnz27ucyxuuh', senderProgress: 0.24449877750611246, receiverProgress: 0.24449877750611246, …}
+Console.js:61 [WebSocket] Received message: file-chunk {from: '1dhcb1', chunkIndex: 2, chunk: {…}, totalChunks: 818, fileId: '6bey5kvrethnz27ucyxuuh', …}
+Console.js:61 [WebSocket] Received message: sync-status {senderId: '1dhcb1', receiverId: 'ykja7g', fileId: '6bey5kvrethnz27ucyxuuh', senderProgress: 0.36674816625916873, receiverProgress: 0.36674816625916873, …}
+Console.js:61 [WebSocket] Received message: file-chunk {from: '1dhcb1', chunkIndex: 3, chunk: {…}, totalChunks: 818, fileId: '6bey5kvrethnz27ucyxuuh', …}
+Console.js:61 [WebSocket] Received message: sync-status {senderId: '1dhcb1', receiverId: 'ykja7g', fileId: '6bey5kvrethnz27ucyxuuh', senderProgress: 0.4889975550122249, receiverProgress: 0.4889975550122249, …}
+Console.js:61 [WebSocket] Received message: file-chunk {from: '1dhcb1', chunkIndex: 4, chunk: {…}, totalChunks: 818, fileId: '6bey5kvrethnz27ucyxuuh', …}
+Console.js:61 [WebSocket] Received message: sync-status {senderId: '1dhcb1', receiverId: 'ykja7g', fileId: '6bey5kvrethnz27ucyxuuh', senderProgress: 0.6112469437652812, receiverProgress: 0.6112469437652812, …}
+Console.js:61 [WebSocket] Received message: file-chunk {from: '1dhcb1', chunkIndex: 5, chunk: {…}, totalChunks: 818, fileId: '6bey5kvrethnz27ucyxuuh', …}
+Console.js:61 [WebSocket] Received message: sync-status {senderId: '1dhcb1', receiverId: 'ykja7g', fileId: '6bey5kvrethnz27ucyxuuh', senderProgress: 0.7334963325183375, receiverProgress: 0.7334963325183375, …}
+Console.js:61 [WebSocket] Received message: file-chunk {from: '1dhcb1', chunkIndex: 6, chunk: {…}, totalChunks: 818, fileId: '6bey5kvrethnz27ucyxuuh', …}
+Console.js:61 [WebSocket] Received message: sync-status {senderId: '1dhcb1', receiverId: 'ykja7g', fileId: '6bey5kvrethnz27ucyxuuh', senderProgress: 0.8557457212713936, receiverProgress: 0.8557457212713936, …}
+Console.js:61 [WebSocket] Received message: file-chunk {from: '1dhcb1', chunkIndex: 7, chunk: {…}, totalChunks: 818, fileId: '6bey5kvrethnz27ucyxuuh', …}
+Console.js:61 [WebSocket] Received message: sync-status {senderId: '1dhcb1', receiverId: 'ykja7g', fileId: '6bey5kvrethnz27ucyxuuh', senderProgress: 0.9779951100244498, receiverProgress: 0.9779951100244498, …}
+Console.js:61 [WebSocket] Received pong
+Console.js:61 [WebSocket] Received pong
+Console.js:61 [WebSocket] Received pong
+Console.js:61 [WebSocket] Received pong
+Console.js:61 [WebSocket] Received pong
+Console.js:61 [WebSocket] Received pong
+Console.js:61 [WebSocket] Received pong
+Console.js:61 [WebSocket] Received pong
