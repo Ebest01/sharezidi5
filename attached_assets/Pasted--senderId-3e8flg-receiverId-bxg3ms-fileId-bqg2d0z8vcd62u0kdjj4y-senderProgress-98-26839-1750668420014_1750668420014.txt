@@ -1,0 +1,23 @@
+{senderId: '3e8flg', receiverId: 'bxg3ms', fileId: 'bqg2d0z8vcd62u0kdjj4y', senderProgress: 98.26839826839827, receiverProgress: 98.26839826839827, …}
+Console.js:61 [WebSocket] No callback for message type: sync-status
+Console.js:61 [WebSocket] Received message: file-chunk {from: '3e8flg', chunkIndex: 227, chunk: {…}, totalChunks: 231, fileId: 'bqg2d0z8vcd62u0kdjj4y', …}
+Console.js:61 [WebSocket] No callback for message type: file-chunk
+Console.js:61 [WebSocket] Received message: sync-status {senderId: '3e8flg', receiverId: 'bxg3ms', fileId: 'bqg2d0z8vcd62u0kdjj4y', senderProgress: 98.7012987012987, receiverProgress: 98.7012987012987, …}
+Console.js:61 [WebSocket] No callback for message type: sync-status
+Console.js:61 [WebSocket] Received message: file-chunk {from: '3e8flg', chunkIndex: 228, chunk: {…}, totalChunks: 231, fileId: 'bqg2d0z8vcd62u0kdjj4y', …}
+Console.js:61 [WebSocket] No callback for message type: file-chunk
+Console.js:61 [WebSocket] Received message: sync-status {senderId: '3e8flg', receiverId: 'bxg3ms', fileId: 'bqg2d0z8vcd62u0kdjj4y', senderProgress: 99.13419913419914, receiverProgress: 99.13419913419914, …}
+Console.js:61 [WebSocket] No callback for message type: sync-status
+Console.js:61 [WebSocket] Received message: file-chunk {from: '3e8flg', chunkIndex: 229, chunk: {…}, totalChunks: 231, fileId: 'bqg2d0z8vcd62u0kdjj4y', …}
+Console.js:61 [WebSocket] No callback for message type: file-chunk
+Console.js:61 [WebSocket] Received message: sync-status {senderId: '3e8flg', receiverId: 'bxg3ms', fileId: 'bqg2d0z8vcd62u0kdjj4y', senderProgress: 99.56709956709958, receiverProgress: 99.56709956709958, …}
+Console.js:61 [WebSocket] No callback for message type: sync-status
+Console.js:61 [WebSocket] Received message: file-chunk {from: '3e8flg', chunkIndex: 230, chunk: {…}, totalChunks: 231, fileId: 'bqg2d0z8vcd62u0kdjj4y', …}
+Console.js:61 [WebSocket] No callback for message type: file-chunk
+Console.js:61 [WebSocket] Received message: sync-status {senderId: '3e8flg', receiverId: 'bxg3ms', fileId: 'bqg2d0z8vcd62u0kdjj4y', senderProgress: 100, receiverProgress: 100, …}
+Console.js:61 [WebSocket] No callback for message type: sync-status
+Console.js:61 [WebSocket] Received message: transfer-complete {from: '3e8flg', fileId: 'bqg2d0z8vcd62u0kdjj4y', fileName: 'Hymn03 (Edit).mp3'}
+Console.js:61 [WebSocket] No callback for message type: transfer-complete
+Console.js:61 [WebSocket] Received message: transfer-complete {from: '3e8flg', fileId: 'bqg2d0z8vcd62u0kdjj4y', fileName: 'Hymn03 (Edit).mp3'}
+Console.js:61 [WebSocket] No callback for message type: transfer-complete
+2Console.js:61 [WebSocket] Received pong

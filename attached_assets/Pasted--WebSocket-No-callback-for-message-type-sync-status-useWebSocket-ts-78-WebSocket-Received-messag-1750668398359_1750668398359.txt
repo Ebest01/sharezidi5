@@ -1,0 +1,26 @@
+[WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 224, fileId: 'bqg2d0z8vcd62u0kdjj4y', status: 'duplicate'}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 225, fileId: 'bqg2d0z8vcd62u0kdjj4y', status: 'received', receiverProgress: 97.83549783549783}
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: '3e8flg', receiverId: 'bxg3ms', fileId: 'bqg2d0z8vcd62u0kdjj4y', senderProgress: 97.83549783549783, receiverProgress: 97.83549783549783, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 225, fileId: 'bqg2d0z8vcd62u0kdjj4y', status: 'duplicate'}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 226, fileId: 'bqg2d0z8vcd62u0kdjj4y', status: 'received', receiverProgress: 98.26839826839827}
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: '3e8flg', receiverId: 'bxg3ms', fileId: 'bqg2d0z8vcd62u0kdjj4y', senderProgress: 98.26839826839827, receiverProgress: 98.26839826839827, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 226, fileId: 'bqg2d0z8vcd62u0kdjj4y', status: 'duplicate'}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 227, fileId: 'bqg2d0z8vcd62u0kdjj4y', status: 'received', receiverProgress: 98.7012987012987}
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: '3e8flg', receiverId: 'bxg3ms', fileId: 'bqg2d0z8vcd62u0kdjj4y', senderProgress: 98.7012987012987, receiverProgress: 98.7012987012987, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 227, fileId: 'bqg2d0z8vcd62u0kdjj4y', status: 'duplicate'}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 228, fileId: 'bqg2d0z8vcd62u0kdjj4y', status: 'received', receiverProgress: 99.13419913419914}
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: '3e8flg', receiverId: 'bxg3ms', fileId: 'bqg2d0z8vcd62u0kdjj4y', senderProgress: 99.13419913419914, receiverProgress: 99.13419913419914, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 228, fileId: 'bqg2d0z8vcd62u0kdjj4y', status: 'duplicate'}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 229, fileId: 'bqg2d0z8vcd62u0kdjj4y', status: 'received', receiverProgress: 99.56709956709958}
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: '3e8flg', receiverId: 'bxg3ms', fileId: 'bqg2d0z8vcd62u0kdjj4y', senderProgress: 99.56709956709958, receiverProgress: 99.56709956709958, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 229, fileId: 'bqg2d0z8vcd62u0kdjj4y', status: 'duplicate'}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 230, fileId: 'bqg2d0z8vcd62u0kdjj4y', status: 'received', receiverProgress: 100}
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: '3e8flg', receiverId: 'bxg3ms', fileId: 'bqg2d0z8vcd62u0kdjj4y', senderProgress: 100, receiverProgress: 100, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 230, fileId: 'bqg2d0z8vcd62u0kdjj4y', status: 'duplicate'}
