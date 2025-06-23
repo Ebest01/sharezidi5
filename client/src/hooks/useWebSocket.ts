@@ -60,11 +60,7 @@ class WebSocketManager {
         this.reconnectAttempts = 0;
         this.notifySubscribers(true);
         
-        // Send register message to update device name
-        this.send('register', { 
-          userId: userId,
-          deviceName: this.getDeviceName()
-        });
+        // Server will send us a registered message with our userId
         
         // Start heartbeat
         this.startPing();
@@ -79,9 +75,20 @@ class WebSocketManager {
             return;
           }
           
+          console.log('[WebSocket] Received message:', message.type, message.data);
+          
+          // Handle registered message to set our user ID
+          if (message.type === 'registered') {
+            this.currentUserId = message.data.userId;
+            console.log('[WebSocket] Registered with ID:', this.currentUserId);
+            return;
+          }
+          
           const callback = this.callbacks.get(message.type);
           if (callback) {
             callback(message.data);
+          } else {
+            console.log('[WebSocket] No callback for message type:', message.type);
           }
         } catch (error) {
           console.error('[WebSocket] Failed to parse message:', error);
@@ -211,14 +218,16 @@ export const useWebSocket = () => {
   const stateCallbackRef = useRef<Function>();
 
   useEffect(() => {
-    // Set the user ID in the manager to ensure consistency
-    wsManager.setUserId(userId);
-    
     // Create callback for connection state updates
     stateCallbackRef.current = (connected: boolean) => {
       setIsConnected(connected);
       if (connected) {
         setSocketId(Math.random().toString(36).substring(2, 10));
+        // Update userId from the WebSocket manager after connection
+        const currentUserId = wsManager.getCurrentUserId();
+        if (currentUserId && currentUserId !== userId) {
+          setUserId(currentUserId);
+        }
       }
     };
 
@@ -234,7 +243,7 @@ export const useWebSocket = () => {
         wsManager.unsubscribe(stateCallbackRef.current);
       }
     };
-  }, [userId]);
+  }, []);
 
   const send = useCallback((type: string, data: any) => {
     return wsManager.send(type, data);
@@ -251,19 +260,23 @@ export const useWebSocket = () => {
   // Handle device list updates
   useEffect(() => {
     const handleDevices = (deviceList: Array<{id: string, name: string}>) => {
-      setDevices(
-        deviceList
-          .filter(device => device.id !== userId)
-          .map(device => ({
-            id: device.id,
-            name: device.name || `Device ${device.id.substring(0, 6)}`,
-            type: device.name?.includes('iPhone') ? 'mobile' as const :
-                  device.name?.includes('iPad') ? 'tablet' as const :
-                  device.name?.includes('Android') ? 'mobile' as const :
-                  'pc' as const,
-            online: true
-          }))
-      );
+      console.log('[WebSocket] Received device list:', deviceList);
+      console.log('[WebSocket] Current user ID:', userId);
+      
+      const filteredDevices = deviceList
+        .filter(device => device.id !== userId)
+        .map(device => ({
+          id: device.id,
+          name: device.name || `Device ${device.id.substring(0, 6)}`,
+          type: device.name?.includes('iPhone') ? 'mobile' as const :
+                device.name?.includes('iPad') ? 'tablet' as const :
+                device.name?.includes('Android') ? 'mobile' as const :
+                'pc' as const,
+          online: true
+        }));
+      
+      console.log('[WebSocket] Filtered devices:', filteredDevices);
+      setDevices(filteredDevices);
     };
 
     on('devices', handleDevices);

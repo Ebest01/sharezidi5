@@ -76,32 +76,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     let userId: string | null = null;
     let isRegistered = false;
 
+    // Auto-register user immediately on connection
+    userId = Math.random().toString(36).substring(2, 8);
+    
+    // Get device info from user agent
+    const userAgent = request.headers['user-agent'] || '';
+    let deviceName = 'Unknown Device';
+    
+    if (userAgent.includes('Windows')) deviceName = 'Windows PC';
+    else if (userAgent.includes('Macintosh')) deviceName = 'Mac';
+    else if (userAgent.includes('iPhone')) deviceName = 'iPhone';
+    else if (userAgent.includes('iPad')) deviceName = 'iPad';
+    else if (userAgent.includes('Android')) deviceName = 'Android Device';
+    else if (userAgent.includes('Linux')) deviceName = 'Linux PC';
+    
+    isRegistered = true;
+    fileTransferService.registerUser(userId, ws, deviceName);
+    
+    // Send user their ID immediately
+    ws.send(JSON.stringify({
+      type: 'registered',
+      data: { userId }
+    }));
+
     ws.on('message', (data) => {
       try {
         const message = JSON.parse(data.toString());
-        
-        if (message.type === 'register' && !isRegistered) {
-          userId = message.data.userId;
-          if (userId) {
-            isRegistered = true;
-            fileTransferService.registerUser(userId, ws);
-            
-            // Send confirmation
-            ws.send(JSON.stringify({
-              type: 'registered',
-              data: { userId }
-            }));
-          }
-        } else if (isRegistered && userId) {
-          // Forward all messages to the file transfer service
-          fileTransferService.handleMessage(userId, message);
-        }
+        fileTransferService.handleMessage(userId, message);
       } catch (error) {
         console.error('[WebSocket] Failed to parse message:', error);
-        ws.send(JSON.stringify({
-          type: 'error',
-          data: { error: 'Invalid message format' }
-        }));
       }
     });
 
