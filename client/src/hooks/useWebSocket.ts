@@ -274,6 +274,11 @@ export const useWebSocket = () => {
         return;
       }
       
+      // Update local userId if we received it from manager but haven't updated state
+      if (currentUserId && currentUserId !== userId) {
+        setUserId(currentUserId);
+      }
+      
       const myUserId = currentUserId || userId;
       const filteredDevices = deviceList
         .filter(device => {

@@ -12,12 +12,21 @@ export const useFileTransfer = (websocket: any) => {
   const transferMetricsRef = useRef<Map<string, TransferMetrics>>(new Map());
 
   const addFiles = useCallback((fileList: FileList) => {
-    const newFiles: SelectedFile[] = Array.from(fileList).map(file => ({
-      ...file,
-      id: TransferUtils.generateFileId(),
-      optimizedChunkSize: TransferUtils.getOptimalChunkSize(file.size),
-      parallelStreams: TransferUtils.getParallelChunkCount()
-    }));
+    const newFiles: SelectedFile[] = Array.from(fileList).map(file => {
+      const fileSize = file.size || 0;
+      const fileName = file.name || 'Unknown File';
+      const fileType = file.type || 'application/octet-stream';
+      
+      return {
+        ...file,
+        name: fileName,
+        size: fileSize,
+        type: fileType,
+        id: TransferUtils.generateFileId(),
+        optimizedChunkSize: TransferUtils.getOptimalChunkSize(fileSize),
+        parallelStreams: TransferUtils.getParallelChunkCount()
+      };
+    });
     
     setSelectedFiles(prev => [...prev, ...newFiles]);
   }, []);
