@@ -1,9 +1,10 @@
 export class TransferUtils {
   static getOptimalChunkSize(fileSize: number): number {
-    if (fileSize < 1024 * 1024) return 16 * 1024; // 16KB for small files
-    if (fileSize < 10 * 1024 * 1024) return 32 * 1024; // 32KB for medium files
-    if (fileSize < 100 * 1024 * 1024) return 64 * 1024; // 64KB for large files
-    return 128 * 1024; // 128KB for very large files
+    // Reduced chunk sizes for better synchronization
+    if (fileSize < 1024 * 1024) return 8 * 1024; // 8KB for small files
+    if (fileSize < 10 * 1024 * 1024) return 16 * 1024; // 16KB for medium files
+    if (fileSize < 100 * 1024 * 1024) return 32 * 1024; // 32KB for large files
+    return 64 * 1024; // 64KB for very large files (reduced from 128KB)
   }
 
   static getParallelChunkCount(): number {

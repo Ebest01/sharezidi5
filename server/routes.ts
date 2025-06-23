@@ -28,18 +28,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (message.type === 'register' && !isRegistered) {
           userId = message.data.userId;
-          isRegistered = true;
-          fileTransferService.registerUser(userId, ws);
-          
-          // Send confirmation
-          ws.send(JSON.stringify({
-            type: 'registered',
-            data: { userId }
-          }));
+          if (userId) {
+            isRegistered = true;
+            fileTransferService.registerUser(userId, ws);
+            
+            // Send confirmation
+            ws.send(JSON.stringify({
+              type: 'registered',
+              data: { userId }
+            }));
+          }
         } else if (isRegistered && userId) {
-          // Forward message to file transfer service
-          fileTransferService.handleMessage?.(userId, message) || 
-          console.log(`[WebSocket] Unhandled message type: ${message.type}`);
+          // Forward all messages to the file transfer service
+          fileTransferService.handleMessage(userId, message);
         }
       } catch (error) {
         console.error('[WebSocket] Failed to parse message:', error);

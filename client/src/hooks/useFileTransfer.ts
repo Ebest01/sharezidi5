@@ -100,6 +100,9 @@ export const useFileTransfer = (websocket: any) => {
   const sendFileChunks = async (file: SelectedFile, deviceId: string, fileInfo: FileInfo) => {
     const chunks = Math.ceil(file.size / file.optimizedChunkSize);
     let sentChunks = 0;
+    let acknowledgedChunks = 0;
+    const pendingChunks = new Set<number>();
+    const maxConcurrentChunks = Math.min(file.parallelStreams, 4); // Limit concurrency
 
     // Initialize metrics
     const metrics: TransferMetrics = {
@@ -110,7 +113,39 @@ export const useFileTransfer = (websocket: any) => {
     };
     transferMetricsRef.current.set(`${deviceId}-${file.id}`, metrics);
 
+    // Set up chunk acknowledgment handler
+    const handleChunkAck = (data: any) => {
+      if (data.fileId === file.id && data.status === 'received') {
+        acknowledgedChunks++;
+        pendingChunks.delete(data.chunkIndex);
+        
+        // Update receiver progress based on acknowledged chunks
+        const receiverProgress = (acknowledgedChunks / chunks) * 100;
+        setTransfers(prev => {
+          const key = `${deviceId}-${file.id}`;
+          const transfer = prev.get(key);
+          if (transfer) {
+            const updated = { 
+              ...transfer, 
+              receivedProgress: receiverProgress,
+              status: receiverProgress === 100 ? 'completed' : 'active'
+            };
+            return new Map(prev.set(key, updated));
+          }
+          return prev;
+        });
+      }
+    };
+
+    websocket.on('chunk-ack', handleChunkAck);
+
+    // Send chunks with flow control
     for (let chunkIndex = 0; chunkIndex < chunks; chunkIndex++) {
+      // Wait if too many chunks are pending
+      while (pendingChunks.size >= maxConcurrentChunks) {
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+
       const start = chunkIndex * file.optimizedChunkSize;
       const end = Math.min(start + file.optimizedChunkSize, file.size);
       const chunk = file.slice(start, end);
@@ -128,14 +163,15 @@ export const useFileTransfer = (websocket: any) => {
 
       if (success) {
         sentChunks++;
-        const progress = (sentChunks / chunks) * 100;
+        pendingChunks.add(chunkIndex);
+        const senderProgress = (sentChunks / chunks) * 100;
         
-        // Update transfer progress
+        // Update sender progress only
         setTransfers(prev => {
           const key = `${deviceId}-${file.id}`;
           const transfer = prev.get(key);
           if (transfer) {
-            const updated = { ...transfer, sentProgress: progress };
+            const updated = { ...transfer, sentProgress: senderProgress };
             return new Map(prev.set(key, updated));
           }
           return prev;
@@ -151,14 +187,22 @@ export const useFileTransfer = (websocket: any) => {
         const etaSeconds = remainingBytes / speedBps;
         metrics.eta = etaSeconds > 0 ? `${Math.ceil(etaSeconds)}s` : 'Complete';
 
-        // Small delay to prevent overwhelming the connection
-        await new Promise(resolve => setTimeout(resolve, 1));
+        // Adaptive delay based on connection speed and pending chunks
+        const delay = Math.max(1, Math.min(50, pendingChunks.size * 2));
+        await new Promise(resolve => setTimeout(resolve, delay));
       } else {
-        // Connection lost, stop transfer
         console.error('Failed to send chunk, connection lost');
         break;
       }
     }
+
+    // Wait for all chunks to be acknowledged
+    while (acknowledgedChunks < chunks && pendingChunks.size > 0) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    // Clean up
+    websocket.off('chunk-ack', handleChunkAck);
 
     // Mark transfer as completed
     setTransfers(prev => {
