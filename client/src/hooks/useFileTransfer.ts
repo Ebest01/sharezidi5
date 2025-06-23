@@ -237,6 +237,12 @@ export const useFileTransfer = (websocket: any) => {
       const transferId = `${data.from}-${websocket.userId}-${data.fileId}`;
       const receivedProgress = ((data.chunkIndex + 1) / data.totalChunks) * 100;
       
+      // Store the chunk data for file reconstruction
+      if (!receivedChunks.current.has(data.fileId)) {
+        receivedChunks.current.set(data.fileId, new Map());
+      }
+      receivedChunks.current.get(data.fileId)!.set(data.chunkIndex, data.chunk);
+      
       setIncomingTransfers(prev => {
         const newMap = new Map(prev);
         const transfer = newMap.get(transferId);
@@ -246,6 +252,15 @@ export const useFileTransfer = (websocket: any) => {
           newMap.set(transferId, transfer);
         }
         return newMap;
+      });
+
+      // Send chunk acknowledgment
+      websocket.send('chunk-ack', {
+        toUserId: data.from,
+        chunkIndex: data.chunkIndex,
+        fileId: data.fileId,
+        status: 'received',
+        receiverProgress: receivedProgress
       });
     };
 
@@ -292,9 +307,47 @@ export const useFileTransfer = (websocket: any) => {
           transfer.isTransferring = false;
           transfer.receivedProgress = 100;
           newMap.set(transferId, transfer);
+          
+          // Reconstruct and download the file
+          reconstructAndDownloadFile(data.fileId, transfer.fileInfo);
         }
         return newMap;
       });
+    };
+
+    const reconstructAndDownloadFile = (fileId: string, fileInfo: any) => {
+      const chunks = receivedChunks.current.get(fileId);
+      if (!chunks) {
+        console.error('[FileTransfer] No chunks found for file:', fileId);
+        return;
+      }
+
+      console.log(`[FileTransfer] Reconstructing file: ${fileInfo.name} (${chunks.size} chunks)`);
+      
+      // Sort chunks by index and combine them
+      const sortedChunks = Array.from(chunks.entries())
+        .sort(([a], [b]) => a - b)
+        .map(([, chunk]) => chunk);
+
+      // Create blob from all chunks
+      const blob = new Blob(sortedChunks, { type: fileInfo.type || 'application/octet-stream' });
+      
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileInfo.name;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up
+      URL.revokeObjectURL(url);
+      receivedChunks.current.delete(fileId);
+      
+      console.log(`[FileTransfer] File downloaded: ${fileInfo.name}`);
     };
 
     websocket.on('transfer-request', handleTransferRequest);
