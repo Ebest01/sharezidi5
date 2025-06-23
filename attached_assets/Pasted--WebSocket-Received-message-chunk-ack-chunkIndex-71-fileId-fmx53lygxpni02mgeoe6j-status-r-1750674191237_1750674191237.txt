@@ -1,0 +1,21 @@
+[WebSocket] Received message: chunk-ack {chunkIndex: 71, fileId: 'fmx53lygxpni02mgeoe6j', status: 'received', receiverProgress: 98.63013698630137}
+useFileTransfer.ts:105 [FileTransfer] Chunk 71 acknowledged, total: 72/73
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'okcips', receiverId: 'td2epc', fileId: 'fmx53lygxpni02mgeoe6j', senderProgress: 98.63013698630137, receiverProgress: 98.63013698630137, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 71, fileId: 'fmx53lygxpni02mgeoe6j', status: 'duplicate'}
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'okcips', receiverId: 'td2epc', fileId: 'fmx53lygxpni02mgeoe6j', senderProgress: 98.63013698630137, receiverProgress: 98.63013698630137, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {toUserId: 'okcips', chunkIndex: 71, fileId: 'fmx53lygxpni02mgeoe6j', status: 'received', receiverProgress: 98.63013698630137}
+useFileTransfer.ts:105 [FileTransfer] Chunk 71 acknowledged, total: 72/73
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'okcips', receiverId: 'td2epc', fileId: 'fmx53lygxpni02mgeoe6j', senderProgress: 98.63013698630137, receiverProgress: 98.63013698630137, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {toUserId: 'okcips', chunkIndex: 71, fileId: 'fmx53lygxpni02mgeoe6j', status: 'received', receiverProgress: 98.63013698630137}
+useFileTransfer.ts:105 [FileTransfer] Chunk 71 acknowledged, total: 72/73
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 72, fileId: 'fmx53lygxpni02mgeoe6j', status: 'received', receiverProgress: 100}
+useFileTransfer.ts:105 [FileTransfer] Chunk 72 acknowledged, total: 73/73
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'okcips', receiverId: 'td2epc', fileId: 'fmx53lygxpni02mgeoe6j', senderProgress: 100, receiverProgress: 100, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {chunkIndex: 72, fileId: 'fmx53lygxpni02mgeoe6j', status: 'duplicate'}
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'okcips', receiverId: 'td2epc', fileId: 'fmx53lygxpni02mgeoe6j', senderProgress: 100, receiverProgress: 100, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {toUserId: 'okcips', chunkIndex: 72, fileId: 'fmx53lygxpni02mgeoe6j', status: 'received', receiverProgress: 100}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'okcips', receiverId: 'td2epc', fileId: 'fmx53lygxpni02mgeoe6j', senderProgress: 100, receiverProgress: 100, …}
+useWebSocket.ts:78 [WebSocket] Received message: chunk-ack {toUserId: 'okcips', chunkIndex: 72, fileId: 'fmx53lygxpni02mgeoe6j', status: 'received', receiverProgress: 100}
+useWebSocket.ts:93 [WebSocket] No callback for message type: chunk-ack
+4useWebSocket.ts:74 [WebSocket] Received pong

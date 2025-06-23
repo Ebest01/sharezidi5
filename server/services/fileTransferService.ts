@@ -278,7 +278,7 @@ export class FileTransferService {
       this.sendToUser(toUserId, 'file-chunk', {
         from: fromUserId,
         chunkIndex,
-        chunk,
+        chunk: chunk, // Pass through the Base64 encoded chunk data
         totalChunks,
         fileId,
         progress: receiverProgress // Send receiver progress, not sender
