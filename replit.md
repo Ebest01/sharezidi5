@@ -1,0 +1,106 @@
+# ShareZidi - Real-time File Transfer Application
+
+## Overview
+
+ShareZidi is a real-time peer-to-peer file sharing application built with React frontend and Express backend, utilizing WebSocket connections for instant file transfers between devices. The application features advanced chunk-based file transfer with synchronization monitoring, error recovery, and optimized performance based on network conditions.
+
+## System Architecture
+
+### Frontend Architecture
+- **Framework**: React 18 with TypeScript
+- **Styling**: Tailwind CSS with shadcn/ui component library
+- **State Management**: React hooks with custom hooks for WebSocket and file transfer logic
+- **Build Tool**: Vite for development and production builds
+- **UI Components**: Comprehensive set of Radix UI primitives with custom styling
+
+### Backend Architecture
+- **Framework**: Express.js with TypeScript
+- **Runtime**: Node.js 20 with ES modules
+- **WebSocket**: ws library for real-time communication
+- **Database**: PostgreSQL with Drizzle ORM (schema defined but minimal usage)
+- **Session Management**: Connect-pg-simple for PostgreSQL session storage
+
+### Database Schema
+- **Users Table**: Basic user authentication with username/password
+- **ORM**: Drizzle with PostgreSQL dialect
+- **Migrations**: Managed through drizzle-kit
+
+## Key Components
+
+### WebSocket Communication (`FileTransferService`)
+- Manages connected users and active file transfers
+- Handles chunked file transfer with progress tracking
+- Implements connection cleanup and error recovery
+- Supports transfer synchronization monitoring
+
+### File Transfer System
+- **Chunk-based Transfer**: Files split into optimized chunks based on size and network conditions
+- **Parallel Streams**: Multiple concurrent chunk transfers for improved speed
+- **Progress Tracking**: Real-time progress monitoring for both sender and receiver
+- **Error Recovery**: Automatic retry logic for failed chunks and network issues
+- **Sync Monitoring**: Tracks sender/receiver synchronization with duplicate chunk detection
+
+### Frontend Components
+- **ShareZidiApp**: Main application container
+- **FileSelector**: Drag-and-drop file selection with preview
+- **DeviceList**: Shows available devices for file sharing
+- **TransferSyncMonitor**: Real-time transfer progress and synchronization status
+- **ErrorRecoveryPanel**: Handles transfer issues and recovery options
+
+### Custom Hooks
+- **useWebSocket**: Manages WebSocket connection with auto-reconnect
+- **useFileTransfer**: Handles file selection, transfer logic, and progress tracking
+- **useIsMobile**: Responsive design detection
+
+## Data Flow
+
+1. **Connection**: Users connect via WebSocket and register with unique IDs
+2. **Discovery**: Connected devices are broadcast to all users
+3. **File Selection**: Users select files through drag-and-drop or file picker
+4. **Transfer Initiation**: Sender requests transfer to target device
+5. **Chunk Processing**: Files are split into optimized chunks and sent in parallel
+6. **Progress Monitoring**: Real-time tracking of sent/received chunks with sync status
+7. **Error Handling**: Automatic retry and recovery for failed transfers
+8. **Completion**: Files are reassembled on receiver side
+
+## External Dependencies
+
+### Core Dependencies
+- **React Ecosystem**: React, React DOM, TypeScript
+- **UI Library**: @radix-ui components, Tailwind CSS, shadcn/ui
+- **Backend**: Express, ws (WebSocket), Drizzle ORM
+- **Database**: @neondatabase/serverless, PostgreSQL driver
+- **Development**: Vite, ESBuild, TSX for development server
+
+### Optional Features
+- **Authentication**: Basic user registration (minimal implementation)
+- **Session Storage**: PostgreSQL-based session management
+- **File Compression**: Infrastructure for ZIP functionality (not fully implemented)
+
+## Deployment Strategy
+
+### Development
+- **Command**: `npm run dev`
+- **Server**: TSX with hot reloading
+- **Client**: Vite dev server with HMR
+- **Database**: Drizzle migrations with `npm run db:push`
+
+### Production
+- **Build**: `npm run build` - compiles both frontend and backend
+- **Server**: Node.js with compiled JavaScript
+- **Frontend**: Static files served by Express
+- **Database**: PostgreSQL connection via environment variables
+
+### Environment Configuration
+- **DATABASE_URL**: Required for PostgreSQL connection
+- **PORT**: Server port (defaults to 5000)
+- **NODE_ENV**: Environment detection for development/production features
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## Changelog
+
+Changelog:
+- June 23, 2025. Initial setup
