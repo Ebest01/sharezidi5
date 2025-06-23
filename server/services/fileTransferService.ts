@@ -114,33 +114,31 @@ export class FileTransferService {
   }
 
   private getDeviceDisplayName(deviceName?: string, userId?: string): string {
-    if (!deviceName) return `Device ${userId?.substring(0, 6) || 'Unknown'}`;
+    if (!deviceName || !userId) return `Device ${userId?.substring(0, 6) || 'Unknown'}`;
     
-    // Count devices of same type to add numbers
-    const sameTypeDevices = Array.from(this.connectedUsers.values())
-      .filter(user => user.deviceName?.includes(deviceName.split(' ')[0]))
-      .length;
+    // Use device type + unique ID for clear identification
+    const shortId = userId.substring(0, 6);
     
     if (deviceName.includes('Windows PC')) {
-      return sameTypeDevices > 1 ? `PC${sameTypeDevices}` : 'PC1';
+      return `PC-${shortId}`;
     }
     if (deviceName.includes('Mac')) {
-      return sameTypeDevices > 1 ? `Mac${sameTypeDevices}` : 'Mac1';
+      return `Mac-${shortId}`;
     }
     if (deviceName.includes('iPhone')) {
-      return sameTypeDevices > 1 ? `iPhone${sameTypeDevices}` : 'iPhone';
+      return `iPhone-${shortId}`;
     }
     if (deviceName.includes('iPad')) {
-      return sameTypeDevices > 1 ? `iPad${sameTypeDevices}` : 'iPad';
+      return `iPad-${shortId}`;
     }
     if (deviceName.includes('Android')) {
-      return sameTypeDevices > 1 ? `Android${sameTypeDevices}` : 'Android';
+      return `Android-${shortId}`;
     }
     if (deviceName.includes('Linux PC')) {
-      return sameTypeDevices > 1 ? `Linux${sameTypeDevices}` : 'Linux1';
+      return `Linux-${shortId}`;
     }
     
-    return deviceName;
+    return `${deviceName}-${shortId}`;
   }
 
   private handleTransferRequest(fromUserId: string, data: any) {
