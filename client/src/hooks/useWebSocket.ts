@@ -269,7 +269,11 @@ export const useWebSocket = () => {
       console.log('[WebSocket] Local userId state:', userId);
       
       const filteredDevices = deviceList
-        .filter(device => device.id !== currentUserId) // Use server-assigned ID for filtering
+        .filter(device => {
+          const shouldExclude = device.id === currentUserId || device.id === userId;
+          console.log(`[WebSocket] Device ${device.id}: exclude=${shouldExclude} (current=${currentUserId}, local=${userId})`);
+          return !shouldExclude;
+        })
         .map(device => ({
           id: device.id,
           name: device.name || `Device ${device.id.substring(0, 6)}`,
@@ -289,7 +293,7 @@ export const useWebSocket = () => {
     return () => {
       off('devices');
     };
-  }, [on, off]);
+  }, [on, off, userId]);
 
   return {
     isConnected,
