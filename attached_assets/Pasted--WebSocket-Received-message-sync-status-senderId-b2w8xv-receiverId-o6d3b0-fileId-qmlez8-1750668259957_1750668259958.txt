@@ -1,0 +1,63 @@
+[WebSocket] Received message: sync-status {senderId: 'b2w8xv', receiverId: 'o6d3b0', fileId: 'qmlez8a92gxr6yuwd1izc', senderProgress: 79.41176470588235, receiverProgress: 79.41176470588235, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: file-chunk {from: 'b2w8xv', chunkIndex: 54, chunk: {…}, totalChunks: 68, fileId: 'qmlez8a92gxr6yuwd1izc', …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: file-chunk
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'b2w8xv', receiverId: 'o6d3b0', fileId: 'qmlez8a92gxr6yuwd1izc', senderProgress: 80.88235294117648, receiverProgress: 80.88235294117648, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: file-chunk {from: 'b2w8xv', chunkIndex: 55, chunk: {…}, totalChunks: 68, fileId: 'qmlez8a92gxr6yuwd1izc', …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: file-chunk
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'b2w8xv', receiverId: 'o6d3b0', fileId: 'qmlez8a92gxr6yuwd1izc', senderProgress: 82.35294117647058, receiverProgress: 82.35294117647058, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: file-chunk {from: 'b2w8xv', chunkIndex: 56, chunk: {…}, totalChunks: 68, fileId: 'qmlez8a92gxr6yuwd1izc', …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: file-chunk
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'b2w8xv', receiverId: 'o6d3b0', fileId: 'qmlez8a92gxr6yuwd1izc', senderProgress: 83.82352941176471, receiverProgress: 83.82352941176471, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: file-chunk {from: 'b2w8xv', chunkIndex: 57, chunk: {…}, totalChunks: 68, fileId: 'qmlez8a92gxr6yuwd1izc', …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: file-chunk
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'b2w8xv', receiverId: 'o6d3b0', fileId: 'qmlez8a92gxr6yuwd1izc', senderProgress: 85.29411764705883, receiverProgress: 85.29411764705883, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: file-chunk {from: 'b2w8xv', chunkIndex: 58, chunk: {…}, totalChunks: 68, fileId: 'qmlez8a92gxr6yuwd1izc', …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: file-chunk
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'b2w8xv', receiverId: 'o6d3b0', fileId: 'qmlez8a92gxr6yuwd1izc', senderProgress: 86.76470588235294, receiverProgress: 86.76470588235294, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: file-chunk {from: 'b2w8xv', chunkIndex: 59, chunk: {…}, totalChunks: 68, fileId: 'qmlez8a92gxr6yuwd1izc', …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: file-chunk
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'b2w8xv', receiverId: 'o6d3b0', fileId: 'qmlez8a92gxr6yuwd1izc', senderProgress: 88.23529411764706, receiverProgress: 88.23529411764706, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: file-chunk {from: 'b2w8xv', chunkIndex: 60, chunk: {…}, totalChunks: 68, fileId: 'qmlez8a92gxr6yuwd1izc', …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: file-chunk
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'b2w8xv', receiverId: 'o6d3b0', fileId: 'qmlez8a92gxr6yuwd1izc', senderProgress: 89.70588235294117, receiverProgress: 89.70588235294117, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: file-chunk {from: 'b2w8xv', chunkIndex: 61, chunk: {…}, totalChunks: 68, fileId: 'qmlez8a92gxr6yuwd1izc', …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: file-chunk
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'b2w8xv', receiverId: 'o6d3b0', fileId: 'qmlez8a92gxr6yuwd1izc', senderProgress: 91.17647058823529, receiverProgress: 91.17647058823529, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: file-chunk {from: 'b2w8xv', chunkIndex: 62, chunk: {…}, totalChunks: 68, fileId: 'qmlez8a92gxr6yuwd1izc', …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: file-chunk
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'b2w8xv', receiverId: 'o6d3b0', fileId: 'qmlez8a92gxr6yuwd1izc', senderProgress: 92.64705882352942, receiverProgress: 92.64705882352942, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: file-chunk {from: 'b2w8xv', chunkIndex: 63, chunk: {…}, totalChunks: 68, fileId: 'qmlez8a92gxr6yuwd1izc', …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: file-chunk
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'b2w8xv', receiverId: 'o6d3b0', fileId: 'qmlez8a92gxr6yuwd1izc', senderProgress: 94.11764705882352, receiverProgress: 94.11764705882352, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: file-chunk {from: 'b2w8xv', chunkIndex: 64, chunk: {…}, totalChunks: 68, fileId: 'qmlez8a92gxr6yuwd1izc', …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: file-chunk
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'b2w8xv', receiverId: 'o6d3b0', fileId: 'qmlez8a92gxr6yuwd1izc', senderProgress: 95.58823529411765, receiverProgress: 95.58823529411765, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: file-chunk {from: 'b2w8xv', chunkIndex: 65, chunk: {…}, totalChunks: 68, fileId: 'qmlez8a92gxr6yuwd1izc', …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: file-chunk
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'b2w8xv', receiverId: 'o6d3b0', fileId: 'qmlez8a92gxr6yuwd1izc', senderProgress: 97.05882352941177, receiverProgress: 97.05882352941177, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: file-chunk {from: 'b2w8xv', chunkIndex: 66, chunk: {…}, totalChunks: 68, fileId: 'qmlez8a92gxr6yuwd1izc', …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: file-chunk
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'b2w8xv', receiverId: 'o6d3b0', fileId: 'qmlez8a92gxr6yuwd1izc', senderProgress: 98.52941176470588, receiverProgress: 98.52941176470588, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: file-chunk {from: 'b2w8xv', chunkIndex: 67, chunk: {…}, totalChunks: 68, fileId: 'qmlez8a92gxr6yuwd1izc', …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: file-chunk
+useWebSocket.ts:78 [WebSocket] Received message: sync-status {senderId: 'b2w8xv', receiverId: 'o6d3b0', fileId: 'qmlez8a92gxr6yuwd1izc', senderProgress: 100, receiverProgress: 100, …}
+useWebSocket.ts:93 [WebSocket] No callback for message type: sync-status
+useWebSocket.ts:78 [WebSocket] Received message: transfer-complete {from: 'b2w8xv', fileId: 'qmlez8a92gxr6yuwd1izc', fileName: 'motor-rubber-2025-05-01 135247.png'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: transfer-complete
+useWebSocket.ts:78 [WebSocket] Received message: transfer-complete {from: 'b2w8xv', fileId: 'qmlez8a92gxr6yuwd1izc', fileName: 'motor-rubber-2025-05-01 135247.png'}
+useWebSocket.ts:93 [WebSocket] No callback for message type: transfer-complete
+2useWebSocket.ts:74 [WebSocket] Received pong
