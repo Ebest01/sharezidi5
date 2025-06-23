@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { TransferUtils } from '../lib/transferUtils';
 import type { SelectedFile, TransferMetrics } from '../types/transfer';
 import type { Device, TransferProgress, FileInfo } from '@shared/types';
@@ -6,10 +6,14 @@ import type { Device, TransferProgress, FileInfo } from '@shared/types';
 export const useFileTransfer = (websocket: any) => {
   const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
   const [transfers, setTransfers] = useState<Map<string, TransferProgress>>(new Map());
+  const [incomingTransfers, setIncomingTransfers] = useState<Map<string, TransferProgress>>(new Map());
   const [isDragging, setIsDragging] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const transferMetricsRef = useRef<Map<string, TransferMetrics>>(new Map());
+  const receivedChunks = useRef<Map<string, Map<number, ArrayBuffer>>>(new Map());
+
+  const totalSizeMB = selectedFiles.reduce((total, file) => total + file.size, 0) / (1024 * 1024);
 
   const addFiles = useCallback((fileList: FileList) => {
     const newFiles: SelectedFile[] = Array.from(fileList).map(file => {
@@ -34,13 +38,6 @@ export const useFileTransfer = (websocket: any) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   }, []);
 
-  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files) {
-      addFiles(files);
-    }
-  }, [addFiles]);
-
   const handleDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     setIsDragging(true);
@@ -56,7 +53,7 @@ export const useFileTransfer = (websocket: any) => {
     setIsDragging(false);
     
     const files = event.dataTransfer.files;
-    if (files) {
+    if (files.length > 0) {
       addFiles(files);
     }
   }, [addFiles]);
@@ -65,91 +62,23 @@ export const useFileTransfer = (websocket: any) => {
     fileInputRef.current?.click();
   }, []);
 
-  const startTransfer = useCallback(async (device: Device, files: SelectedFile[]) => {
-    if (!websocket.isConnected) {
-      throw new Error('Not connected to server');
-    }
-
-    for (const file of files) {
-      const fileInfo: FileInfo = {
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        totalChunks: Math.ceil(file.size / file.optimizedChunkSize),
-        chunkSize: file.optimizedChunkSize
-      };
-
-      // Initialize transfer progress
-      const transferProgress: TransferProgress = {
-        deviceId: device.id,
-        fileInfo,
-        sentProgress: 0,
-        receivedProgress: 0,
-        status: 'pending',
-        duplicateChunks: 0,
-        missingChunks: [],
-        isTransferring: true
-      };
-
-      setTransfers(prev => new Map(prev.set(`${device.id}-${file.id}`, transferProgress)));
-
-      // Start transfer
-      websocket.send('transfer-request', {
-        toUserId: device.id,
-        fileInfo,
-        fileId: file.id
-      });
-
-      // Send file chunks
-      await sendFileChunks(file, device.id, fileInfo);
-    }
-  }, [websocket]);
-
   const sendFileChunks = async (file: SelectedFile, deviceId: string, fileInfo: FileInfo) => {
     const chunks = Math.ceil(file.size / file.optimizedChunkSize);
-    let sentChunks = 0;
-    let acknowledgedChunks = 0;
+    const maxConcurrentChunks = file.parallelStreams;
     const pendingChunks = new Set<number>();
-    const maxConcurrentChunks = Math.min(file.parallelStreams, 4); // Limit concurrency
+    let acknowledgedChunks = 0;
 
-    // Initialize metrics
     const metrics: TransferMetrics = {
       startTime: Date.now(),
       bytesTransferred: 0,
-      speed: '0 MB/s',
+      speed: '0 B/s',
       eta: 'Calculating...'
     };
-    transferMetricsRef.current.set(`${deviceId}-${file.id}`, metrics);
 
-    // Set up chunk acknowledgment handler
-    const handleChunkAck = (data: any) => {
-      if (data.fileId === file.id && data.status === 'received') {
-        acknowledgedChunks++;
-        pendingChunks.delete(data.chunkIndex);
-        
-        // Update receiver progress based on acknowledged chunks
-        const receiverProgress = (acknowledgedChunks / chunks) * 100;
-        setTransfers(prev => {
-          const key = `${deviceId}-${file.id}`;
-          const transfer = prev.get(key);
-          if (transfer) {
-            const updated = { 
-              ...transfer, 
-              receivedProgress: receiverProgress,
-              status: receiverProgress === 100 ? 'completed' : 'active'
-            };
-            return new Map(prev.set(key, updated));
-          }
-          return prev;
-        });
-      }
-    };
+    transferMetricsRef.current.set(file.id, metrics);
 
-    websocket.on('chunk-ack', handleChunkAck);
-
-    // Send chunks with flow control
     for (let chunkIndex = 0; chunkIndex < chunks; chunkIndex++) {
-      // Wait if too many chunks are pending
+      // Rate limiting for concurrent chunks
       while (pendingChunks.size >= maxConcurrentChunks) {
         await new Promise(resolve => setTimeout(resolve, 10));
       }
@@ -177,13 +106,13 @@ export const useFileTransfer = (websocket: any) => {
       });
 
       if (success) {
-        sentChunks++;
         pendingChunks.add(chunkIndex);
-        const senderProgress = (sentChunks / chunks) * 100;
         
-        // Update sender progress only
+        // Update transfer progress
+        const senderProgress = ((chunkIndex + 1) / chunks) * 100;
+        const key = `${websocket.userId}-${deviceId}-${file.id}`;
+        
         setTransfers(prev => {
-          const key = `${deviceId}-${file.id}`;
           const transfer = prev.get(key);
           if (transfer) {
             const updated = { ...transfer, sentProgress: senderProgress };
@@ -216,63 +145,171 @@ export const useFileTransfer = (websocket: any) => {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
 
-    // Clean up
-    websocket.off('chunk-ack', handleChunkAck);
-
-    // Mark transfer as completed
-    setTransfers(prev => {
-      const key = `${deviceId}-${file.id}`;
-      const transfer = prev.get(key);
-      if (transfer) {
-        const updated = { 
-          ...transfer, 
-          status: 'completed' as const,
-          isTransferring: false
-        };
-        return new Map(prev.set(key, updated));
-      }
-      return prev;
-    });
-
-    // Notify completion
+    // Mark transfer as complete
     websocket.send('transfer-complete', {
       toUserId: deviceId,
-      fileId: file.id,
-      fileName: file.name
+      fileId: file.id
     });
   };
 
-  const getTotalSize = useCallback(() => {
-    return selectedFiles.reduce((total, file) => total + file.size, 0);
-  }, [selectedFiles]);
+  const startTransfer = useCallback(async (device: Device, files: SelectedFile[]) => {
+    for (const file of files) {
+      const fileInfo: FileInfo = {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        totalChunks: Math.ceil(file.size / file.optimizedChunkSize),
+        chunkSize: file.optimizedChunkSize
+      };
 
-  const getTotalSizeMB = useCallback(() => {
-    return TransferUtils.formatFileSize(getTotalSize());
-  }, [getTotalSize]);
+      const transferProgress: TransferProgress = {
+        deviceId: device.id,
+        fileInfo,
+        sentProgress: 0,
+        receivedProgress: 0,
+        status: 'pending',
+        duplicateChunks: 0,
+        missingChunks: [],
+        isTransferring: true
+      };
 
-  // Listen for transfer events
-  websocket.on('transfer-accepted', (data: { fromUserId: string; fileId: string }) => {
-    console.log('Transfer accepted:', data);
-  });
+      const transferId = `${websocket.userId}-${device.id}-${file.id}`;
+      setTransfers(prev => new Map(prev.set(transferId, transferProgress)));
 
-  websocket.on('transfer-rejected', (data: { fromUserId: string; reason: string }) => {
-    console.error('Transfer rejected:', data.reason);
-  });
+      // Send transfer request
+      const success = websocket.send('transfer-request', {
+        toUserId: device.id,
+        fileInfo,
+        fileId: file.id
+      });
+
+      if (success) {
+        // Start sending file chunks
+        await sendFileChunks(file, device.id, fileInfo);
+      }
+    }
+  }, [websocket]);
+
+  // Set up WebSocket handlers for incoming transfers
+  React.useEffect(() => {
+    if (!websocket?.on) return;
+
+    const handleTransferRequest = (data: any) => {
+      console.log('[FileTransfer] Incoming transfer request:', data);
+      
+      // Create transfer progress entry for incoming file
+      const transferId = `${data.from}-${websocket.userId}-${data.fileId}`;
+      const transferProgress: TransferProgress = {
+        deviceId: data.from,
+        fileInfo: data.fileInfo,
+        sentProgress: 0,
+        receivedProgress: 0,
+        status: 'pending',
+        duplicateChunks: 0,
+        missingChunks: [],
+        isTransferring: true
+      };
+
+      setIncomingTransfers(prev => new Map(prev.set(transferId, transferProgress)));
+      
+      // Auto-accept transfer
+      websocket.send('transfer-response', {
+        toUserId: data.from,
+        accepted: true,
+        fileId: data.fileId
+      });
+    };
+
+    const handleFileChunk = (data: any) => {
+      const transferId = `${data.from}-${websocket.userId}-${data.fileId}`;
+      const receivedProgress = ((data.chunkIndex + 1) / data.totalChunks) * 100;
+      
+      setIncomingTransfers(prev => {
+        const newMap = new Map(prev);
+        const transfer = newMap.get(transferId);
+        if (transfer) {
+          transfer.receivedProgress = receivedProgress;
+          transfer.status = receivedProgress >= 100 ? 'completed' : 'active';
+          newMap.set(transferId, transfer);
+        }
+        return newMap;
+      });
+    };
+
+    const handleSyncStatus = (data: any) => {
+      const transferId = `${data.senderId}-${data.receiverId}-${data.fileId}`;
+      
+      // Update incoming transfer if we're the receiver
+      if (data.receiverId === websocket.userId) {
+        setIncomingTransfers(prev => {
+          const newMap = new Map(prev);
+          const transfer = newMap.get(transferId);
+          if (transfer) {
+            transfer.sentProgress = data.senderProgress;
+            transfer.receivedProgress = data.receiverProgress;
+            newMap.set(transferId, transfer);
+          }
+          return newMap;
+        });
+      }
+      
+      // Update outgoing transfer if we're the sender
+      if (data.senderId === websocket.userId) {
+        setTransfers(prev => {
+          const newMap = new Map(prev);
+          const transfer = newMap.get(transferId);
+          if (transfer) {
+            transfer.sentProgress = data.senderProgress;
+            transfer.receivedProgress = data.receiverProgress;
+            newMap.set(transferId, transfer);
+          }
+          return newMap;
+        });
+      }
+    };
+
+    const handleTransferComplete = (data: any) => {
+      const transferId = `${data.from}-${websocket.userId}-${data.fileId}`;
+      
+      setIncomingTransfers(prev => {
+        const newMap = new Map(prev);
+        const transfer = newMap.get(transferId);
+        if (transfer) {
+          transfer.status = 'completed';
+          transfer.isTransferring = false;
+          transfer.receivedProgress = 100;
+          newMap.set(transferId, transfer);
+        }
+        return newMap;
+      });
+    };
+
+    websocket.on('transfer-request', handleTransferRequest);
+    websocket.on('file-chunk', handleFileChunk);
+    websocket.on('sync-status', handleSyncStatus);
+    websocket.on('transfer-complete', handleTransferComplete);
+
+    return () => {
+      websocket.off('transfer-request');
+      websocket.off('file-chunk');
+      websocket.off('sync-status');
+      websocket.off('transfer-complete');
+    };
+  }, [websocket]);
 
   return {
     selectedFiles,
     transfers,
+    incomingTransfers,
     isDragging,
+    totalSizeMB,
     fileInputRef,
     addFiles,
+    startTransfer,
     removeFile,
-    handleFileSelect,
     handleDragOver,
     handleDragLeave,
     handleDrop,
-    openFileDialog,
-    startTransfer,
-    getTotalSize,
-    getTotalSizeMB
+    openFileDialog
   };
 };

@@ -102,6 +102,7 @@ export const ShareZidiApp: React.FC = () => {
         {/* Transfer Sync Monitor */}
         <TransferSyncMonitor 
           transfers={fileTransfer.transfers}
+          incomingTransfers={fileTransfer.incomingTransfers || new Map()}
           connectionInfo={connectionInfo}
         />
 
@@ -110,13 +111,13 @@ export const ShareZidiApp: React.FC = () => {
           selectedFiles={fileTransfer.selectedFiles}
           isDragging={fileTransfer.isDragging}
           fileInputRef={fileTransfer.fileInputRef}
-          onFileSelect={fileTransfer.handleFileSelect}
+          onFileSelect={(e) => fileTransfer.addFiles(e.target.files!)}
           onDragOver={fileTransfer.handleDragOver}
           onDragLeave={fileTransfer.handleDragLeave}
           onDrop={fileTransfer.handleDrop}
           onOpenFileDialog={fileTransfer.openFileDialog}
           onRemoveFile={fileTransfer.removeFile}
-          totalSizeMB={fileTransfer.getTotalSizeMB()}
+          totalSizeMB={fileTransfer.totalSizeMB.toFixed(2)}
         />
 
         {/* Device List */}
