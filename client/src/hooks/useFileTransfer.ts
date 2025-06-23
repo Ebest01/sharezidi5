@@ -237,6 +237,8 @@ export const useFileTransfer = (websocket: any) => {
       const transferId = `${data.from}-${websocket.userId}-${data.fileId}`;
       const receivedProgress = ((data.chunkIndex + 1) / data.totalChunks) * 100;
       
+      console.log(`[FileTransfer] Received chunk ${data.chunkIndex}, size:`, data.chunk?.byteLength || 'unknown', 'type:', typeof data.chunk);
+      
       // Store the chunk data for file reconstruction
       if (!receivedChunks.current.has(data.fileId)) {
         receivedChunks.current.set(data.fileId, new Map());
@@ -324,13 +326,31 @@ export const useFileTransfer = (websocket: any) => {
 
       console.log(`[FileTransfer] Reconstructing file: ${fileInfo.name} (${chunks.size} chunks)`);
       
+      // Debug: Check chunk data
+      chunks.forEach((chunk, index) => {
+        console.log(`[FileTransfer] Chunk ${index}:`, chunk, 'Type:', typeof chunk, 'Size:', chunk?.byteLength || 'unknown');
+      });
+      
       // Sort chunks by index and combine them
       const sortedChunks = Array.from(chunks.entries())
         .sort(([a], [b]) => a - b)
-        .map(([, chunk]) => chunk);
+        .map(([, chunk]) => {
+          // Ensure chunk is ArrayBuffer
+          if (chunk instanceof ArrayBuffer) {
+            return chunk;
+          } else if (chunk && typeof chunk === 'object' && chunk.data) {
+            // Handle case where chunk is wrapped in an object
+            return chunk.data;
+          } else {
+            console.error('[FileTransfer] Invalid chunk data:', chunk);
+            return new ArrayBuffer(0);
+          }
+        });
 
       // Create blob from all chunks
       const blob = new Blob(sortedChunks, { type: fileInfo.type || 'application/octet-stream' });
+      
+      console.log(`[FileTransfer] Created blob size: ${blob.size} bytes, expected: ${fileInfo.size} bytes`);
       
       // Create download link
       const url = URL.createObjectURL(blob);
