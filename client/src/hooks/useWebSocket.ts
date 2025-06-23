@@ -81,6 +81,8 @@ class WebSocketManager {
           if (message.type === 'registered') {
             this.currentUserId = message.data.userId;
             console.log('[WebSocket] Registered with ID:', this.currentUserId);
+            // Notify subscribers about the new user ID
+            this.notifySubscribers(true);
             return;
           }
           
@@ -211,7 +213,7 @@ class WebSocketManager {
 export const useWebSocket = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [devices, setDevices] = useState<Device[]>([]);
-  const [userId] = useState(() => Math.random().toString(36).substring(2, 8));
+  const [userId, setUserId] = useState<string>('');
   const [socketId, setSocketId] = useState<string>('');
   
   const wsManager = WebSocketManager.getInstance();
@@ -225,8 +227,9 @@ export const useWebSocket = () => {
         setSocketId(Math.random().toString(36).substring(2, 10));
         // Update userId from the WebSocket manager after connection
         const currentUserId = wsManager.getCurrentUserId();
-        if (currentUserId && currentUserId !== userId) {
+        if (currentUserId) {
           setUserId(currentUserId);
+          console.log('[WebSocket] Updated local userId to:', currentUserId);
         }
       }
     };
@@ -261,10 +264,12 @@ export const useWebSocket = () => {
   useEffect(() => {
     const handleDevices = (deviceList: Array<{id: string, name: string}>) => {
       console.log('[WebSocket] Received device list:', deviceList);
-      console.log('[WebSocket] Current user ID:', userId);
+      const currentUserId = wsManager.getCurrentUserId();
+      console.log('[WebSocket] Current user ID from manager:', currentUserId);
+      console.log('[WebSocket] Local userId state:', userId);
       
       const filteredDevices = deviceList
-        .filter(device => device.id !== userId)
+        .filter(device => device.id !== currentUserId) // Use server-assigned ID for filtering
         .map(device => ({
           id: device.id,
           name: device.name || `Device ${device.id.substring(0, 6)}`,
@@ -284,7 +289,7 @@ export const useWebSocket = () => {
     return () => {
       off('devices');
     };
-  }, [on, off, userId]);
+  }, [on, off]);
 
   return {
     isConnected,
