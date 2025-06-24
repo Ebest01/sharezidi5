@@ -145,6 +145,15 @@ Preferred communication style: Simple, everyday language.
 - Smart tooltips and hints with accessibility features (ARIA labels)
 - Mobile-friendly design with touch-optimized button sizes
 
+### Freemium Business Model
+- Email-based registration system for user tracking and marketing
+- Guest mode for quick access without registration
+- Free tier: 15 transfers per month with usage tracking
+- Pro tier: Unlimited transfers with visual badge
+- Usage banners show remaining transfers and upgrade prompts
+- Simple localStorage-based session management
+- Transfer limit enforcement with upgrade prompts
+
 ### Mobile Connection Support
 - Added ConnectionHelper component with QR code generation
 - Automatic network IP detection for local connections

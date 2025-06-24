@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useFileTransfer } from '../hooks/useFileTransfer';
+import { useAuth } from '../hooks/useAuth';
 import { TransferSyncMonitor } from './TransferSyncMonitor';
 import { FileSelector } from './FileSelector';
 import { DeviceList } from './DeviceList';
@@ -8,12 +9,16 @@ import { ErrorRecoveryPanel } from './ErrorRecoveryPanel';
 import { ConnectionHelper } from './ConnectionHelper';
 import { MobileTransferGuard } from './MobileTransferGuard';
 import { ZipProgress } from './ZipProgress';
+import { AuthModal } from './AuthModal';
+import { UsageBanner } from './UsageBanner';
 import type { Device } from '@shared/types';
 
 export const ShareZidiApp: React.FC = () => {
   const websocket = useWebSocket();
   const fileTransfer = useFileTransfer(websocket);
+  const auth = useAuth();
   const [showConnectionHelper, setShowConnectionHelper] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const connectionInfo = {
     effectiveType: (navigator as any).connection?.effectiveType,
@@ -22,14 +27,27 @@ export const ShareZidiApp: React.FC = () => {
   };
 
   const handleSendFiles = async (device: Device) => {
+    // Check if user can transfer
+    if (!auth.canTransfer()) {
+      alert('Transfer limit reached. Please upgrade to Pro for unlimited transfers.');
+      return;
+    }
+
     try {
       await fileTransfer.startTransfer(device, fileTransfer.selectedFiles);
+      auth.incrementTransferCount();
     } catch (error) {
       console.error('Failed to start transfer:', error);
     }
   };
 
   const handleZipAndSend = async (device: Device) => {
+    // Check if user can transfer
+    if (!auth.canTransfer()) {
+      alert('Transfer limit reached. Please upgrade to Pro for unlimited transfers.');
+      return;
+    }
+
     if (fileTransfer.selectedFiles.length === 0) {
       console.warn('[FileTransfer] No files selected for zipping');
       return;
@@ -78,6 +96,7 @@ export const ShareZidiApp: React.FC = () => {
       
       // Start transfer with the ZIP file
       await fileTransfer.startTransfer(device, [selectedZipFile]);
+      auth.incrementTransferCount();
       
     } catch (error) {
       console.error('[FileTransfer] ZIP creation failed:', error);
@@ -103,6 +122,19 @@ export const ShareZidiApp: React.FC = () => {
     console.log('Cancel transfer:', transferId);
     // TODO: Implement transfer cancellation
   };
+
+  const handleUpgrade = () => {
+    // Simple pro upgrade - in production this would integrate with Stripe
+    if (auth.user) {
+      auth.updateUser({ isPro: true });
+      alert('Upgraded to Pro! You now have unlimited transfers.');
+    }
+  };
+
+  // Show auth modal if user is not authenticated
+  if (!auth.isAuthenticated && !auth.isLoading) {
+    return <AuthModal isOpen={true} onClose={() => {}} onAuthSuccess={auth.login} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -151,6 +183,9 @@ export const ShareZidiApp: React.FC = () => {
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-8">
+        {/* Usage Banner */}
+        <UsageBanner user={auth.user} onUpgrade={handleUpgrade} />
+
         {/* Mobile Transfer Guard */}
         <MobileTransferGuard 
           isTransferring={Array.from(fileTransfer.transfers.values()).some(t => t.isTransferring) || 
