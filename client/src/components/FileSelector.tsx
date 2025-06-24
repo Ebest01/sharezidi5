@@ -92,8 +92,19 @@ export const FileSelector: React.FC<FileSelectorProps> = ({
             </div>
           ))}
           
-          <div className="mt-4 text-right">
-            <span className="font-semibold text-gray-700">Total: {totalSizeMB}</span>
+          <div className="mt-4 flex justify-between items-center">
+            <button
+              onClick={() => {
+                // Clear all files
+                for (let i = selectedFiles.length - 1; i >= 0; i--) {
+                  onRemoveFile(i);
+                }
+              }}
+              className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+            >
+              Clear all files
+            </button>
+            <span className="font-semibold text-gray-700 dark:text-gray-300">Total: {totalSizeMB}</span>
           </div>
         </div>
       )}

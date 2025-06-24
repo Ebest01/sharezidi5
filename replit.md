@@ -138,6 +138,18 @@ Preferred communication style: Simple, everyday language.
 - Public URL detection for deployed environments
 - Mobile-friendly interface improvements
 
+### File Management Interface
+- Added individual file remove buttons with hover reveal for clean UI
+- Implemented "Clear all files" functionality for bulk removal
+- Enhanced file selection with visual feedback and accessibility
+- Smart tooltips and hints for better user experience
+
+### Mobile Connection Support
+- Added ConnectionHelper component with QR code generation
+- Automatic network IP detection for local connections
+- Public URL detection for deployed environments
+- Mobile-friendly interface improvements
+
 ## Deployment Notes
 - For testing with mobile devices, deployment to public URL is required
 - Development server uses internal IPs not accessible from external devices
