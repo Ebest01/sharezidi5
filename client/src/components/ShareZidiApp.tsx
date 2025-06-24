@@ -30,8 +30,58 @@ export const ShareZidiApp: React.FC = () => {
   };
 
   const handleZipAndSend = async (device: Device) => {
-    // TODO: Implement ZIP functionality
-    console.log('ZIP and send not implemented yet');
+    if (fileTransfer.selectedFiles.length === 0) {
+      console.warn('[FileTransfer] No files selected for zipping');
+      return;
+    }
+
+    console.log('[FileTransfer] Creating ZIP archive for', fileTransfer.selectedFiles.length, 'files');
+    
+    try {
+      // Dynamic import of JSZip
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+      
+      // Add all selected files to the ZIP
+      for (const file of fileTransfer.selectedFiles) {
+        console.log('[FileTransfer] Adding to ZIP:', file.name);
+        zip.file(file.name, file);
+      }
+      
+      // Generate the ZIP file
+      console.log('[FileTransfer] Generating ZIP archive...');
+      const zipBlob = await zip.generateAsync({ 
+        type: 'blob',
+        compression: 'DEFLATE',
+        compressionOptions: { level: 6 }
+      });
+      
+      // Calculate total original size
+      const originalSize = fileTransfer.selectedFiles.reduce((sum, file) => sum + file.size, 0);
+      const compressionRatio = ((originalSize - zipBlob.size) / originalSize * 100).toFixed(1);
+      
+      console.log(`[FileTransfer] ZIP created: ${zipBlob.size} bytes (${compressionRatio}% compression)`);
+      
+      // Create a new file object for the ZIP
+      const zipFileName = `ShareZidi_${fileTransfer.selectedFiles.length}files_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.zip`;
+      const zipFile = new File([zipBlob], zipFileName, { type: 'application/zip' });
+      
+      // Create selected file with optimization
+      const { TransferUtils } = await import('../lib/transferUtils');
+      const selectedZipFile = Object.assign(zipFile, {
+        id: TransferUtils.generateFileId(),
+        optimizedChunkSize: TransferUtils.getOptimalChunkSize(zipFile.size),
+        parallelStreams: TransferUtils.getParallelChunkCount()
+      });
+      
+      console.log('[FileTransfer] Starting ZIP transfer to device:', device.id);
+      
+      // Start transfer with the ZIP file
+      await fileTransfer.startTransfer(device, [selectedZipFile]);
+      
+    } catch (error) {
+      console.error('[FileTransfer] ZIP creation failed:', error);
+    }
   };
 
   const handleRetryTransfer = (transferId: string) => {
