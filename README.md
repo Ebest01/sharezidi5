@@ -1,141 +1,170 @@
 # ShareZidi - Real-time File Transfer Application
 
-ShareZidi is a modern, real-time peer-to-peer file sharing application that allows seamless file transfers between devices using WebSocket connections. The application features advanced chunk-based file transfer with synchronization monitoring, error recovery, and optimized performance.
+A modern, real-time peer-to-peer file sharing application with mobile optimization, ZIP compression, and freemium business model.
 
 ## Features
 
-- **Real-time File Transfer**: WebSocket-based instant file sharing between devices
-- **Synchronization Monitoring**: Track sender/receiver progress with sync lag detection
-- **Error Recovery**: Automatic retry logic for failed chunks and network issues
-- **Mobile Support**: QR code generation for easy mobile device connections
-- **Optimized Performance**: Adaptive chunk sizing based on network conditions
-- **Modern UI**: Beautiful, responsive interface built with React and Tailwind CSS
+### Core Functionality
+- **Real-time file transfers** via WebSocket connections
+- **Chunk-based transfer** with progress tracking and error recovery
+- **ZIP compression** for multiple file transfers
+- **Cross-device compatibility** (desktop, mobile, tablet)
+- **QR code sharing** for easy mobile connections
+
+### Mobile Optimization
+- **Wake lock protection** prevents device sleep during transfers
+- **Background sync** maintains transfers when app is backgrounded
+- **Network resilience** with automatic reconnection
+- **Touch-optimized interface** for mobile devices
+
+### Business Model
+- **Free tier**: 15 transfers per month
+- **Pro tier**: Unlimited transfers
+- **Email registration** for user tracking and marketing
+- **Guest mode** for quick access
+- **Usage tracking** with upgrade prompts
+
+### Authentication
+- **Google OAuth integration** for easy sign-up
+- **Traditional email/password** registration
+- **Session management** with secure storage
+- **Guest mode** fallback
 
 ## Tech Stack
 
-- **Frontend**: React 18 + TypeScript + Tailwind CSS
-- **Backend**: Express.js + Node.js + WebSocket (ws)
-- **Database**: PostgreSQL with Drizzle ORM
-- **Build Tool**: Vite
-- **UI Components**: Radix UI primitives with shadcn/ui
+### Frontend
+- React 18 with TypeScript
+- Tailwind CSS + shadcn/ui components
+- Vite for development and production builds
+- Custom hooks for WebSocket and file transfer logic
+
+### Backend
+- Express.js with TypeScript
+- WebSocket (ws) for real-time communication
+- PostgreSQL with Drizzle ORM
+- Passport.js for authentication
+- bcrypt for password hashing
+
+### Infrastructure
+- Docker containerization
+- Easypanel deployment
+- PostgreSQL database with persistent storage
+- Automatic SSL certificates
+- Health monitoring and logging
 
 ## Quick Start
 
-### Prerequisites
-
-- Node.js 18+ 
-- PostgreSQL database
-- npm or yarn
-
-### Installation
-
-1. Clone the repository:
+### Development
 ```bash
-git clone <your-repo-url>
-cd sharezidi
-```
-
-2. Install dependencies:
-```bash
+# Install dependencies
 npm install
-```
 
-3. Set up environment variables:
-```bash
-# Create .env file
-cp .env.example .env
-
-# Edit .env with your database URL
-DATABASE_URL=postgresql://username:password@localhost:5432/sharezidi
-PORT=5000
-```
-
-4. Set up the database:
-```bash
-npm run db:push
-```
-
-5. Start the development server:
-```bash
+# Start development server
 npm run dev
-```
 
-The application will be available at `http://localhost:5000`
-
-## Production Deployment
-
-### Build for Production
-
-```bash
-npm run build
-```
-
-### Start Production Server
-
-```bash
-npm start
+# Access at http://localhost:5000
 ```
 
 ### Environment Variables
+```env
+NODE_ENV=development
+DATABASE_URL=postgresql://user:password@localhost:5432/sharezidi
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+SESSION_SECRET=your_random_secret
+```
 
-- `DATABASE_URL`: PostgreSQL connection string
-- `PORT`: Server port (default: 5000)
-- `NODE_ENV`: Set to "production" for production builds
+### Database Setup
+```bash
+# Push schema to database
+npm run db:push
+```
 
-## File Transfer Features
+## Deployment
 
-### Synchronization Improvements
-- Fixed sender reaching 100% while receiver at 22% issue
-- Added flow control to prevent overwhelming connections
-- Proper acknowledgment system between devices
-- Reduced chunk sizes for better sync (8KB-64KB)
+### Easypanel (Recommended)
+See [DEPLOYMENT.md](DEPLOYMENT.md) for complete Easypanel deployment guide.
 
-### Mobile Device Connection
-- QR code generation for easy mobile access
-- Automatic network IP detection
-- Public URL support for deployment
-- Multiple connection methods
+### Docker
+```bash
+# Build and run with Docker Compose
+docker-compose up --build
+```
+
+## Project Structure
+
+```
+├── client/                 # React frontend application
+│   ├── src/
+│   │   ├── components/     # React components
+│   │   ├── hooks/          # Custom React hooks
+│   │   └── lib/            # Utility functions
+├── server/                 # Express backend application
+│   ├── services/           # Business logic services
+│   ├── routes.ts          # API routes and WebSocket setup
+│   └── storage.ts         # Data access layer
+├── shared/                 # Shared types and schemas
+│   ├── schema.ts          # Database schema with Drizzle
+│   └── types.ts           # TypeScript type definitions
+└── dist/                  # Production build output
+```
+
+## Key Features Detail
+
+### File Transfer System
+- **Optimized chunking** based on file size and network conditions
+- **Parallel transfers** for improved speed
+- **Progress synchronization** between sender and receiver
+- **Automatic retry** for failed chunks
+- **Duplicate detection** and handling
+
+### Mobile Protection
+- **Wake Lock API** integration
+- **Service Worker** for background sync
+- **Heartbeat system** with multiple fallback strategies
+- **Network quality detection** and adaptation
+
+### User Experience
+- **Drag and drop** file selection
+- **Real-time progress** tracking
+- **Visual transfer status** indicators
+- **Error recovery** with user guidance
+- **Responsive design** for all screen sizes
 
 ## API Endpoints
 
-- `POST /api/generate-qr` - Generate QR codes for connection URLs
-- `GET /api/network-info` - Get local network information
-- `WebSocket /ws` - Real-time file transfer communication
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/user` - Get current user
+- `POST /api/auth/logout` - User logout
+- `GET /api/auth/google` - Google OAuth login
+- `GET /api/auth/google/callback` - Google OAuth callback
 
-## Development
+### Health Monitoring
+- `GET /health` - Application health check
 
-### Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run db:push` - Push database schema changes
-
-### Project Structure
-
-```
-├── client/               # React frontend
-│   ├── src/
-│   │   ├── components/   # React components
-│   │   ├── hooks/        # Custom React hooks
-│   │   ├── lib/          # Utility libraries
-│   │   └── types/        # TypeScript types
-├── server/               # Express backend
-│   ├── services/         # Business logic services
-│   ├── routes.ts         # API routes and WebSocket setup
-│   └── index.ts          # Server entry point
-├── shared/               # Shared types and schemas
-└── package.json          # Dependencies and scripts
-```
+### WebSocket Events
+- `registered` - User registration confirmation
+- `devices` - Available device list
+- `transfer-request` - Incoming transfer request
+- `file-chunk` - File data chunk
+- `chunk-ack` - Chunk acknowledgment
+- `sync-status` - Transfer synchronization status
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test thoroughly
+4. Add tests if applicable
 5. Submit a pull request
 
 ## License
 
 MIT License - see LICENSE file for details
+
+## Support
+
+For deployment help, see [DEPLOYMENT.md](DEPLOYMENT.md)
+For GitHub setup, see [GITHUB_SETUP.md](GITHUB_SETUP.md)
