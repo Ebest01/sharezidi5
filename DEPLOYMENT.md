@@ -1,215 +1,169 @@
-# Deployment Guide for ShareZidi
+# ShareZidi Deployment Guide - Easypanel on Hostinger VPS
 
-## Option 1: Deploy to VPS with EasyPanel
+## Prerequisites
+- Hostinger VPS with Easypanel installed
+- Domain name pointed to your VPS IP
+- Easypanel admin access
 
-### Step 1: Prepare Repository
+## Step 1: Prepare Application for Production
 
-1. **Create GitHub Repository**:
-   - Go to GitHub and create a new repository
-   - Name it `sharezidi` or your preferred name
-   - Make it public for easier deployment
+### Create Production Build Script
+Add to package.json:
+```json
+{
+  "scripts": {
+    "start": "NODE_ENV=production node dist/server/index.js",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "vite build",
+    "build:server": "tsc --project tsconfig.server.json"
+  }
+}
+```
 
-2. **Push Code to GitHub**:
-   ```bash
-   # Initialize git if not already done
-   git init
-   
-   # Add all files
-   git add .
-   
-   # Commit changes
-   git commit -m "Initial ShareZidi deployment"
-   
-   # Add your GitHub repository as origin
-   git remote add origin https://github.com/yourusername/sharezidi.git
-   
-   # Push to GitHub
-   git push -u origin main
-   ```
+### Environment Variables for Easypanel
+Set these in Easypanel app settings:
+```
+NODE_ENV=production
+PORT=3000
+DATABASE_URL=postgresql://username:password@postgres:5432/sharezidi
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+SESSION_SECRET=generate_random_32_char_string
+```
 
-### Step 2: Deploy on EasyPanel
+## Step 2: Easypanel Deployment
 
-1. **Access EasyPanel**:
-   - Log into your VPS EasyPanel dashboard
+### Create New Application
+1. Login to Easypanel dashboard
+2. Click "Create App" → "From Source"
+3. Connect your GitHub repository
+4. Choose Node.js template
 
-2. **Create New Project**:
-   - Click "New Project" or "Add Application"
-   - Choose "GitHub Repository" as source
+### Configure Application Settings
+```yaml
+# App Configuration
+Name: sharezidi
+Source: GitHub Repository
+Branch: main
+Build Command: npm run build
+Start Command: npm start
+Port: 3000
+```
 
-3. **Configure Repository**:
-   - Repository URL: `https://github.com/yourusername/sharezidi.git`
-   - Branch: `main`
-   - Build Command: `npm install && npm run build`
-   - Start Command: `npm start`
+### Database Setup
+1. Create PostgreSQL service in Easypanel
+2. Database name: `sharezidi`
+3. Note the connection details for DATABASE_URL
 
-4. **Environment Variables**:
-   Add these environment variables in EasyPanel:
-   ```
-   NODE_ENV=production
-   PORT=5000
-   DATABASE_URL=postgresql://username:password@localhost:5432/sharezidi
-   ```
+### Domain Setup
+1. Add your domain in Easypanel
+2. Enable SSL certificate (automatic)
+3. Point domain to your app
 
-5. **Database Setup**:
-   - Create a PostgreSQL database in EasyPanel
-   - Update DATABASE_URL with your database credentials
-   - Run database migrations: `npm run db:push`
+## Step 3: Google OAuth Setup
 
-### Step 3: Domain Configuration
+### Google Cloud Console Configuration
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create OAuth 2.0 Client ID
+3. Add authorized redirect URI: `https://yourdomain.com/api/auth/google/callback`
+4. Add authorized JavaScript origins: `https://yourdomain.com`
+5. Copy Client ID and Secret to Easypanel environment variables
 
-1. **Custom Domain** (Optional):
-   - In EasyPanel, go to your app settings
-   - Add your custom domain
-   - Configure DNS to point to your VPS
+## Step 4: Database Migration
 
-2. **SSL Certificate**:
-   - EasyPanel usually provides automatic SSL
-   - Verify HTTPS is working for WebSocket connections
+### Run Database Setup
+```bash
+# SSH into your container or use Easypanel terminal
+npm run db:push
+```
 
-## Option 2: Docker Deployment
+## Step 5: File Structure for Production
 
-If your VPS supports Docker:
+### Static File Serving
+The app automatically serves static files from `dist/client` in production.
 
-1. **Build and Run**:
-   ```bash
-   # Clone repository
-   git clone https://github.com/yourusername/sharezidi.git
-   cd sharezidi
-   
-   # Build and start with Docker Compose
-   docker-compose up -d
-   ```
+### WebSocket Configuration
+WebSockets work automatically with Easypanel's reverse proxy.
 
-2. **Environment Configuration**:
-   - Edit `docker-compose.yml` for your database credentials
-   - Application will be available on port 5000
+## Step 6: Process Management
 
-## Option 3: Manual VPS Deployment
+### PM2 Alternative (if needed)
+Easypanel handles process management, but if you need PM2:
+```json
+// ecosystem.config.js
+module.exports = {
+  apps: [{
+    name: 'sharezidi',
+    script: 'dist/server/index.js',
+    instances: 'max',
+    exec_mode: 'cluster',
+    env: {
+      NODE_ENV: 'production',
+      PORT: 3000
+    }
+  }]
+}
+```
 
-1. **Server Setup**:
-   ```bash
-   # Update system
-   sudo apt update && sudo apt upgrade -y
-   
-   # Install Node.js 20
-   curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-   sudo apt-get install -y nodejs
-   
-   # Install PostgreSQL
-   sudo apt install postgresql postgresql-contrib
-   ```
+## Step 7: Health Checks
 
-2. **Application Deployment**:
-   ```bash
-   # Clone repository
-   git clone https://github.com/yourusername/sharezidi.git
-   cd sharezidi
-   
-   # Install dependencies
-   npm install
-   
-   # Set up environment
-   cp .env.example .env
-   # Edit .env with your database credentials
-   
-   # Build application
-   npm run build
-   
-   # Set up database
-   npm run db:push
-   
-   # Start application (consider using PM2 for production)
-   npm install -g pm2
-   pm2 start npm --name "sharezidi" -- start
-   pm2 startup
-   pm2 save
-   ```
+### Add Health Endpoint
+The app includes a health check at `/health` for monitoring.
 
-3. **Nginx Configuration**:
-   ```nginx
-   server {
-       listen 80;
-       server_name your-domain.com;
-       
-       location / {
-           proxy_pass http://localhost:5000;
-           proxy_http_version 1.1;
-           proxy_set_header Upgrade $http_upgrade;
-           proxy_set_header Connection 'upgrade';
-           proxy_set_header Host $host;
-           proxy_set_header X-Real-IP $remote_addr;
-           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-           proxy_set_header X-Forwarded-Proto $scheme;
-           proxy_cache_bypass $http_upgrade;
-       }
-       
-       # WebSocket support
-       location /ws {
-           proxy_pass http://localhost:5000;
-           proxy_http_version 1.1;
-           proxy_set_header Upgrade $http_upgrade;
-           proxy_set_header Connection "upgrade";
-           proxy_set_header Host $host;
-           proxy_set_header X-Real-IP $remote_addr;
-           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-           proxy_set_header X-Forwarded-Proto $scheme;
-       }
-   }
-   ```
+## Step 8: SSL and Security
 
-## Post-Deployment Steps
+### Automatic SSL
+Easypanel provides automatic SSL certificates via Let's Encrypt.
 
-1. **Test File Transfer**:
-   - Access your deployed URL
-   - Test WebSocket connection
-   - Try file transfer between devices
-
-2. **Mobile Testing**:
-   - Use QR code feature to connect mobile devices
-   - Test file transfers from iPhone/Android
-
-3. **Monitor Performance**:
-   - Check server logs for any issues
-   - Monitor resource usage
-   - Set up backup strategies for database
+### Security Headers
+The app includes security middleware for production.
 
 ## Troubleshooting
 
-### Common Issues:
+### Common Issues
+1. **Database Connection**: Verify DATABASE_URL format
+2. **Google OAuth**: Check redirect URIs match exactly
+3. **WebSocket Issues**: Ensure domain supports WebSocket upgrades
+4. **File Upload Size**: Check Easypanel file size limits
 
-1. **WebSocket Connection Failed**:
-   - Ensure WebSocket path `/ws` is properly proxied
-   - Check firewall settings for port 5000
-   - Verify SSL/TLS configuration for WSS
+### Logs
+Access logs through Easypanel dashboard or:
+```bash
+# In Easypanel terminal
+npm run logs
+```
 
-2. **Database Connection Issues**:
-   - Verify DATABASE_URL is correct
-   - Check PostgreSQL service is running
-   - Ensure database user has proper permissions
+## Monitoring
 
-3. **Build Failures**:
-   - Check Node.js version (requires 18+)
-   - Verify all dependencies are installed
-   - Check available disk space and memory
+### Built-in Monitoring
+- Connection status tracking
+- Transfer success/failure rates
+- User registration metrics
+- Performance monitoring
 
-4. **File Transfer Issues**:
-   - Test with small files first
-   - Check network connectivity between devices
-   - Monitor browser console for errors
+### Easypanel Monitoring
+Use Easypanel's built-in monitoring for:
+- CPU/Memory usage
+- Response times
+- Error rates
+- Uptime monitoring
 
-## Security Considerations
+## Backup Strategy
 
-1. **Environment Variables**:
-   - Never commit .env files to git
-   - Use strong database passwords
-   - Rotate credentials regularly
+### Database Backups
+Configure automatic PostgreSQL backups in Easypanel.
 
-2. **Network Security**:
-   - Configure firewall properly
-   - Use HTTPS in production
-   - Implement rate limiting if needed
+### Application Backups
+- GitHub repository serves as code backup
+- Environment variables should be documented securely
 
-3. **File Upload Limits**:
-   - Consider implementing file size limits
-   - Add virus scanning for uploaded files
-   - Monitor disk usage
+## Scaling
+
+### Horizontal Scaling
+Easypanel supports scaling to multiple instances:
+1. Enable cluster mode in app settings
+2. Configure session store for multiple instances
+3. Use Redis for session storage if needed
+
+### Vertical Scaling
+Adjust container resources in Easypanel dashboard.
