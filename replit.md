@@ -139,10 +139,11 @@ Preferred communication style: Simple, everyday language.
 - Mobile-friendly interface improvements
 
 ### File Management Interface
-- Added individual file remove buttons with hover reveal for clean UI
+- Added individual file remove buttons that are always visible for mobile compatibility
 - Implemented "Clear all files" functionality for bulk removal
-- Enhanced file selection with visual feedback and accessibility
-- Smart tooltips and hints for better user experience
+- Enhanced file selection with proper layout and truncation for long filenames
+- Smart tooltips and hints with accessibility features (ARIA labels)
+- Mobile-friendly design with touch-optimized button sizes
 
 ### Mobile Connection Support
 - Added ConnectionHelper component with QR code generation
