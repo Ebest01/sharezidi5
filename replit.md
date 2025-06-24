@@ -102,7 +102,7 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### June 23, 2025 - File Transfer System Complete
+### June 23, 2025 - File Transfer System Complete with Mobile Protection
 - Fixed critical sender/receiver synchronization issues where sender reached 100% while receiver was at 22%
 - Resolved device visibility race conditions that prevented devices from seeing each other consistently
 - Fixed file selection crashes caused by NaN/undefined errors in formatFileName and file size calculations
@@ -113,6 +113,15 @@ Preferred communication style: Simple, everyday language.
 - File transfers now work end-to-end with real-time progress tracking and automatic chunk acknowledgment
 - Added QR code generation for mobile device connections
 - Improved WebSocket connection stability with ping/pong mechanism and singleton pattern
+
+### Mobile Transfer Protection System
+- Implemented comprehensive FileTransferManager with Wake Lock API to prevent mobile device sleep
+- Added service worker registration for background sync capabilities
+- Created heartbeat system with multiple fallback strategies (network requests, DOM operations)
+- Built visibility change handlers to maintain transfers when app goes to background
+- Added MobileTransferGuard component with visual warnings for mobile users
+- Integrated exponential backoff reconnection for better mobile network handling
+- Faster ping intervals (15s) optimized for mobile connection monitoring
 
 ### Mobile Connection Support
 - Added ConnectionHelper component with QR code generation

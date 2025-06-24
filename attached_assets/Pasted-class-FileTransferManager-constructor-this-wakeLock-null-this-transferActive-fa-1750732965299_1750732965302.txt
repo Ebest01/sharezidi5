@@ -1,0 +1,80 @@
+class FileTransferManager {
+  constructor() {
+    this.wakeLock = null;
+    this.transferActive = false;
+    this.heartbeatInterval = null;
+  }
+
+  async startTransfer() {
+    this.transferActive = true;
+    
+    // 1. Try Wake Lock API first
+    await this.requestWakeLock();
+    
+    // 2. Register service worker for background
+    await this.registerServiceWorker();
+    
+    // 3. Start heartbeat to prevent idle
+    this.startHeartbeat();
+    
+    // 4. Monitor visibility changes
+    this.setupVisibilityHandlers();
+  }
+
+  async requestWakeLock() {
+    if ('wakeLock' in navigator) {
+      try {
+        this.wakeLock = await navigator.wakeLock.request('screen');
+      } catch (err) {
+        console.warn('Wake lock failed, using fallbacks');
+      }
+    }
+  }
+
+  startHeartbeat() {
+    this.heartbeatInterval = setInterval(() => {
+      if (this.transferActive) {
+        // Dummy operation to prevent idle
+        fetch('/ping', { 
+          method: 'POST', 
+          keepalive: true,
+          body: JSON.stringify({ timestamp: Date.now() })
+        }).catch(() => {}); // Ignore errors
+      }
+    }, 25000); // Every 25 seconds
+  }
+
+  setupVisibilityHandlers() {
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && this.transferActive) {
+        // App backgrounded during transfer
+        this.handleBackground();
+      } else if (!document.hidden && this.wakeLock === null) {
+        // App foregrounded, re-acquire wake lock
+        this.requestWakeLock();
+      }
+    });
+  }
+
+  async handleBackground() {
+    // Try to register background sync
+    if ('serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.ready;
+      if ('sync' in registration) {
+        await registration.sync.register('continue-transfer');
+      }
+    }
+  }
+
+  cleanup() {
+    this.transferActive = false;
+    
+    if (this.wakeLock) {
+      this.wakeLock.release();
+    }
+    
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+    }
+  }
+}

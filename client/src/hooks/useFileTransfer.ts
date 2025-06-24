@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { TransferUtils } from '../lib/transferUtils';
+import { useWakeLock } from './useWakeLock';
 import type { SelectedFile, TransferMetrics } from '../types/transfer';
 import type { Device, TransferProgress, FileInfo } from '@shared/types';
 
@@ -12,6 +13,7 @@ export const useFileTransfer = (websocket: any) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const transferMetricsRef = useRef<Map<string, TransferMetrics>>(new Map());
   const receivedChunks = useRef<Map<string, Map<number, ArrayBuffer>>>(new Map());
+  const { requestWakeLock, releaseWakeLock, isWakeLockActive } = useWakeLock();
 
   const totalSizeMB = selectedFiles.reduce((total, file) => total + file.size, 0) / (1024 * 1024);
 
@@ -191,6 +193,9 @@ export const useFileTransfer = (websocket: any) => {
   };
 
   const startTransfer = useCallback(async (device: Device, files: SelectedFile[]) => {
+    // Activate comprehensive mobile transfer protection
+    await requestWakeLock();
+    
     for (const file of files) {
       const fileInfo: FileInfo = {
         name: file.name,
@@ -328,6 +333,9 @@ export const useFileTransfer = (websocket: any) => {
 
     const handleTransferComplete = (data: any) => {
       const transferId = `${data.from}-${websocket.userId}-${data.fileId}`;
+      
+      // Release comprehensive transfer protection
+      releaseWakeLock();
       
       setIncomingTransfers(prev => {
         const newMap = new Map(prev);

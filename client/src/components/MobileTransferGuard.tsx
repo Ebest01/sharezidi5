@@ -50,10 +50,11 @@ export const MobileTransferGuard: React.FC<MobileTransferGuardProps> = ({
         <div className="text-sm space-y-1">
           <div className="flex items-center gap-2">
             <Battery className="h-3 w-3" />
-            <span>Keep screen on during transfer</span>
+            <span>Advanced protection active</span>
           </div>
-          <div>• Don't switch apps or lock phone</div>
-          <div>• Transfer will pause if phone goes to sleep</div>
+          <div>• Wake lock enabled to prevent sleep</div>
+          <div>• Background sync registered</div>
+          <div>• Keep app in foreground for best results</div>
         </div>
       </AlertDescription>
     </Alert>

@@ -6,6 +6,7 @@ import { FileSelector } from './FileSelector';
 import { DeviceList } from './DeviceList';
 import { ErrorRecoveryPanel } from './ErrorRecoveryPanel';
 import { ConnectionHelper } from './ConnectionHelper';
+import { MobileTransferGuard } from './MobileTransferGuard';
 import type { Device } from '@shared/types';
 
 export const ShareZidiApp: React.FC = () => {
@@ -99,6 +100,12 @@ export const ShareZidiApp: React.FC = () => {
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-8">
+        {/* Mobile Transfer Guard */}
+        <MobileTransferGuard 
+          isTransferring={Array.from(fileTransfer.transfers.values()).some(t => t.isTransferring) || 
+                          Array.from(fileTransfer.incomingTransfers?.values() || []).some(t => t.isTransferring)} 
+        />
+        
         {/* Transfer Sync Monitor */}
         <TransferSyncMonitor 
           transfers={fileTransfer.transfers}
