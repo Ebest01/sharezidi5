@@ -9,6 +9,8 @@ export const useFileTransfer = (websocket: any) => {
   const [transfers, setTransfers] = useState<Map<string, TransferProgress>>(new Map());
   const [incomingTransfers, setIncomingTransfers] = useState<Map<string, TransferProgress>>(new Map());
   const [isDragging, setIsDragging] = useState(false);
+  const [isZipping, setIsZipping] = useState(false);
+  const [zipProgress, setZipProgress] = useState(0);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const transferMetricsRef = useRef<Map<string, TransferMetrics>>(new Map());

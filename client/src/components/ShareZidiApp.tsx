@@ -7,6 +7,7 @@ import { DeviceList } from './DeviceList';
 import { ErrorRecoveryPanel } from './ErrorRecoveryPanel';
 import { ConnectionHelper } from './ConnectionHelper';
 import { MobileTransferGuard } from './MobileTransferGuard';
+import { ZipProgress } from './ZipProgress';
 import type { Device } from '@shared/types';
 
 export const ShareZidiApp: React.FC = () => {
@@ -104,6 +105,12 @@ export const ShareZidiApp: React.FC = () => {
         <MobileTransferGuard 
           isTransferring={Array.from(fileTransfer.transfers.values()).some(t => t.isTransferring) || 
                           Array.from(fileTransfer.incomingTransfers?.values() || []).some(t => t.isTransferring)} 
+        />
+        
+        {/* ZIP Progress */}
+        <ZipProgress 
+          isZipping={fileTransfer.isZipping}
+          progress={fileTransfer.zipProgress}
         />
         
         {/* Transfer Sync Monitor */}
