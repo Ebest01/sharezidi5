@@ -66,10 +66,30 @@ Thumbs.db
 replit.nix
 ```
 
-## Step 3: Initialize Git Repository
+## Step 3: Upload to GitHub (Alternative Methods)
 
-### Commands to run in terminal:
+### Method A: GitHub Web Upload (Easiest)
+Since Replit has git restrictions, use GitHub's web interface:
+
+1. Go to your new GitHub repository
+2. Click "uploading an existing file" 
+3. Drag and drop all project files EXCEPT:
+   - `node_modules/` folder
+   - `dist/` folder
+   - `.replit` file
+   - `replit.nix` file
+4. Add commit message: "Initial commit: ShareZidi file transfer app"
+5. Click "Commit changes"
+
+### Method B: Download and Git Upload
+1. Download your Replit project as ZIP
+2. Extract on your local computer
+3. Run these commands in your local terminal:
+
 ```bash
+# Navigate to extracted folder
+cd sharezidi
+
 # Initialize git repository
 git init
 
@@ -83,6 +103,7 @@ git commit -m "Initial commit: ShareZidi file transfer app with freemium model"
 git remote add origin https://github.com/USERNAME/REPO.git
 
 # Push to GitHub
+git branch -M main
 git push -u origin main
 ```
 
