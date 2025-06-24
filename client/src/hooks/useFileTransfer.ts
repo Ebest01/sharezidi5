@@ -429,6 +429,8 @@ export const useFileTransfer = (websocket: any) => {
     transfers,
     incomingTransfers,
     isDragging,
+    isZipping: isZipping || false,
+    zipProgress: zipProgress || 0,
     totalSizeMB,
     fileInputRef,
     addFiles,
