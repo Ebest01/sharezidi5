@@ -154,6 +154,15 @@ Preferred communication style: Simple, everyday language.
 - Simple localStorage-based session management
 - Transfer limit enforcement with upgrade prompts
 
+### Authentication System
+- Google OAuth integration with passport-google-oauth20
+- Traditional email/password registration and login
+- Session-based authentication with express-session
+- Automatic user detection from Google auth callbacks
+- Fallback to localStorage for guest users
+- Password hashing with bcrypt for security
+- API endpoints for register/login/logout/user-info
+
 ### Mobile Connection Support
 - Added ConnectionHelper component with QR code generation
 - Automatic network IP detection for local connections

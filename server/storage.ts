@@ -35,6 +35,7 @@ export class MemStorage implements IStorage {
     const user: User = { 
       ...insertUser, 
       id,
+      password: insertUser.password || null,
       transferCount: 0,
       isPro: false,
       subscriptionDate: null,

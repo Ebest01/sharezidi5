@@ -13,26 +13,79 @@ export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing user session
-    const savedUser = localStorage.getItem('shareZidiUser');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        localStorage.removeItem('shareZidiUser');
-      }
+    // Check URL for auth success/failure
+    const urlParams = new URLSearchParams(window.location.search);
+    const authResult = urlParams.get('auth');
+    const authError = urlParams.get('error');
+
+    if (authResult === 'success') {
+      // Google auth success - fetch user from backend
+      fetchCurrentUser();
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (authError) {
+      console.error('Auth error:', authError);
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+      // Check for existing session or local storage
+      fetchCurrentUser();
     }
-    setIsLoading(false);
   }, []);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await fetch('/api/auth/user', {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+      } else {
+        // Fallback to localStorage for guest users
+        const savedUser = localStorage.getItem('shareZidiUser');
+        if (savedUser) {
+          try {
+            setUser(JSON.parse(savedUser));
+          } catch (error) {
+            localStorage.removeItem('shareZidiUser');
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch current user:', error);
+      // Fallback to localStorage
+      const savedUser = localStorage.getItem('shareZidiUser');
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch (error) {
+          localStorage.removeItem('shareZidiUser');
+        }
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const login = (userData: User) => {
     setUser(userData);
     localStorage.setItem('shareZidiUser', JSON.stringify(userData));
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('shareZidiUser');
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setUser(null);
+      localStorage.removeItem('shareZidiUser');
+    }
   };
 
   const updateUser = (updates: Partial<User>) => {
