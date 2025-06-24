@@ -173,3 +173,12 @@ Preferred communication style: Simple, everyday language.
 - For testing with mobile devices, deployment to public URL is required
 - Development server uses internal IPs not accessible from external devices
 - QR code generation works for both local and deployed environments
+
+### Easypanel Deployment (Hostinger VPS)
+- Complete Docker configuration with health checks and multi-stage builds
+- PostgreSQL database service with persistent volumes
+- Automatic SSL certificates via Let's Encrypt
+- Environment variable management through Easypanel dashboard
+- Horizontal scaling support with session store compatibility
+- Built-in monitoring and logging through Easypanel interface
+- GitHub integration for automatic deployments on push
