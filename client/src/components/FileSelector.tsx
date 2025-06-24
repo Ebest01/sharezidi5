@@ -64,8 +64,8 @@ export const FileSelector: React.FC<FileSelectorProps> = ({
         <div className="mt-6 space-y-3">
           {(selectedFiles || []).map((file, index) => (
             <div key={file.id} className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+              <div className="flex items-center space-x-4 flex-1 min-w-0">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                   file.type && file.type.startsWith('image/') ? 'bg-green-100' :
                   file.type && file.type.startsWith('video/') ? 'bg-red-100' :
                   file.type && file.type.startsWith('audio/') ? 'bg-purple-100' :
@@ -74,8 +74,8 @@ export const FileSelector: React.FC<FileSelectorProps> = ({
                 }`}>
                   <i className={`${TransferUtils.getFileIcon(file.type || '')} ${TransferUtils.getFileIconColor(file.type || '')}`}></i>
                 </div>
-                <div>
-                  <div className="font-medium text-gray-800">
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-gray-800 truncate">
                     {TransferUtils.formatFileName(file?.name || 'Unknown')}
                   </div>
                   <div className="text-sm text-gray-500">
@@ -85,9 +85,13 @@ export const FileSelector: React.FC<FileSelectorProps> = ({
               </div>
               <button 
                 onClick={() => onRemoveFile(index)}
-                className="text-gray-400 hover:text-red-500 transition-colors"
+                className="ml-3 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all duration-200 flex-shrink-0"
+                title="Remove this file"
+                aria-label={`Remove ${file.name}`}
               >
-                <i className="fas fa-times"></i>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
           ))}
