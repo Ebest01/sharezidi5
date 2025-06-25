@@ -65,9 +65,19 @@ app.post('/api/auth/logout', (req, res) => {
   res.json({ success: true });
 });
 
-// Health check
+// Health check with detailed status
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  const memUsage = process.memoryUsage();
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: {
+      rss: Math.round(memUsage.rss / 1024 / 1024) + 'MB',
+      heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024) + 'MB'
+    },
+    pid: process.pid
+  });
 });
 
 // Error handler
@@ -88,8 +98,45 @@ app.get("*", (req, res) => {
 });
 
 const port = parseInt(process.env.PORT || "5000");
-httpServer.listen({ port, host: "0.0.0.0" }, () => {
+
+// Graceful shutdown handling
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  httpServer.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully');
+  httpServer.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+httpServer.listen(port, "0.0.0.0", () => {
   console.log(`ShareZidi production server running on port ${port}`);
   console.log(`Serving static files from: ${distPath}`);
   console.log(`WebSocket server available at /ws`);
+  console.log(`Process ID: ${process.pid}`);
+}).on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`Port ${port} is already in use`);
+    process.exit(1);
+  } else {
+    console.error('Server error:', err);
+    process.exit(1);
+  }
 });
