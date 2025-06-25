@@ -15,10 +15,13 @@ COPY . .
 # Build the application
 RUN npm run build
 
-# Production stage
+# Production stage  
 FROM node:20-alpine AS production
 
 WORKDIR /app
+
+# Install curl for health checks
+RUN apk add --no-cache curl
 
 # Copy package files and install only production dependencies
 COPY package*.json ./
@@ -28,21 +31,17 @@ RUN npm ci --only=production
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/client/dist ./client/dist
 
-# Copy necessary files
-COPY server ./server
-COPY shared ./shared
-
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
-USER nextjs
+RUN adduser -S nodejs -u 1001
+USER nodejs
 
 # Expose port
 EXPOSE 5000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:5000/health || exit 1
+  CMD curl -f http://localhost:5000/api/auth/user || exit 1
 
 # Start the application
 CMD ["node", "dist/index.js"]
