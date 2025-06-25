@@ -15,8 +15,8 @@ COPY . .
 # Build the frontend
 RUN npx vite build client
 
-# Build the production server (NO VITE DEPENDENCIES) - Cache bust v4
-RUN npx esbuild server/production.ts --bundle --platform=node --target=node20 --format=esm --outdir=dist --external:pg --external:ws --external:express
+# Build the production server (COMPLETE SEPARATION) - Cache bust v5
+RUN npx esbuild server/prod-server.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/prod-server.js --external:ws --external:express
 
 # Production stage  
 FROM node:20-alpine AS production
@@ -47,4 +47,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:5000/api/auth/user || exit 1
 
 # Start the application
-CMD ["node", "dist/production.js"]
+CMD ["node", "dist/prod-server.js"]
