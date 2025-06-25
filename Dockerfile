@@ -15,8 +15,8 @@ COPY . .
 # Build the frontend
 RUN npx vite build client
 
-# Build the backend server (production version without Vite) - Cache bust v2
-RUN npx esbuild server/production.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/index.js --external:pg --external:ws --external:express
+# Build the backend server - Cache bust v3
+RUN npx esbuild server/index.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/index.js --external:pg --external:ws --external:express
 
 # Production stage  
 FROM node:20-alpine AS production
