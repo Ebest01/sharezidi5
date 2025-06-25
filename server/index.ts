@@ -51,14 +51,13 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
+  // Only setup vite in development - in production, serve static files directly
   if (process.env.NODE_ENV === "development") {
-    const { setupVite } = await import("./vite.js");
-    await setupVite(app, server);
+    // Dynamic import to avoid static resolution
+    const viteModule = await import("./vite.js");
+    await viteModule.setupVite(app, server);
   } else {
-    // Serve static files in production
+    // Production: serve static files without any Vite imports
     const path = await import("path");
     const fs = await import("fs");
     
