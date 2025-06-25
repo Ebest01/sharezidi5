@@ -1,0 +1,86 @@
+#8 24.61 npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+#8 24.89 npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+#8 63.69 
+#8 63.69 added 570 packages, and audited 571 packages in 1m
+#8 63.69 
+#8 63.69 69 packages are looking for funding
+#8 63.69   run `npm fund` for details
+#8 63.81 
+#8 63.81 9 vulnerabilities (1 low, 8 moderate)
+#8 63.81 
+#8 63.81 To address issues that do not require attention, run:
+#8 63.81   npm audit fix
+#8 63.81 
+#8 63.81 To address all issues (including breaking changes), run:
+#8 63.81   npm audit fix --force
+#8 63.81 
+#8 63.81 Run `npm audit` for details.
+#8 63.82 npm notice
+#8 63.82 npm notice New major version of npm available! 10.8.2 -> 11.4.2
+#8 63.82 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.4.2
+#8 63.82 npm notice To update run: npm install -g npm@11.4.2
+#8 63.82 npm notice
+#8 DONE 64.0s
+
+#9 [5/7] COPY . .
+#9 DONE 0.1s
+
+#10 [6/7] RUN npm run build
+#10 0.538 
+#10 0.538 > rest-express@1.0.0 build
+#10 0.538 > vite build && esbuild server/prod-server.ts --platform=node --bundle --format=esm --outdir=dist --external:ws --external:express --external:path --external:fs --external:http --external:os
+#10 0.538 
+#10 1.484 vite v5.4.19 building for production...
+#10 1.568 transforming...
+#10 3.933 Browserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+#10 3.933   npx update-browserslist-db@latest
+#10 3.933   Why you should do it regularly: https://github.com/browserslist/update-db#readme
+#10 9.785 [vite:css] @import must precede all other statements (besides @charset or empty @layer)
+#10 9.785 128|  
+#10 9.785 129|  /* FontAwesome icons - load from CDN */
+#10 9.785 130|  @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+#10 9.785    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#10 9.785 131|  
+#10 24.65 ✓ 1646 modules transformed.
+#10 25.20 rendering chunks...
+#10 25.32 [plugin:vite:reporter] [plugin vite:reporter] 
+#10 25.32 (!) /app/client/src/lib/transferUtils.ts is dynamically imported by /app/client/src/components/ShareZidiApp.tsx but also statically imported by /app/client/src/components/FileSelector.tsx, /app/client/src/hooks/useFileTransfer.ts, dynamic import will not move module into another chunk.
+#10 25.32 
+#10 25.38 computing gzip size...
+#10 25.43 ../dist/public/index.html                      0.63 kB │ gzip:  0.38 kB
+#10 25.43 ../dist/public/assets/index-DSs_DWNe.css      67.99 kB │ gzip: 11.71 kB
+#10 25.43 ../dist/public/assets/jszip.min-B1ay_hdg.js   97.13 kB │ gzip: 30.15 kB
+#10 25.43 ../dist/public/assets/index-B0--eW-3.js      255.73 kB │ gzip: 79.75 kB
+#10 25.43 ✓ built in 23.91s
+#10 25.54 ✘ [ERROR] Could not resolve "server/prod-server.ts"
+#10 25.54 
+#10 25.54 1 error
+#10 ERROR: process "/bin/sh -c npm run build" did not complete successfully: exit code: 1
+------
+ > [6/7] RUN npm run build:
+25.32 
+25.38 computing gzip size...
+25.43 ../dist/public/index.html                      0.63 kB │ gzip:  0.38 kB
+25.43 ../dist/public/assets/index-DSs_DWNe.css      67.99 kB │ gzip: 11.71 kB
+25.43 ../dist/public/assets/jszip.min-B1ay_hdg.js   97.13 kB │ gzip: 30.15 kB
+25.43 ../dist/public/assets/index-B0--eW-3.js      255.73 kB │ gzip: 79.75 kB
+25.43 ✓ built in 23.91s
+25.54 ✘ [ERROR] Could not resolve "server/prod-server.ts"
+25.54 
+25.54 1 error
+------
+Dockerfile:17
+--------------------
+  15 |     
+  16 |     # Build the application
+  17 | >>> RUN npm run build
+  18 |     
+  19 |     # Remove dev dependencies after build
+--------------------
+ERROR: failed to solve: process "/bin/sh -c npm run build" did not complete successfully: exit code: 1
+##########################################
+### Error
+### Wed, 25 Jun 2025 11:11:02 GMT
+##########################################
+
+Command failed with exit code 1: docker buildx build --network host -f /etc/easypanel/projects/sharezidi_v2/app4_services/code/Dockerfile -t easypanel/sharezidi_v2/app4_services --label 'keep=true' --build-arg 'GIT_SHA=1f511dd06e2796ef39cbb6594f7232ec847c3b19' /etc/easypanel/projects/sharezidi_v2/app4_services/code/
