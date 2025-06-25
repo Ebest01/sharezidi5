@@ -1,0 +1,98 @@
+Commit: Create prod-server.ts 
+##########################################
+### Download Github Archive Started...
+### Wed, 25 Jun 2025 11:41:06 GMT
+##########################################
+
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 617B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 0.5s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 176B 0.0s done
+#3 DONE 0.0s
+
+#4 [1/7] FROM docker.io/library/node:20-alpine@sha256:674181320f4f94582c6182eaa151bf92c6744d478be0f1d12db804b7d59b2d11
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 4.04MB 0.7s done
+#5 DONE 0.8s
+
+#6 [2/7] WORKDIR /app
+#6 CACHED
+
+#7 [3/7] COPY package*.json ./
+#7 CACHED
+
+#8 [4/7] RUN npm ci
+#8 CACHED
+
+#9 [5/7] COPY . .
+#9 DONE 0.4s
+
+#10 [6/7] RUN npm run build
+#10 0.810 
+#10 0.810 > rest-express@1.0.0 build
+#10 0.810 > vite build && esbuild server/prod-server.ts --platform=node --bundle --format=esm --outdir=dist --external:ws --external:express --external:path --external:fs --external:http --external:os
+#10 0.810 
+#10 1.711 vite v5.4.19 building for production...
+#10 1.795 transforming...
+#10 6.954 Browserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+#10 6.954   npx update-browserslist-db@latest
+#10 6.954   Why you should do it regularly: https://github.com/browserslist/update-db#readme
+#10 13.18 [vite:css] @import must precede all other statements (besides @charset or empty @layer)
+#10 13.18 128|  
+#10 13.18 129|  /* FontAwesome icons - load from CDN */
+#10 13.18 130|  @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+#10 13.18    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#10 13.18 131|  
+#10 25.28 ✓ 1646 modules transformed.
+#10 26.55 rendering chunks...
+#10 26.79 [plugin:vite:reporter] [plugin vite:reporter] 
+#10 26.79 (!) /app/client/src/lib/transferUtils.ts is dynamically imported by /app/client/src/components/ShareZidiApp.tsx but also statically imported by /app/client/src/components/FileSelector.tsx, /app/client/src/hooks/useFileTransfer.ts, dynamic import will not move module into another chunk.
+#10 26.79 
+#10 26.94 computing gzip size...
+#10 27.06 ../dist/public/index.html                      0.63 kB │ gzip:  0.38 kB
+#10 27.07 ../dist/public/assets/index-DSs_DWNe.css      67.99 kB │ gzip: 11.71 kB
+#10 27.07 ../dist/public/assets/jszip.min-B1ay_hdg.js   97.13 kB │ gzip: 30.15 kB
+#10 27.07 ../dist/public/assets/index-B0--eW-3.js      255.73 kB │ gzip: 79.75 kB
+#10 27.07 ✓ built in 25.32s
+#10 27.25 
+#10 27.25   dist/prod-server.js  14.7kb
+#10 27.25 
+#10 27.25 ⚡ Done in 19ms
+#10 DONE 27.3s
+
+#11 [7/7] RUN npm prune --production
+#11 0.286 npm warn config production Use `--omit=dev` instead.
+#11 7.599 
+#11 7.599 up to date, audited 473 packages in 7s
+#11 7.599 
+#11 7.600 57 packages are looking for funding
+#11 7.600   run `npm fund` for details
+#11 7.603 
+#11 7.603 1 low severity vulnerability
+#11 7.603 
+#11 7.603 To address all issues, run:
+#11 7.603   npm audit fix
+#11 7.603 
+#11 7.603 Run `npm audit` for details.
+#11 DONE 7.7s
+
+#12 exporting to image
+#12 exporting layers
+#12 exporting layers 13.0s done
+#12 writing image sha256:444358a2e52eecd5922746f6b13f5be36949128ebddc33f9ed1f8cf0b3adcb4c
+#12 writing image sha256:444358a2e52eecd5922746f6b13f5be36949128ebddc33f9ed1f8cf0b3adcb4c 0.0s done
+#12 naming to docker.io/easypanel/sharezidi_v2/app4_services 0.0s done
+#12 DONE 13.0s
+##########################################
+### Success
+### Wed, 25 Jun 2025 11:42:00 GMT
+##########################################
