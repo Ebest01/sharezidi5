@@ -1,6 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 app.use(express.json());
@@ -29,7 +28,12 @@ app.use((req, res, next) => {
         logLine = logLine.slice(0, 79) + "…";
       }
 
-      log(logLine);
+      console.log(`${new Date().toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit", 
+        second: "2-digit",
+        hour12: true,
+      })} [express] ${logLine}`);
     }
   });
 
@@ -50,10 +54,27 @@ app.use((req, res, next) => {
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
+  if (process.env.NODE_ENV === "development") {
+    const { setupVite } = await import("./vite.js");
     await setupVite(app, server);
   } else {
-    serveStatic(app);
+    // Serve static files in production
+    const path = await import("path");
+    const fs = await import("fs");
+    
+    const distPath = path.resolve(import.meta.dirname, "..", "client", "dist");
+    
+    if (fs.existsSync(distPath)) {
+      app.use(express.static(distPath));
+      app.use("*", (_req, res) => {
+        res.sendFile(path.resolve(distPath, "index.html"));
+      });
+    } else {
+      console.error(`Build directory not found: ${distPath}`);
+      app.use("*", (_req, res) => {
+        res.status(500).send("Application not built properly");
+      });
+    }
   }
 
   // ALWAYS serve the app on port 5000
@@ -65,6 +86,11 @@ app.use((req, res, next) => {
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
-    log(`serving on port ${port}`);
+    console.log(`${new Date().toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit", 
+      hour12: true,
+    })} [express] serving on port ${port}`);
   });
 })();
