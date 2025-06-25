@@ -13,7 +13,7 @@ RUN npm ci
 COPY . .
 
 # Build the application
-RUN npm run build
+RUN npx vite build client && npx esbuild server/production.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/index.js --external:pg --external:ws
 
 # Production stage  
 FROM node:20-alpine AS production
