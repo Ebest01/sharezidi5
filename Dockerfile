@@ -12,11 +12,10 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build the frontend
-RUN npx vite build client
+# Build both frontend and backend in one step
 
-# Build the production server (COMPLETE SEPARATION) - Cache bust v5
-RUN npx esbuild server/prod-server.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/prod-server.js --external:ws --external:express
+# Build the production server (ZERO VITE DEPENDENCIES) - Cache bust v6
+RUN npx vite build client && npx esbuild server/prod-server.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/prod-server.js --external:ws --external:express
 
 # Production stage  
 FROM node:20-alpine AS production
