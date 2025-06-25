@@ -1,0 +1,74 @@
+Commit: Provide clear directions to upload the project to a new GitHub repository
+
+Adds a markdown file with instructions for setting up the Git remote and pushing the ShareZidi application to GitHub.
+
+Replit-Commit-Author: Agent
+Replit-Commit-Session-Id: 90256268-e7f2-4dec-a751-fdea294a1e52
+Replit-Commit-Screenshot-Url: https://storage.googleapis.com/screenshot-production-us-central1/1fe712b0-981f-4eb3-b5df-636862de5ce2/3369ca9a-999e-4fa8-9817-a1b1a2d5b131.jpg 
+##########################################
+### Download Github Archive Started...
+### Wed, 25 Jun 2025 06:17:20 GMT
+##########################################
+
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 526B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 0.3s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 176B done
+#3 DONE 0.0s
+
+#4 [1/6] FROM docker.io/library/node:20-alpine@sha256:674181320f4f94582c6182eaa151bf92c6744d478be0f1d12db804b7d59b2d11
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 10.85kB 0.0s done
+#5 DONE 0.0s
+
+#6 [2/6] WORKDIR /app
+#6 CACHED
+
+#7 [3/6] COPY package*.json ./
+#7 CACHED
+
+#8 [4/6] RUN npm ci --only=production
+#8 CACHED
+
+#9 [5/6] COPY . .
+#9 CACHED
+
+#10 [6/6] RUN npm run build
+#10 0.394 
+#10 0.394 > rest-express@1.0.0 build
+#10 0.394 > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+#10 0.394 
+#10 0.401 sh: vite: not found
+#10 ERROR: process "/bin/sh -c npm run build" did not complete successfully: exit code: 127
+------
+ > [6/6] RUN npm run build:
+0.394 
+0.394 > rest-express@1.0.0 build
+0.394 > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+0.394 
+0.401 sh: vite: not found
+------
+Dockerfile:17
+--------------------
+  15 |     
+  16 |     # Build the application
+  17 | >>> RUN npm run build
+  18 |     
+  19 |     # Expose port
+--------------------
+ERROR: failed to solve: process "/bin/sh -c npm run build" did not complete successfully: exit code: 127
+##########################################
+### Error
+### Wed, 25 Jun 2025 06:17:23 GMT
+##########################################
+
+Command failed with exit code 1: docker buildx build --network host -f /etc/easypanel/projects/sharezidi/app_service/code/Dockerfile -t easypanel/sharezidi/app_service --label 'keep=true' --build-arg 'GIT_SHA=ccb3ba3ceefc2810aac6950c791ae2273d1c1e5e' /etc/easypanel/projects/sharezidi/app_service/code/
