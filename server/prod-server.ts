@@ -164,7 +164,7 @@ app.get("*", (req, res) => {
   }
 });
 
-const port = parseInt(process.env.PORT || "5000");
+const port = parseInt(process.env.PORT || "3001");
 
 // Graceful shutdown handling
 process.on("SIGTERM", () => {
