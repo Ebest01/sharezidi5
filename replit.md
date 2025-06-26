@@ -182,10 +182,11 @@ Preferred communication style: Simple, everyday language.
 - QR code generation works for both local and deployed environments
 
 ### Easypanel Deployment (Hostinger VPS)
-- Complete Docker configuration with health checks and multi-stage builds
+- **Buildpacks deployment** (much simpler than Docker for Node.js applications)
 - PostgreSQL database service with persistent volumes
 - Automatic SSL certificates via Let's Encrypt
 - Environment variable management through Easypanel dashboard
 - Horizontal scaling support with session store compatibility
 - Built-in monitoring and logging through Easypanel interface
 - GitHub integration for automatic deployments on push
+- **Important lesson**: Use Buildpacks instead of Dockerfile for Node.js - more reliable and less complex
