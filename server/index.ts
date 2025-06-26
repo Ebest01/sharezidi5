@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 app.use(express.json());
@@ -28,12 +29,7 @@ app.use((req, res, next) => {
         logLine = logLine.slice(0, 79) + "…";
       }
 
-      console.log(`${new Date().toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit", 
-        second: "2-digit",
-        hour12: true,
-      })} [express] ${logLine}`);
+      log(logLine);
     }
   });
 
@@ -51,29 +47,13 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // Only setup vite in development - in production, serve static files directly
-  if (process.env.NODE_ENV === "development") {
-    // Dynamic import to avoid static resolution
-    const viteModule = await import("./vite.js");
-    await viteModule.setupVite(app, server);
+  // importantly only setup vite in development and after
+  // setting up all the other routes so the catch-all route
+  // doesn't interfere with the other routes
+  if (app.get("env") === "development") {
+    await setupVite(app, server);
   } else {
-    // Production: serve static files without any Vite imports
-    const path = await import("path");
-    const fs = await import("fs");
-    
-    const distPath = path.resolve(import.meta.dirname, "..", "client", "dist");
-    
-    if (fs.existsSync(distPath)) {
-      app.use(express.static(distPath));
-      app.use("*", (_req, res) => {
-        res.sendFile(path.resolve(distPath, "index.html"));
-      });
-    } else {
-      console.error(`Build directory not found: ${distPath}`);
-      app.use("*", (_req, res) => {
-        res.status(500).send("Application not built properly");
-      });
-    }
+    serveStatic(app);
   }
 
   // ALWAYS serve the app on port 5000
@@ -85,11 +65,6 @@ app.use((req, res, next) => {
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
-    console.log(`${new Date().toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      second: "2-digit", 
-      hour12: true,
-    })} [express] serving on port ${port}`);
+    log(`serving on port ${port}`);
   });
 })();

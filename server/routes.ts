@@ -6,10 +6,6 @@ import QRCode from 'qrcode';
 import { networkInterfaces } from 'os';
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Health check endpoint for Docker
-  app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
-  });
   const httpServer = createServer(app);
   
   // Initialize file transfer service

@@ -3,7 +3,6 @@ import path from "path";
 import { WebSocketServer, WebSocket } from "ws";
 import { createServer } from "http";
 import { FileTransferService } from "./services/fileTransferService.js";
-import fs from "fs";
 
 const app = express();
 app.use(express.json({ limit: "50mb" }));
@@ -95,76 +94,41 @@ app.use((err: any, req: any, res: any, next: any) => {
   res.status(status).json({ message });
 });
 
-// DEBUGGING: Find the correct static file path
-console.log("=== DEBUGGING STATIC FILE PATHS ===");
-console.log("Current working directory:", process.cwd());
-
+// Serve static files - with path debugging
 const possiblePaths = [
   path.resolve(process.cwd(), "dist", "public"),
   path.resolve(process.cwd(), "client", "dist"),
   path.resolve(process.cwd(), "dist"),
-  path.resolve("/app/dist/public"),
-  path.resolve("/app/client/dist"),
-  path.resolve("/app/dist"),
 ];
 
 let distPath;
 for (const p of possiblePaths) {
-  console.log(`Checking path: ${p}`);
   try {
-    if (fs.existsSync(p)) {
-      const files = fs.readdirSync(p);
-      console.log(
-        `  📁 Directory exists, files: ${files.slice(0, 5).join(", ")}${files.length > 5 ? "..." : ""}`,
-      );
-
-      if (fs.existsSync(path.join(p, "index.html"))) {
-        distPath = p;
-        console.log(`  ✅ Found index.html at: ${distPath}`);
-        break;
-      } else {
-        console.log(`  ❌ No index.html found`);
-      }
+    if (require("fs").existsSync(path.join(p, "index.html"))) {
+      distPath = p;
+      console.log(`✅ Found static files at: ${distPath}`);
+      break;
     } else {
-      console.log(`  ❌ Directory doesn't exist`);
+      console.log(`❌ No index.html found at: ${p}`);
     }
   } catch (e) {
-    console.log(`  ❌ Error checking path: ${e.message}`);
+    console.log(`❌ Error checking path: ${p}`);
   }
 }
 
 if (!distPath) {
   console.error("❌ Could not find index.html in any expected location");
-  console.log("Available directories:");
-  try {
-    const rootFiles = fs.readdirSync(process.cwd());
-    console.log(`Root directory files: ${rootFiles.join(", ")}`);
-  } catch (e) {
-    console.error("Can't read root directory");
-  }
   distPath = path.resolve(process.cwd(), "dist", "public"); // fallback
 }
 
-console.log(`🎯 Using static path: ${distPath}`);
-console.log("=== END DEBUGGING ===");
-
-// Serve static files
 app.use(express.static(distPath));
 
 // Catch-all handler for SPA
 app.get("*", (req, res) => {
-  const indexPath = path.join(distPath, "index.html");
-  console.log(`Serving index.html from: ${indexPath}`);
-
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    console.error(`❌ index.html not found at: ${indexPath}`);
-    res.status(404).send("index.html not found");
-  }
+  res.sendFile(path.join(distPath, "index.html"));
 });
 
-const port = parseInt(process.env.PORT || "3001");
+const port = parseInt(process.env.PORT || "5000");
 
 // Graceful shutdown handling
 process.on("SIGTERM", () => {
@@ -199,7 +163,6 @@ httpServer
     console.log(`Serving static files from: ${distPath}`);
     console.log(`WebSocket server available at /ws`);
     console.log(`Process ID: ${process.pid}`);
-    console.log(`Health check: http://localhost:${port}/health`);
   })
   .on("error", (err) => {
     if (err.code === "EADDRINUSE") {

@@ -1,48 +1,30 @@
-# Build stage
-FROM node:20-alpine AS builder
+# Use Node.js 20 Alpine for smaller image size
+FROM node:20-alpine
 
+# Set working directory
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install all dependencies
+# Install all dependencies (including dev dependencies for build)
 RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Build frontend and backend separately - Cache bust v9  
-RUN npx vite build client
-RUN npx esbuild server/prod-server.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/prod-server.js --external:ws --external:express
+# Build the application
+RUN npm run build
 
-# Production stage  
-FROM node:20-alpine AS production
-
-WORKDIR /app
-
-# Install curl for health checks
-RUN apk add --no-cache curl
-
-# Copy package files and install only production dependencies
-COPY package*.json ./
-RUN npm ci --only=production
-
-# Copy built application from builder stage
-COPY --from=builder /app/dist/prod-server.js ./dist/prod-server.js
-COPY --from=builder /app/client/dist ./client/dist
-
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nodejs -u 1001
-USER nodejs
+# Remove dev dependencies after build
+RUN npm prune --production
 
 # Expose port
 EXPOSE 5000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:5000/api/auth/user || exit 1
+  CMD curl -f http://localhost:5000/health || exit 1
 
-# Start the production server directly (bypass npm start)
-CMD ["node", "dist/prod-server.js"]
+# Start the application
+CMD ["npm", "start"]
