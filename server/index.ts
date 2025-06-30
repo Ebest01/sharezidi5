@@ -1,10 +1,68 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { GeolocationService } from "./services/geolocationService";
+import { db } from "./db";
+import { visitors, type InsertVisitor } from "@shared/schema";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// IMMEDIATE GEOLOCATION TRACKING - First thing that happens when visitor hits server
+// This is equivalent to placing PHP code above <html> tag
+app.use(async (req, res, next) => {
+  // Skip tracking for API calls, static assets, and WebSocket upgrades
+  if (req.path.startsWith('/api/') || 
+      req.path.includes('.') || 
+      req.path === '/ws' ||
+      req.headers.upgrade === 'websocket') {
+    return next();
+  }
+
+  // Capture visitor data immediately
+  setImmediate(async () => {
+    try {
+      const ip = GeolocationService.extractIPAddress(req);
+      const userAgent = req.headers['user-agent'] || '';
+      const referrer = req.headers.referer || '';
+      
+      console.log(`[Visitor] Immediate capture: ${ip} requesting ${req.path}`);
+
+      // Get geolocation data (this happens in background)
+      const locationData = await GeolocationService.getLocationData(ip);
+
+      if (locationData) {
+        const visitorData: InsertVisitor = {
+          sessionId: GeolocationService.generateSessionId(),
+          ipAddress: ip,
+          userAgent,
+          country: locationData.country || '',
+          countryCode: locationData.country_code || '',
+          region: locationData.region || '',
+          city: locationData.city || '',
+          timezone: locationData.timezone || '',
+          latitude: locationData.latitude || '',
+          longitude: locationData.longitude || '',
+          isp: locationData.isp || '',
+          referrer
+        };
+
+        // Save to database (fire and forget - won't block page loading)
+        db.insert(visitors).values(visitorData).catch(error => {
+          console.warn('[Geolocation] Failed to save visitor data:', error);
+        });
+
+        console.log(`[Visitor] Captured: ${ip} from ${locationData.city}, ${locationData.country}`);
+      }
+    } catch (error) {
+      console.warn('[Geolocation] Immediate tracking failed:', error);
+    }
+  });
+
+  // Continue with page rendering immediately (don't wait for geolocation)
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
