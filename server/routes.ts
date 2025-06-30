@@ -14,51 +14,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize file transfer service
   const fileTransferService = new FileTransferService();
 
-  // Visitor tracking middleware
-  app.use(async (req, res, next) => {
-    // Skip tracking for API calls and static files
-    if (req.path.startsWith('/api/') || req.path.includes('.')) {
-      return next();
-    }
 
-    try {
-      const ip = GeolocationService.extractIPAddress(req);
-      const sessionId = req.session?.id || GeolocationService.generateSessionId();
-      const userAgent = req.headers['user-agent'] || '';
-      const referrer = req.headers.referer || '';
-
-      // Get geolocation data
-      const locationData = await GeolocationService.getLocationData(ip);
-
-      if (locationData) {
-        const visitorData: InsertVisitor = {
-          sessionId,
-          ipAddress: ip,
-          userAgent,
-          country: locationData.country || '',
-          countryCode: locationData.country_code || '',
-          region: locationData.region || '',
-          city: locationData.city || '',
-          timezone: locationData.timezone || '',
-          latitude: locationData.latitude || '',
-          longitude: locationData.longitude || '',
-          isp: locationData.isp || '',
-          referrer
-        };
-
-        // Insert visitor data (fire and forget)
-        db.insert(visitors).values(visitorData).catch(error => {
-          console.warn('[Geolocation] Failed to save visitor data:', error);
-        });
-
-        console.log(`[Visitor] ${ip} from ${locationData.city}, ${locationData.country}`);
-      }
-    } catch (error) {
-      console.warn('[Geolocation] Visitor tracking failed:', error);
-    }
-
-    next();
-  });
 
   // API endpoint to generate QR code
   app.post('/api/generate-qr', async (req, res) => {
@@ -115,10 +71,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API endpoint for visitor analytics
   app.get('/api/analytics/visitors', async (req, res) => {
     try {
-      // Get visitor stats
-      const [totalVisitors] = await db.execute(`SELECT COUNT(*) as count FROM visitors`);
-      const [uniqueIPs] = await db.execute(`SELECT COUNT(DISTINCT ip_address) as count FROM visitors`);
-      const [topCountries] = await db.execute(`
+      // Get visitor stats using proper Drizzle queries
+      const totalVisitorsResult = await db.execute(`SELECT COUNT(*) as count FROM visitors`);
+      const uniqueIPsResult = await db.execute(`SELECT COUNT(DISTINCT ip_address) as count FROM visitors`);
+      const topCountriesResult = await db.execute(`
         SELECT country, country_code, COUNT(*) as visits 
         FROM visitors 
         WHERE country IS NOT NULL AND country != '' 
@@ -126,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ORDER BY visits DESC 
         LIMIT 10
       `);
-      const [topCities] = await db.execute(`
+      const topCitiesResult = await db.execute(`
         SELECT city, country, COUNT(*) as visits 
         FROM visitors 
         WHERE city IS NOT NULL AND city != '' 
@@ -134,7 +90,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ORDER BY visits DESC 
         LIMIT 10
       `);
-      const [recentVisitors] = await db.execute(`
+      const recentVisitorsResult = await db.execute(`
         SELECT ip_address, country, city, user_agent, visited_at 
         FROM visitors 
         ORDER BY visited_at DESC 
@@ -143,12 +99,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         summary: {
-          totalVisitors: totalVisitors.count,
-          uniqueIPs: uniqueIPs.count
+          totalVisitors: totalVisitorsResult.rows[0]?.count || 0,
+          uniqueIPs: uniqueIPsResult.rows[0]?.count || 0
         },
-        topCountries,
-        topCities,
-        recentVisitors
+        topCountries: topCountriesResult.rows || [],
+        topCities: topCitiesResult.rows || [],
+        recentVisitors: recentVisitorsResult.rows || []
       });
     } catch (error) {
       console.error('Analytics fetch failed:', error);
