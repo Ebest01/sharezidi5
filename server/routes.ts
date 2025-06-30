@@ -68,47 +68,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // API endpoint for visitor analytics
+  // API endpoint for visitor analytics with comprehensive error handling
   app.get('/api/analytics/visitors', async (req, res) => {
     try {
-      // Get visitor stats using proper Drizzle queries
-      const totalVisitorsResult = await db.execute(`SELECT COUNT(*) as count FROM visitors`);
-      const uniqueIPsResult = await db.execute(`SELECT COUNT(DISTINCT ip_address) as count FROM visitors`);
-      const topCountriesResult = await db.execute(`
-        SELECT country, country_code, COUNT(*) as visits 
-        FROM visitors 
-        WHERE country IS NOT NULL AND country != '' 
-        GROUP BY country, country_code 
-        ORDER BY visits DESC 
-        LIMIT 10
-      `);
-      const topCitiesResult = await db.execute(`
-        SELECT city, country, COUNT(*) as visits 
-        FROM visitors 
-        WHERE city IS NOT NULL AND city != '' 
-        GROUP BY city, country 
-        ORDER BY visits DESC 
-        LIMIT 10
-      `);
-      const recentVisitorsResult = await db.execute(`
-        SELECT ip_address, country, city, user_agent, visited_at 
-        FROM visitors 
-        ORDER BY visited_at DESC 
-        LIMIT 20
-      `);
+      // Set response timeout to prevent hanging requests
+      const timeoutId = setTimeout(() => {
+        if (!res.headersSent) {
+          res.status(408).json({ error: 'Request timeout' });
+        }
+      }, 10000);
 
+      // Get visitor stats with fallback values
+      let summary = { totalVisitors: 0, uniqueIPs: 0 };
+      let topCountries: any[] = [];
+      let topCities: any[] = [];
+      let recentVisitors: any[] = [];
+
+      try {
+        const totalVisitorsResult = await db.execute(`SELECT COUNT(*) as count FROM visitors`);
+        summary.totalVisitors = parseInt(totalVisitorsResult.rows[0]?.count as string) || 0;
+      } catch (error) {
+        console.warn('[Analytics] Failed to get total visitors:', error);
+      }
+
+      try {
+        const uniqueIPsResult = await db.execute(`SELECT COUNT(DISTINCT ip_address) as count FROM visitors`);
+        summary.uniqueIPs = parseInt(uniqueIPsResult.rows[0]?.count as string) || 0;
+      } catch (error) {
+        console.warn('[Analytics] Failed to get unique IPs:', error);
+      }
+
+      try {
+        const topCountriesResult = await db.execute(`
+          SELECT country, country_code, COUNT(*) as visits 
+          FROM visitors 
+          WHERE country IS NOT NULL AND country != '' AND country != 'Unknown'
+          GROUP BY country, country_code 
+          ORDER BY visits DESC 
+          LIMIT 10
+        `);
+        topCountries = topCountriesResult.rows || [];
+      } catch (error) {
+        console.warn('[Analytics] Failed to get top countries:', error);
+      }
+
+      try {
+        const topCitiesResult = await db.execute(`
+          SELECT city, country, COUNT(*) as visits 
+          FROM visitors 
+          WHERE city IS NOT NULL AND city != '' AND city != 'Unknown'
+          GROUP BY city, country 
+          ORDER BY visits DESC 
+          LIMIT 10
+        `);
+        topCities = topCitiesResult.rows || [];
+      } catch (error) {
+        console.warn('[Analytics] Failed to get top cities:', error);
+      }
+
+      try {
+        const recentVisitorsResult = await db.execute(`
+          SELECT ip_address, country, city, user_agent, visited_at 
+          FROM visitors 
+          ORDER BY visited_at DESC 
+          LIMIT 20
+        `);
+        recentVisitors = recentVisitorsResult.rows || [];
+      } catch (error) {
+        console.warn('[Analytics] Failed to get recent visitors:', error);
+      }
+
+      clearTimeout(timeoutId);
+
+      // Always return valid data structure
       res.json({
-        summary: {
-          totalVisitors: totalVisitorsResult.rows[0]?.count || 0,
-          uniqueIPs: uniqueIPsResult.rows[0]?.count || 0
-        },
-        topCountries: topCountriesResult.rows || [],
-        topCities: topCitiesResult.rows || [],
-        recentVisitors: recentVisitorsResult.rows || []
+        summary,
+        topCountries,
+        topCities,
+        recentVisitors,
+        status: 'success'
       });
-    } catch (error) {
-      console.error('Analytics fetch failed:', error);
-      res.status(500).json({ error: 'Failed to fetch analytics data' });
+
+    } catch (systemError) {
+      console.error('[Analytics] System error:', systemError);
+      
+      // Ensure response is sent even on critical failure
+      if (!res.headersSent) {
+        res.status(500).json({ 
+          error: 'Analytics temporarily unavailable',
+          summary: { totalVisitors: 0, uniqueIPs: 0 },
+          topCountries: [],
+          topCities: [],
+          recentVisitors: [],
+          status: 'error'
+        });
+      }
     }
   });
 

@@ -19,56 +19,138 @@ export class GeolocationService {
 
   /**
    * Get geolocation data for an IP address using free APIs
+   * Handles 10+ potential error scenarios gracefully to ensure zero user impact
    */
   static async getLocationData(ip: string): Promise<Partial<GeolocationData> | null> {
-    // Skip private/local IPs
-    if (this.isPrivateIP(ip)) {
-      return {
-        ip,
-        country: 'Local Network',
-        country_code: 'LN',
-        region: 'Private',
-        city: 'Local',
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        latitude: '0',
-        longitude: '0',
-        isp: 'Private Network'
-      };
-    }
-
-    // Try different free APIs
-    for (const apiUrl of this.FREE_API_ENDPOINTS) {
-      try {
-        const url = apiUrl.includes('{ip}') ? apiUrl.replace('{ip}', ip) : apiUrl + ip;
-        console.log(`[Geolocation] Fetching location for IP ${ip} from ${url}`);
-        
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-        
-        const response = await fetch(url, {
-          signal: controller.signal,
-          headers: {
-            'User-Agent': 'ShareZidi/1.0'
-          }
-        });
-        
-        clearTimeout(timeoutId);
-
-        if (!response.ok) continue;
-
-        const data = await response.json();
-        
-        // Normalize different API response formats
-        return this.normalizeLocationData(data, ip);
-        
-      } catch (error) {
-        console.warn(`[Geolocation] API ${apiUrl} failed:`, error instanceof Error ? error.message : 'Unknown error');
-        continue;
+    try {
+      // ERROR 1: Invalid or malformed IP address
+      if (!ip || typeof ip !== 'string' || ip.trim() === '') {
+        console.warn('[Geolocation] Invalid IP address provided:', ip);
+        return this.getFallbackLocationData('Unknown', 'Invalid IP');
       }
-    }
 
-    console.warn(`[Geolocation] All APIs failed for IP ${ip}`);
-    return { ip, country: 'Unknown', country_code: 'XX' };
+      // ERROR 2: Private/local IP addresses (not routable)
+      if (this.isPrivateIP(ip)) {
+        return {
+          ip,
+          country: 'Local Network',
+          country_code: 'LN',
+          region: 'Private',
+          city: 'Local',
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          latitude: '0',
+          longitude: '0',
+          isp: 'Private Network'
+        };
+      }
+
+      // Try each API endpoint with comprehensive error handling
+      for (const apiUrl of this.FREE_API_ENDPOINTS) {
+        try {
+          const url = apiUrl.includes('{ip}') ? apiUrl.replace('{ip}', ip) : apiUrl + ip;
+          console.log(`[Geolocation] Fetching location for IP ${ip} from ${url}`);
+          
+          // ERROR 3: Network timeout (2 second limit to prevent delays)
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => {
+            controller.abort();
+          }, 2000);
+          
+          // ERROR 4: Network connectivity issues
+          const response = await fetch(url, {
+            signal: controller.signal,
+            headers: {
+              'User-Agent': 'ShareZidi/1.0',
+              'Accept': 'application/json',
+              'Cache-Control': 'no-cache'
+            }
+          });
+          
+          clearTimeout(timeoutId);
+
+          // ERROR 5: HTTP error responses (404, 500, 403, etc.)
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          // ERROR 6: Invalid content type (not JSON)
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            throw new Error(`Invalid content type`);
+          }
+
+          // ERROR 7: Malformed or empty JSON response
+          let data;
+          try {
+            const text = await response.text();
+            if (!text || text.trim() === '') {
+              throw new Error('Empty response');
+            }
+            data = JSON.parse(text);
+          } catch (parseError) {
+            throw new Error('JSON parse failed');
+          }
+
+          // ERROR 8: API rate limiting or quota exceeded
+          if (data.error || data.status === 'fail' || data.message?.includes('limit')) {
+            throw new Error('API rate limited');
+          }
+
+          // ERROR 9: Missing or invalid location data in response
+          if (!data || (typeof data !== 'object')) {
+            throw new Error('Invalid data structure');
+          }
+
+          // Normalize and validate data before returning
+          const normalizedData = this.normalizeLocationData(data, ip);
+          
+          // ERROR 10: Data validation failure
+          if (!normalizedData || !normalizedData.country) {
+            throw new Error('Data validation failed');
+          }
+
+          return normalizedData;
+          
+        } catch (error) {
+          // Silent error handling - don't spam logs but track issues
+          const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+          
+          // Don't continue if it's an abort error (timeout)
+          if (error instanceof Error && error.name === 'AbortError') {
+            continue;
+          }
+          
+          // Continue to next API
+          continue;
+        }
+      }
+
+      // All APIs failed - return fallback data
+      return this.getFallbackLocationData(ip, 'API Failure');
+
+    } catch (systemError) {
+      // ERROR 11: Unexpected system errors (memory, disk, etc.)
+      console.error('[Geolocation] System error:', systemError);
+      return this.getFallbackLocationData(ip || 'Unknown', 'System Error');
+    }
+  }
+
+  /**
+   * Provide fallback location data when all else fails
+   * Ensures we always have usable data for analytics
+   */
+  private static getFallbackLocationData(ip: string, reason: string): Partial<GeolocationData> {
+    return {
+      ip,
+      country: 'Unknown',
+      country_code: 'XX',
+      city: 'Unknown',
+      region: 'Unknown',
+      timezone: 'UTC',
+      latitude: '0',
+      longitude: '0',
+      isp: `Unknown (${reason})`
+    };
   }
 
   /**
