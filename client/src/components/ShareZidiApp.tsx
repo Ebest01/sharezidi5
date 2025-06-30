@@ -144,9 +144,9 @@ export const ShareZidiApp: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <img 
-                src="https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.0.3&auto=format&fit=crop&w=120&h=40" 
+                src="/sharezidi-logo.gif" 
                 alt="ShareZidi Logo" 
-                className="h-10"
+                className="h-12 w-auto"
               />
               <div className="text-lg font-semibold text-gray-800">ShareZidi</div>
             </div>
