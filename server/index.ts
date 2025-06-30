@@ -11,6 +11,13 @@ app.use(express.urlencoded({ extended: false }));
 
 // IMMEDIATE GEOLOCATION TRACKING - First thing that happens when visitor hits server
 // This is equivalent to placing PHP code above <html> tag
+// Includes circuit breaker pattern to prevent system overload
+
+let geoFailureCount = 0;
+let lastFailureTime = 0;
+const FAILURE_THRESHOLD = 5;
+const CIRCUIT_RESET_TIME = 30000; // 30 seconds
+
 app.use(async (req, res, next) => {
   // Skip tracking for API calls, static assets, and WebSocket upgrades
   if (req.path.startsWith('/api/') || 
@@ -20,47 +27,75 @@ app.use(async (req, res, next) => {
     return next();
   }
 
-  // Capture visitor data immediately
+  // Circuit breaker: Skip geolocation if too many recent failures
+  const now = Date.now();
+  if (geoFailureCount >= FAILURE_THRESHOLD && (now - lastFailureTime) < CIRCUIT_RESET_TIME) {
+    // Continue without geolocation tracking to ensure page loads normally
+    return next();
+  }
+
+  // Reset circuit breaker if enough time has passed
+  if ((now - lastFailureTime) >= CIRCUIT_RESET_TIME) {
+    geoFailureCount = 0;
+  }
+
+  // Capture visitor data immediately (non-blocking)
   setImmediate(async () => {
     try {
       const ip = GeolocationService.extractIPAddress(req);
       const userAgent = req.headers['user-agent'] || '';
       const referrer = req.headers.referer || '';
       
-      console.log(`[Visitor] Immediate capture: ${ip} requesting ${req.path}`);
+      // Always log basic visitor info even if geolocation fails
+      console.log(`[Visitor] ${ip} requesting ${req.path}`);
 
-      // Get geolocation data (this happens in background)
-      const locationData = await GeolocationService.getLocationData(ip);
+      // Get geolocation data with timeout protection
+      const locationData = await Promise.race([
+        GeolocationService.getLocationData(ip),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Overall timeout')), 5000)
+        )
+      ]) as any;
 
       if (locationData) {
         const visitorData: InsertVisitor = {
           sessionId: GeolocationService.generateSessionId(),
           ipAddress: ip,
           userAgent,
-          country: locationData.country || '',
-          countryCode: locationData.country_code || '',
-          region: locationData.region || '',
-          city: locationData.city || '',
-          timezone: locationData.timezone || '',
-          latitude: locationData.latitude || '',
-          longitude: locationData.longitude || '',
-          isp: locationData.isp || '',
+          country: locationData.country || 'Unknown',
+          countryCode: locationData.country_code || 'XX',
+          region: locationData.region || 'Unknown',
+          city: locationData.city || 'Unknown',
+          timezone: locationData.timezone || 'UTC',
+          latitude: locationData.latitude || '0',
+          longitude: locationData.longitude || '0',
+          isp: locationData.isp || 'Unknown',
           referrer
         };
 
-        // Save to database (fire and forget - won't block page loading)
-        db.insert(visitors).values(visitorData).catch(error => {
-          console.warn('[Geolocation] Failed to save visitor data:', error);
-        });
-
-        console.log(`[Visitor] Captured: ${ip} from ${locationData.city}, ${locationData.country}`);
+        // Save to database with additional error protection
+        try {
+          await db.insert(visitors).values(visitorData);
+          // Reset failure count on success
+          geoFailureCount = 0;
+        } catch (dbError) {
+          throw new Error(`Database save failed: ${dbError}`);
+        }
       }
     } catch (error) {
-      console.warn('[Geolocation] Immediate tracking failed:', error);
+      // Track failures for circuit breaker
+      geoFailureCount++;
+      lastFailureTime = Date.now();
+      
+      // Silent failure - don't impact user experience
+      // Only log critical errors
+      if (geoFailureCount === 1) {
+        console.warn('[Geolocation] Service degraded, switching to minimal tracking');
+      }
     }
   });
 
-  // Continue with page rendering immediately (don't wait for geolocation)
+  // ALWAYS continue with page rendering immediately
   next();
 });
 
