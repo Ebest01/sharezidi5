@@ -148,7 +148,6 @@ export const ShareZidiApp: React.FC = () => {
                 alt="ShareZidi Logo" 
                 className="h-12 w-auto"
               />
-              <div className="text-lg font-semibold text-gray-800">ShareZidi</div>
             </div>
             
             {/* Connection Status */}
@@ -275,6 +274,11 @@ export const ShareZidiApp: React.FC = () => {
               <i className="fas fa-cog mr-1"></i>
               Advanced Settings
             </button>
+          </div>
+          
+          {/* Copyright Notice */}
+          <div className="text-center text-xs text-gray-500 mt-3 pt-3 border-t border-gray-100">
+            © {new Date().getFullYear()} ShareZidi. All rights reserved.
           </div>
         </div>
       </footer>
