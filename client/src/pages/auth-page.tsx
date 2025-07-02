@@ -19,7 +19,7 @@ const registerSchema = z.object({
 });
 
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  email: z.string().min(1, "Email or username is required"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -417,6 +417,15 @@ export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
               </TabsContent>
 
               <TabsContent value="login" className="space-y-4">
+                <Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
+                  <Lock className="h-4 w-4" />
+                  <AlertDescription className="text-sm">
+                    Use your email and the password sent to your inbox. 
+                    <span className="text-xs text-muted-foreground block mt-1">
+                      Dev admin: AxDMIxN / AZQ00001xx
+                    </span>
+                  </AlertDescription>
+                </Alert>
                 <Form {...loginForm}>
                   <form onSubmit={loginForm.handleSubmit((data) => loginMutation.mutate(data))} className="space-y-4">
                     <FormField
@@ -424,11 +433,11 @@ export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Email</FormLabel>
+                          <FormLabel>Email or Username</FormLabel>
                           <FormControl>
                             <Input
-                              type="email"
-                              placeholder="your@email.com"
+                              type="text"
+                              placeholder="your@email.com or username"
                               {...field}
                             />
                           </FormControl>

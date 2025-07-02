@@ -102,6 +102,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 2, 2025 - Admin Login Bypass System Added ✅
+- Added development admin credentials: username "AxDMIxN", password "AZQ00001xx"
+- Admin login bypasses email verification system for development purposes
+- Auto-creates admin user with Pro privileges (unlimited transfers) on first login
+- Login form updated to accept both email and username inputs
+- Added visual hint in login form showing admin credentials for developers
+- Admin user gets created with special email "admin@sharezidi.dev" for database consistency
+- Perfect for development and testing without requiring email setup
+
 ### July 2, 2025 - User Registration Geolocation Capture Fixed ✅
 - Fixed critical bug where user registration wasn't capturing geolocation data in the users table
 - Resolved authentication routes not being registered (API endpoints were returning HTML instead of JSON)
