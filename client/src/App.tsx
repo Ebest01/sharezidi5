@@ -11,9 +11,12 @@ function App() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/auth/user', {
-          credentials: 'include'
+        const response = await fetch("/api/auth/user", {
+          credentials: "include",
         });
+
+        console.log("Auth check response:", response);
+
         if (response.ok) {
           const userData = await response.json();
           // Only set authenticated if we actually get user data
@@ -23,7 +26,7 @@ function App() {
         }
       } catch (error) {
         // User not authenticated, show landing page
-        console.log('Not authenticated, showing landing page');
+        console.log("Not authenticated, showing landing page");
       } finally {
         setIsLoading(false);
       }
