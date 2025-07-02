@@ -16,6 +16,7 @@ function App() {
         });
 
         console.log("Auth check response:", response);
+        alert("RESPONSE: " + response.status + " " + response.statusText);
 
         if (response.ok) {
           const userData = await response.json();
