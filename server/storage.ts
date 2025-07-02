@@ -11,6 +11,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUserTransferCount(id: number): Promise<User | undefined>;
   upgradeUserToPro(id: number): Promise<User | undefined>;
+  updateUserPassword(id: number, hashedPassword: string): Promise<User | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -54,6 +55,18 @@ export class DatabaseStorage implements IStorage {
       .set({ 
         isPro: true,
         subscriptionDate: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+
+  async updateUserPassword(id: number, hashedPassword: string): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        password: hashedPassword,
         updatedAt: new Date()
       })
       .where(eq(users.id, id))

@@ -1,0 +1,816 @@
+// ================================================================
+// EMAIL SERVICE MANAGER - PRODUCTION READY
+// Handles multiple email providers with automatic failover
+// ================================================================
+
+require('dotenv').config();
+const sqlite3 = require('sqlite3').verbose();
+
+// ================================================================
+// EMAIL SERVICE ADAPTERS
+// ================================================================
+
+class MailerSendAdapter {
+  constructor(apiToken) {
+    this.apiToken = apiToken;
+    this.baseURL = 'https://api.mailersend.com/v1';
+    this.name = 'mailersend';
+  }
+
+  async send(to, subject, text, html = null, fromName = 'ShareZidi') {
+    try {
+      const response = await fetch(`${this.baseURL}/email`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.apiToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from: {
+            email: process.env.FROM_EMAIL || 'noreply@sharezidi.com',
+            name: fromName
+          },
+          to: [{ email: to }],
+          subject: subject,
+          text: text,
+          html: html || `<p>${text.replace(/\n/g, '<br>')}</p>`
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`MailerSend: ${error.message || response.statusText}`);
+      }
+
+      const data = await response.json();
+      return {
+        success: true,
+        messageId: data.message_id,
+        service: this.name
+      };
+    } catch (error) {
+      throw new Error(`MailerSend Error: ${error.message}`);
+    }
+  }
+}
+
+class BrevoAdapter {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+    this.baseURL = 'https://api.brevo.com/v3';
+    this.name = 'brevo';
+  }
+
+  async send(to, subject, text, html = null, fromName = 'ShareZidi') {
+    try {
+      const response = await fetch(`${this.baseURL}/smtp/email`, {
+        method: 'POST',
+        headers: {
+          'api-key': this.apiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: {
+            email: process.env.FROM_EMAIL || 'noreply@sharezidi.com',
+            name: fromName
+          },
+          to: [{ email: to }],
+          subject: subject,
+          textContent: text,
+          htmlContent: html || `<p>${text.replace(/\n/g, '<br>')}</p>`
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`Brevo: ${error.message || response.statusText}`);
+      }
+
+      const data = await response.json();
+      return {
+        success: true,
+        messageId: data.messageId,
+        service: this.name
+      };
+    } catch (error) {
+      throw new Error(`Brevo Error: ${error.message}`);
+    }
+  }
+}
+
+class SMTP2GoAdapter {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+    this.baseURL = 'https://api.smtp2go.com/v3';
+    this.name = 'smtp2go';
+  }
+
+  async send(to, subject, text, html = null, fromName = 'ShareZidi') {
+    try {
+      const response = await fetch(`${this.baseURL}/email/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          api_key: this.apiKey,
+          sender: `${fromName} <${process.env.FROM_EMAIL || 'noreply@sharezidi.com'}>`,
+          to: [to],
+          subject: subject,
+          text_body: text,
+          html_body: html || `<p>${text.replace(/\n/g, '<br>')}</p>`
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`SMTP2Go: ${error.error || response.statusText}`);
+      }
+
+      const data = await response.json();
+      return {
+        success: data.data.succeeded > 0,
+        messageId: data.data.email_id,
+        service: this.name
+      };
+    } catch (error) {
+      throw new Error(`SMTP2Go Error: ${error.message}`);
+    }
+  }
+}
+
+class ElasticEmailAdapter {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+    this.baseURL = 'https://api.elasticemail.com/v2';
+    this.name = 'elasticemail';
+  }
+
+  async send(to, subject, text, html = null, fromName = 'ShareZidi') {
+    try {
+      const formData = new URLSearchParams();
+      formData.append('apikey', this.apiKey);
+      formData.append('from', process.env.FROM_EMAIL || 'noreply@sharezidi.com');
+      formData.append('fromName', fromName);
+      formData.append('to', to);
+      formData.append('subject', subject);
+      formData.append('bodyText', text);
+      formData.append('bodyHtml', html || `<p>${text.replace(/\n/g, '<br>')}</p>`);
+
+      const response = await fetch(`${this.baseURL}/email/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`ElasticEmail: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(`ElasticEmail: ${data.error}`);
+      }
+
+      return {
+        success: true,
+        messageId: data.data.messageid,
+        service: this.name
+      };
+    } catch (error) {
+      throw new Error(`ElasticEmail Error: ${error.message}`);
+    }
+  }
+}
+
+// Gmail Backup Adapter (Emergency use only)
+class GmailAdapter {
+  constructor() {
+    this.name = 'gmail';
+  }
+
+  async send(to, subject, text, html = null, fromName = 'ShareZidi') {
+    const nodemailer = require('nodemailer');
+    
+    try {
+      const transporter = nodemailer.createTransporter({
+        service: 'gmail',
+        auth: {
+          user: process.env.GMAIL_USER,
+          pass: process.env.GMAIL_APP_PASSWORD // App password, not regular password
+        }
+      });
+
+      const result = await transporter.sendMail({
+        from: `${fromName} <${process.env.GMAIL_USER}>`,
+        to: to,
+        subject: subject,
+        text: text,
+        html: html || `<p>${text.replace(/\n/g, '<br>')}</p>`
+      });
+
+      return {
+        success: true,
+        messageId: result.messageId,
+        service: this.name
+      };
+    } catch (error) {
+      throw new Error(`Gmail Error: ${error.message}`);
+    }
+  }
+}
+
+// ================================================================
+// QUOTA MANAGEMENT SYSTEM
+// ================================================================
+
+class QuotaManager {
+  constructor() {
+    this.db = new sqlite3.Database('email_quotas.db');
+    this.initDatabase();
+    
+    // Daily limits for free tiers
+    this.dailyLimits = {
+      mailersend: 100,    // 3000/month ≈ 100/day
+      brevo: 300,         // 9000/month ≈ 300/day  
+      smtp2go: 33,       // 1000/month ≈ 33/day
+      elasticemail: 100, // 3000/month ≈ 100/day
+      gmail: 450          // 500/day with safety buffer
+    };
+  }
+
+  initDatabase() {
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS email_usage (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        service TEXT NOT NULL,
+        date TEXT NOT NULL,
+        count INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(service, date)
+      )
+    `);
+
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS email_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        service TEXT NOT NULL,
+        recipient TEXT NOT NULL,
+        subject TEXT NOT NULL,
+        email_type TEXT NOT NULL,
+        status TEXT NOT NULL,
+        message_id TEXT,
+        error_message TEXT,
+        sent_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+  }
+
+  async getTodayUsage(service) {
+    const today = new Date().toISOString().split('T')[0];
+    
+    return new Promise((resolve, reject) => {
+      this.db.get(
+        'SELECT count FROM email_usage WHERE service = ? AND date = ?',
+        [service, today],
+        (err, row) => {
+          if (err) reject(err);
+          resolve(row ? row.count : 0);
+        }
+      );
+    });
+  }
+
+  async incrementUsage(service) {
+    const today = new Date().toISOString().split('T')[0];
+    
+    return new Promise((resolve, reject) => {
+      this.db.run(
+        `INSERT OR REPLACE INTO email_usage (service, date, count) 
+         VALUES (?, ?, COALESCE((SELECT count FROM email_usage WHERE service = ? AND date = ?), 0) + 1)`,
+        [service, today, service, today],
+        function(err) {
+          if (err) reject(err);
+          resolve(this.changes);
+        }
+      );
+    });
+  }
+
+  async isQuotaAvailable(service) {
+    const usage = await this.getTodayUsage(service);
+    const limit = this.dailyLimits[service] || 0;
+    return usage < limit;
+  }
+
+  async getRemainingQuota(service) {
+    const usage = await this.getTodayUsage(service);
+    const limit = this.dailyLimits[service] || 0;
+    return Math.max(0, limit - usage);
+  }
+
+  async logEmail(service, recipient, subject, emailType, status, messageId = null, errorMessage = null) {
+    return new Promise((resolve, reject) => {
+      this.db.run(
+        `INSERT INTO email_log (service, recipient, subject, email_type, status, message_id, error_message)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [service, recipient, subject, emailType, status, messageId, errorMessage],
+        function(err) {
+          if (err) reject(err);
+          resolve(this.lastID);
+        }
+      );
+    });
+  }
+
+  async getUsageStats() {
+    const today = new Date().toISOString().split('T')[0];
+    
+    return new Promise((resolve, reject) => {
+      this.db.all(
+        'SELECT service, count FROM email_usage WHERE date = ?',
+        [today],
+        (err, rows) => {
+          if (err) reject(err);
+          
+          const stats = {};
+          Object.keys(this.dailyLimits).forEach(service => {
+            const usage = rows.find(r => r.service === service);
+            stats[service] = {
+              used: usage ? usage.count : 0,
+              limit: this.dailyLimits[service],
+              remaining: this.dailyLimits[service] - (usage ? usage.count : 0)
+            };
+          });
+          
+          resolve(stats);
+        }
+      );
+    });
+  }
+}
+
+// ================================================================
+// MAIN EMAIL SERVICE MANAGER
+// ================================================================
+
+class EmailServiceManager {
+  constructor() {
+    this.quotaManager = new QuotaManager();
+    
+    // Initialize service adapters
+    this.services = {};
+    
+    if (process.env.MAILERSEND_API_TOKEN) {
+      this.services.mailersend = new MailerSendAdapter(process.env.MAILERSEND_API_TOKEN);
+    }
+    
+    if (process.env.BREVO_API_KEY) {
+      this.services.brevo = new BrevoAdapter(process.env.BREVO_API_KEY);
+    }
+    
+    if (process.env.SMTP2GO_API_KEY) {
+      this.services.smtp2go = new SMTP2GoAdapter(process.env.SMTP2GO_API_KEY);
+    }
+    
+    if (process.env.ELASTICEMAIL_API_KEY) {
+      this.services.elasticemail = new ElasticEmailAdapter(process.env.ELASTICEMAIL_API_KEY);
+    }
+    
+    if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+      this.services.gmail = new GmailAdapter();
+    }
+
+    // Email routing configuration
+    this.emailRoutes = {
+      registration: ['mailersend', 'brevo', 'smtp2go'],
+      password_reset: ['mailersend', 'brevo', 'smtp2go'],
+      promotional: ['brevo', 'elasticemail', 'mailersend'],
+      notification: ['smtp2go', 'brevo', 'mailersend'],
+      support: ['mailersend', 'smtp2go', 'brevo'],
+      marketing: ['elasticemail', 'brevo', 'mailersend'],
+      system: ['mailersend', 'brevo', 'gmail'] // Gmail as last resort
+    };
+
+    console.log(`✅ Email Service Manager initialized with services: ${Object.keys(this.services).join(', ')}`);
+  }
+
+  async sendEmail(emailType, recipient, subject, message, options = {}) {
+    const { fromName = 'ShareZidi', html = null, priority = 'normal' } = options;
+    
+    // Get preferred services for this email type
+    const preferredServices = this.emailRoutes[emailType] || ['mailersend', 'brevo'];
+    
+    let lastError = null;
+    
+    // Try each service in order until one succeeds
+    for (const serviceName of preferredServices) {
+      if (!this.services[serviceName]) {
+        console.log(`⚠️ Service ${serviceName} not configured, skipping...`);
+        continue;
+      }
+
+      try {
+        // Check if service has quota available (skip for emergency emails)
+        if (priority !== 'emergency') {
+          const hasQuota = await this.quotaManager.isQuotaAvailable(serviceName);
+          if (!hasQuota) {
+            console.log(`📊 ${serviceName} quota exceeded, trying next service...`);
+            continue;
+          }
+        }
+
+        // Attempt to send email
+        console.log(`📧 Attempting to send via ${serviceName}...`);
+        const result = await this.services[serviceName].send(recipient, subject, message, html, fromName);
+        
+        // Log successful send
+        await this.quotaManager.incrementUsage(serviceName);
+        await this.quotaManager.logEmail(serviceName, recipient, subject, emailType, 'success', result.messageId);
+        
+        console.log(`✅ Email sent successfully via ${serviceName} (ID: ${result.messageId})`);
+        
+        return {
+          success: true,
+          service: serviceName,
+          messageId: result.messageId,
+          message: `Email sent successfully via ${serviceName}`
+        };
+        
+      } catch (error) {
+        lastError = error;
+        console.log(`❌ ${serviceName} failed: ${error.message}`);
+        
+        // Log failed attempt
+        await this.quotaManager.logEmail(serviceName, recipient, subject, emailType, 'failed', null, error.message);
+        
+        // Continue to next service
+        continue;
+      }
+    }
+
+    // If we get here, all services failed
+    console.error(`💥 All email services failed for ${emailType} email to ${recipient}`);
+    console.error(`Last error: ${lastError?.message}`);
+    
+    return {
+      success: false,
+      error: `All email services failed. Last error: ${lastError?.message}`,
+      service: null
+    };
+  }
+
+  async sendRegistrationEmail(email, username, password) {
+    const subject = 'Welcome to ShareZidi - Your Account Details';
+    const message = `Welcome to ShareZidi!
+
+Your account has been created successfully.
+
+Login Details:
+• Email: ${email}
+• Username: ${username}
+• Temporary Password: ${password}
+
+Please log in and change your password for security.
+
+Visit: https://sharezidi.com/login
+
+Best regards,
+ShareZidi Team`;
+
+    const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #2c3e50;">Welcome to ShareZidi!</h2>
+      <p>Your account has been created successfully.</p>
+      
+      <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3 style="margin-top: 0; color: #495057;">Login Details:</h3>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Username:</strong> ${username}</p>
+        <p><strong>Temporary Password:</strong> <span style="background: #e9ecef; padding: 4px 8px; font-family: monospace; font-size: 16px;">${password}</span></p>
+      </div>
+      
+      <p>Please log in and change your password for security.</p>
+      
+      <a href="https://sharezidi.com/login" style="background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; margin: 20px 0;">
+        Login to ShareZidi
+      </a>
+      
+      <p style="color: #6c757d; font-size: 14px; margin-top: 30px;">
+        Best regards,<br>
+        ShareZidi Team
+      </p>
+    </div>`;
+
+    return await this.sendEmail('registration', email, subject, message, { html });
+  }
+
+  async sendPasswordResetEmail(email, password) {
+    const subject = 'ShareZidi - New Password';
+    const message = `Your ShareZidi password has been reset.
+
+New Login Details:
+• Email: ${email}
+• New Password: ${password}
+
+Please log in and change your password.
+
+Visit: https://sharezidi.com/login
+
+If you didn't request this, please contact support.
+
+ShareZidi Team`;
+
+    const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #2c3e50;">Password Reset - ShareZidi</h2>
+      <p>Your password has been reset as requested.</p>
+      
+      <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+        <h3 style="margin-top: 0; color: #856404;">New Login Details:</h3>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>New Password:</strong> <span style="background: #fff; padding: 4px 8px; font-family: monospace; font-size: 16px; border: 1px solid #ddd;">${password}</span></p>
+      </div>
+      
+      <p>Please log in and change your password immediately.</p>
+      
+      <a href="https://sharezidi.com/login" style="background: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; margin: 20px 0;">
+        Login Now
+      </a>
+      
+      <p style="color: #721c24; background: #f8d7da; padding: 10px; border-radius: 4px; font-size: 14px;">
+        <strong>Security Notice:</strong> If you didn't request this password reset, please contact our support team immediately.
+      </p>
+      
+      <p style="color: #6c757d; font-size: 14px; margin-top: 30px;">
+        ShareZidi Team
+      </p>
+    </div>`;
+
+    return await this.sendEmail('password_reset', email, subject, message, { html, priority: 'high' });
+  }
+
+  async sendPromoEmail(email, subject, message, html = null) {
+    return await this.sendEmail('promotional', email, subject, message, { html });
+  }
+
+  async sendNotificationEmail(email, subject, message, html = null) {
+    return await this.sendEmail('notification', email, subject, message, { html });
+  }
+
+  async sendSupportEmail(email, subject, message, html = null) {
+    return await this.sendEmail('support', email, subject, message, { html, priority: 'high' });
+  }
+
+  async getServiceStatus() {
+    const stats = await this.quotaManager.getUsageStats();
+    
+    const status = {
+      services: Object.keys(this.services).map(name => ({
+        name,
+        configured: true,
+        quota: stats[name] || { used: 0, limit: 0, remaining: 0 }
+      })),
+      totalEmails: Object.values(stats).reduce((sum, s) => sum + s.used, 0),
+      availableServices: Object.keys(this.services).length
+    };
+
+    return status;
+  }
+
+  async testService(serviceName, testEmail) {
+    if (!this.services[serviceName]) {
+      return { success: false, error: 'Service not configured' };
+    }
+
+    try {
+      const result = await this.services[serviceName].send(
+        testEmail,
+        'ShareZidi Email Service Test',
+        'This is a test email from ShareZidi email service manager.',
+        '<p>This is a test email from ShareZidi email service manager.</p><p>If you receive this, the service is working correctly!</p>'
+      );
+
+      return {
+        success: true,
+        service: serviceName,
+        messageId: result.messageId
+      };
+    } catch (error) {
+      return {
+        success: false,
+        service: serviceName,
+        error: error.message
+      };
+    }
+  }
+}
+
+// ================================================================
+// EXPRESS API ROUTES
+// ================================================================
+
+const express = require('express');
+const router = express.Router();
+
+// Initialize email manager
+const emailManager = new EmailServiceManager();
+
+// Send email endpoint
+router.post('/send-email', async (req, res) => {
+  const { type, recipient, subject, message, html, fromName } = req.body;
+
+  if (!type || !recipient || !subject || !message) {
+    return res.status(400).json({
+      error: 'Missing required fields: type, recipient, subject, message'
+    });
+  }
+
+  try {
+    const result = await emailManager.sendEmail(type, recipient, subject, message, { html, fromName });
+    
+    if (result.success) {
+      res.json(result);
+    } else {
+      res.status(500).json(result);
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Registration email endpoint (integrates with auth system)
+router.post('/send-registration', async (req, res) => {
+  const { email, username, password } = req.body;
+
+  if (!email || !username || !password) {
+    return res.status(400).json({
+      error: 'Missing required fields: email, username, password'
+    });
+  }
+
+  try {
+    const result = await emailManager.sendRegistrationEmail(email, username, password);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Password reset email endpoint
+router.post('/send-password-reset', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({
+      error: 'Missing required fields: email, password'
+    });
+  }
+
+  try {
+    const result = await emailManager.sendPasswordResetEmail(email, password);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Service status endpoint
+router.get('/status', async (req, res) => {
+  try {
+    const status = await emailManager.getServiceStatus();
+    res.json(status);
+  } catch (error) {
+    res.status(500).json({
+      error: error.message
+    });
+  }
+});
+
+// Test service endpoint
+router.post('/test/:service', async (req, res) => {
+  const { service } = req.params;
+  const { testEmail } = req.body;
+
+  if (!testEmail) {
+    return res.status(400).json({
+      error: 'Test email address required'
+    });
+  }
+
+  try {
+    const result = await emailManager.testService(service, testEmail);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+module.exports = { EmailServiceManager, router };
+
+// ================================================================
+// INTEGRATION WITH AUTH SYSTEM
+// ================================================================
+
+// Update your existing auth routes to use the email manager
+
+/* 
+// In your auth.js file, replace the email sending code with:
+
+const { EmailServiceManager } = require('./emailServiceManager');
+const emailManager = new EmailServiceManager();
+
+// Registration endpoint (updated)
+app.post('/api/register', async (req, res) => {
+  const { email } = req.body;
+  
+  // ... validation and database logic ...
+  
+  // Replace the old email sending with:
+  const emailResult = await emailManager.sendRegistrationEmail(email, username, tempPassword);
+  
+  if (emailResult.success) {
+    res.json({ 
+      success: true, 
+      message: 'Registration successful! Check your email for your password.',
+      username,
+      emailService: emailResult.service 
+    });
+  } else {
+    res.status(500).json({ 
+      error: 'Registration successful but email delivery failed',
+      details: emailResult.error 
+    });
+  }
+});
+
+// Password reset endpoint (updated)
+app.post('/api/resend-password', async (req, res) => {
+  const { email } = req.body;
+  
+  // ... database logic ...
+  
+  const emailResult = await emailManager.sendPasswordResetEmail(email, tempPassword);
+  
+  if (emailResult.success) {
+    res.json({ 
+      success: true, 
+      message: 'New password sent to your email',
+      emailService: emailResult.service 
+    });
+  } else {
+    res.status(500).json({ 
+      error: 'Failed to send email',
+      details: emailResult.error 
+    });
+  }
+});
+*/
+
+// ================================================================
+// ENVIRONMENT VARIABLES (.env)
+// ================================================================
+
+/*
+# Email Service API Keys (add as you get them)
+MAILERSEND_API_TOKEN=your_mailersend_token
+BREVO_API_KEY=your_brevo_api_key
+SMTP2GO_API_KEY=your_smtp2go_api_key
+ELASTICEMAIL_API_KEY=your_elasticemail_api_key
+
+# Gmail Backup (Emergency only)
+GMAIL_USER=backup@yourdomain.com
+GMAIL_APP_PASSWORD=your_16_char_app_password
+
+# Email Settings
+FROM_EMAIL=noreply@sharezidi.com
+*/
+
+// ================================================================
+// PACKAGE.JSON DEPENDENCIES
+// ================================================================
+
+/*
+{
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6",
+    "nodemailer": "^6.9.7",
+    "dotenv": "^16.0.3"
+  }
+}
+*/

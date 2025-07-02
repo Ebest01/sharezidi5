@@ -1,9 +1,10 @@
 import type { Express } from 'express';
 import { storage } from './storage';
-import { insertUserSchema, loginUserSchema } from '@shared/schema';
 import bcrypt from 'bcrypt';
 import session from 'express-session';
 import { GeolocationService } from './services/geolocationService';
+import { generatePassword, extractUsernameFromEmail, validateEmail } from './utils/passwordGenerator';
+import { sendEmail, createRegistrationEmail } from './utils/emailService';
 
 export function setupAuthRoutes(app: Express) {
   // Session middleware
@@ -17,44 +18,54 @@ export function setupAuthRoutes(app: Express) {
     }
   }));
 
-  // Register endpoint
+  // Email registration endpoint - Step 1: Register with email only
   app.post('/api/auth/register', async (req, res) => {
     try {
-      const { email, password } = insertUserSchema.parse(req.body);
+      const { email } = req.body;
       
+      if (!email || !validateEmail(email)) {
+        return res.status(400).json({ error: 'Valid email address is required' });
+      }
+
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(email);
       if (existingUser) {
-        return res.status(400).json({ error: 'User already exists' });
+        return res.status(400).json({ error: 'User already exists with this email' });
       }
 
-      // Validate password
-      if (!password) {
-        return res.status(400).json({ error: 'Password is required' });
-      }
-
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
+      // Generate username from email prefix
+      const username = extractUsernameFromEmail(email);
       
-      // Capture geolocation data for new user
-      const ip = GeolocationService.extractIPAddress(req);
+      // Generate password in format [A-Z{3}][0-9{5}][a-z{2}]
+      const generatedPassword = generatePassword();
+
+      // Get user's IP address and geolocation data
+      const clientIP = GeolocationService.extractIPAddress(req);
       let locationData;
       try {
-        locationData = await GeolocationService.getLocationData(ip);
+        locationData = await GeolocationService.getLocationData(clientIP);
       } catch (error) {
         console.warn('[Registration] Geolocation failed, proceeding without location data');
         locationData = null;
       }
-      
+
+      // Hash the generated password
+      const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+
       // Create user with geolocation data
       const userData: any = {
         email,
-        password: hashedPassword
+        username,
+        password: hashedPassword,
+        transferCount: 0,
+        isPro: false,
+        subscriptionDate: null,
+        lastResetDate: new Date(),
       };
       
       // Add geolocation data if available
       if (locationData) {
-        userData.ipAddress = ip;
+        userData.ipAddress = clientIP;
         userData.country = locationData.country;
         userData.countryCode = locationData.country_code;
         userData.region = locationData.region;
@@ -64,26 +75,90 @@ export function setupAuthRoutes(app: Express) {
         userData.longitude = locationData.longitude;
         userData.isp = locationData.isp;
       }
-      
-      const user = await storage.createUser(userData);
-      console.log(`[Registration] New user ${email} registered from ${locationData?.city || 'Unknown'}, ${locationData?.country || 'Unknown'}`);
 
-      // Store user in session
+      const user = await storage.createUser(userData);
+
+      // Send registration email with password
+      const emailContent = createRegistrationEmail(email, username, generatedPassword);
+      const emailSent = await sendEmail({
+        to: email,
+        from: 'noreply@sharezidi.com',
+        ...emailContent
+      });
+
+      // Log registration with location info
+      const location = locationData ? `${locationData.city}, ${locationData.country}` : 'Unknown Location';
+      console.log(`[Registration] New user ${user.email} (${username}) registered from ${location}`);
+      console.log(`[Registration] Password sent via email: ${emailSent ? 'SUCCESS' : 'FAILED'}`);
+
+      // Store user in session after successful registration
       (req.session as any).userId = user.id;
 
-      // Return user without password
-      const { password: _, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
+      // Return success response (don't include password or sensitive data)
+      res.status(201).json({
+        message: 'Registration successful! Check your email for login credentials.',
+        email: user.email,
+        username: user.username,
+        emailSent,
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          transferCount: user.transferCount,
+          isPro: user.isPro
+        }
+      });
     } catch (error) {
       console.error('Registration error:', error);
       res.status(400).json({ error: 'Registration failed' });
     }
   });
 
+  // Resend password email endpoint
+  app.post('/api/auth/resend-password', async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email || !validateEmail(email)) {
+        return res.status(400).json({ error: 'Valid email address is required' });
+      }
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({ error: 'No account found with this email' });
+      }
+
+      // Generate new password
+      const newPassword = generatePassword();
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update user's password in database
+      await storage.updateUserPassword(user.id, hashedPassword);
+
+      // Send new password via email
+      const emailContent = createRegistrationEmail(user.email, user.username || extractUsernameFromEmail(user.email), newPassword);
+      const emailSent = await sendEmail({
+        to: email,
+        from: 'noreply@sharezidi.com',
+        ...emailContent
+      });
+
+      console.log(`[Password Resend] New password sent to ${email}: ${emailSent ? 'SUCCESS' : 'FAILED'}`);
+
+      res.json({
+        message: 'New password sent to your email!',
+        emailSent
+      });
+    } catch (error) {
+      console.error('Password resend error:', error);
+      res.status(400).json({ error: 'Failed to resend password' });
+    }
+  });
+
   // Login endpoint
   app.post('/api/auth/login', async (req, res) => {
     try {
-      const { email, password } = loginUserSchema.parse(req.body);
+      const { email, password } = req.body;
       
       // Find user
       const user = await storage.getUserByEmail(email);
