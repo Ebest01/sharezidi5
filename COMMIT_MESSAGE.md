@@ -62,13 +62,12 @@ git status
 git add .
 
 # Commit with message
-git commit -m "feat: Add professional landing page with authentication flow
+git commit -m "fix: Force landing page display for unauthenticated users
 
-- Beautiful landing page with feature highlights
-- Login/Register buttons throughout the page
-- Automatic authentication checking
-- Smooth flow: Landing → Auth → ShareZidi app
-- Admin login ready (AxDMIxN / AZQ00001xx)"
+- Enhanced authentication check to verify actual user data
+- Fixed bypass issue where main app showed instead of landing page
+- Added debugging to track authentication status
+- Forced landing page for non-authenticated users in production"
 
 # Push to GitHub
 git push origin main
