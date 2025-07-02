@@ -15,10 +15,15 @@ function App() {
           credentials: 'include'
         });
         if (response.ok) {
-          setIsAuthenticated(true);
+          const userData = await response.json();
+          // Only set authenticated if we actually get user data
+          if (userData && userData.id) {
+            setIsAuthenticated(true);
+          }
         }
       } catch (error) {
         // User not authenticated, show landing page
+        console.log('Not authenticated, showing landing page');
       } finally {
         setIsLoading(false);
       }
@@ -46,10 +51,12 @@ function App() {
     );
   }
 
+  // Force landing page for non-authenticated users
   if (!isAuthenticated) {
     return <LandingPage onAuthSuccess={handleAuthSuccess} />;
   }
 
+  // Only show main app if explicitly authenticated
   return <ShareZidiApp />;
 }
 
