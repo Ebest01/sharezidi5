@@ -5,6 +5,7 @@ import { z } from "zod";
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   email: varchar("email", { length: 255 }).notNull().unique(),
+  username: varchar("username", { length: 100 }),
   password: varchar("password", { length: 255 }),
   transferCount: integer("transfer_count").default(0),
   isPro: boolean("is_pro").default(false),
