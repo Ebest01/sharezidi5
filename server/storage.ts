@@ -1,4 +1,6 @@
 import { users, type User, type InsertUser } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -11,70 +13,53 @@ export interface IStorage {
   upgradeUserToPro(id: number): Promise<User | undefined>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  currentId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.currentId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.email === email,
-    );
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentId++;
-    const user: User = { 
-      ...insertUser, 
-      id,
-      password: insertUser.password || null,
-      transferCount: 0,
-      isPro: false,
-      subscriptionDate: null,
-      lastResetDate: new Date(),
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    this.users.set(id, user);
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
 
   async updateUserTransferCount(id: number): Promise<User | undefined> {
-    const user = this.users.get(id);
-    if (user) {
-      const updatedUser = {
-        ...user,
-        transferCount: (user.transferCount || 0) + 1,
+    // First get the current user to increment their transfer count
+    const currentUser = await this.getUser(id);
+    if (!currentUser) return undefined;
+    
+    const [user] = await db
+      .update(users)
+      .set({ 
+        transferCount: (currentUser.transferCount || 0) + 1,
         updatedAt: new Date()
-      };
-      this.users.set(id, updatedUser);
-      return updatedUser;
-    }
-    return undefined;
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
   }
 
   async upgradeUserToPro(id: number): Promise<User | undefined> {
-    const user = this.users.get(id);
-    if (user) {
-      const updatedUser = {
-        ...user,
+    const [user] = await db
+      .update(users)
+      .set({ 
         isPro: true,
         subscriptionDate: new Date(),
         updatedAt: new Date()
-      };
-      this.users.set(id, updatedUser);
-      return updatedUser;
-    }
-    return undefined;
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
