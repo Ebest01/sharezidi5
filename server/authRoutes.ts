@@ -3,6 +3,7 @@ import { storage } from './storage';
 import { insertUserSchema, loginUserSchema } from '@shared/schema';
 import bcrypt from 'bcrypt';
 import session from 'express-session';
+import { GeolocationService } from './services/geolocationService';
 
 export function setupAuthRoutes(app: Express) {
   // Session middleware
@@ -27,14 +28,45 @@ export function setupAuthRoutes(app: Express) {
         return res.status(400).json({ error: 'User already exists' });
       }
 
+      // Validate password
+      if (!password) {
+        return res.status(400).json({ error: 'Password is required' });
+      }
+
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
       
-      // Create user
-      const user = await storage.createUser({
+      // Capture geolocation data for new user
+      const ip = GeolocationService.extractIPAddress(req);
+      let locationData;
+      try {
+        locationData = await GeolocationService.getLocationData(ip);
+      } catch (error) {
+        console.warn('[Registration] Geolocation failed, proceeding without location data');
+        locationData = null;
+      }
+      
+      // Create user with geolocation data
+      const userData: any = {
         email,
         password: hashedPassword
-      });
+      };
+      
+      // Add geolocation data if available
+      if (locationData) {
+        userData.ipAddress = ip;
+        userData.country = locationData.country;
+        userData.countryCode = locationData.country_code;
+        userData.region = locationData.region;
+        userData.city = locationData.city;
+        userData.timezone = locationData.timezone;
+        userData.latitude = locationData.latitude;
+        userData.longitude = locationData.longitude;
+        userData.isp = locationData.isp;
+      }
+      
+      const user = await storage.createUser(userData);
+      console.log(`[Registration] New user ${email} registered from ${locationData?.city || 'Unknown'}, ${locationData?.country || 'Unknown'}`);
 
       // Store user in session
       (req.session as any).userId = user.id;
@@ -69,6 +101,19 @@ export function setupAuthRoutes(app: Express) {
         // OAuth user trying to log in without password - that's ok
       } else {
         return res.status(401).json({ error: 'Invalid credentials' });
+      }
+
+      // Update user's location data on login if not already set
+      if (!user.ipAddress) {
+        const ip = GeolocationService.extractIPAddress(req);
+        try {
+          const locationData = await GeolocationService.getLocationData(ip);
+          if (locationData) {
+            console.log(`[Login] Captured location for ${email}: ${locationData.city}, ${locationData.country}`);
+          }
+        } catch (error) {
+          console.warn('[Login] Geolocation failed for existing user');
+        }
       }
 
       // Store user in session
