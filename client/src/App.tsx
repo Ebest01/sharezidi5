@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { Router, Route, Switch } from "wouter";
 import { ShareZidiApp } from "./components/ShareZidiApp";
 import LandingPage from "./pages/landing-page";
+import LoginPage from "./pages/login-page";
 import "./index.css";
 
 function App() {
@@ -16,7 +18,6 @@ function App() {
         });
 
         console.log("Auth check response:", response);
-        alert("RESPONSE: " + response.status + " " + response.statusText);
 
         if (response.ok) {
           const userData = await response.json();
@@ -55,13 +56,28 @@ function App() {
     );
   }
 
-  // Force landing page for non-authenticated users
-  if (!isAuthenticated) {
-    return <LandingPage onAuthSuccess={handleAuthSuccess} />;
-  }
+  return (
+    <Router>
+      <Switch>
+        {/* Dedicated login page route */}
+        <Route path="/login">
+          <LoginPage 
+            onLoginSuccess={handleAuthSuccess}
+            onSignUpClick={() => window.location.href = "/auth"}
+          />
+        </Route>
 
-  // Only show main app if explicitly authenticated
-  return <ShareZidiApp />;
+        {/* Authentication state-based routing */}
+        <Route path="*">
+          {!isAuthenticated ? (
+            <LandingPage onAuthSuccess={handleAuthSuccess} />
+          ) : (
+            <ShareZidiApp />
+          )}
+        </Route>
+      </Switch>
+    </Router>
+  );
 }
 
 export default App;
