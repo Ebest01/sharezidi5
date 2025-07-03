@@ -193,10 +193,11 @@ export const ShareZidiApp: React.FC = () => {
                     // Redirect to landing page
                     window.location.href = '/';
                   }}
-                  className="p-2 text-red-500 hover:text-red-700 rounded-lg hover:bg-red-50 transition-colors border border-red-200"
+                  className="px-3 py-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg border border-red-300 hover:border-red-600 transition-all duration-200 text-sm font-medium"
                   title="Sign Out"
                 >
-                  <i className="fas fa-sign-out-alt text-sm"></i>
+                  <i className="fas fa-sign-out-alt mr-1"></i>
+                  <span className="hidden sm:inline">Sign Out</span>
                 </button>
               </div>
             </div>
