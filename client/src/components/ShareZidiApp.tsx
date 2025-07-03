@@ -210,7 +210,12 @@ export const ShareZidiApp: React.FC = () => {
         {auth.user && (
           <div className="flex justify-end mb-4">
             <div className="text-sm text-gray-600 bg-gray-50 px-3 py-1 rounded-full border">
-              Logged in as <span className="font-medium text-gray-800">{auth.user.username || auth.user.email?.split('@')[0] || 'guest'}</span>
+              Logged in as <span className="font-medium text-gray-800">
+                {(() => {
+                  console.log('ShareZidiApp - Current user data:', auth.user);
+                  return auth.user.username || auth.user.email?.split('@')[0] || 'guest';
+                })()}
+              </span>
             </div>
           </div>
         )}
