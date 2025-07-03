@@ -277,23 +277,27 @@ export function setupAuthRoutes(app: Express) {
   app.get("/api/auth/user", async (req, res) => {
     try {
       const userId = (req.session as any)?.userId;
-      console.log("xxxSession user ID:", userId);
-      console.log("xxxSession data:", req.session);
-      alert("xxxUSER ID: " + userId);
+      console.log("[Auth Check] Session user ID:", userId);
+      console.log("[Auth Check] Session exists:", !!req.session);
+      
       if (!userId) {
+        console.log("[Auth Check] No userId in session - returning 401");
         return res.status(401).json({ error: "Not authenticated" });
       }
 
+      console.log("[Auth Check] Looking up user in database:", userId);
       const user = await storage.getUser(userId);
       if (!user) {
+        console.log("[Auth Check] User not found in database - returning 401");
         return res.status(401).json({ error: "User not found" });
       }
 
+      console.log("[Auth Check] User found, returning data:", user.email);
       // Return user without password
       const { password: _, ...userWithoutPassword } = user;
       res.json(userWithoutPassword);
     } catch (error) {
-      console.error("Get user error:", error);
+      console.error("[Auth Check] Error:", error);
       res.status(500).json({ error: "Failed to get user" });
     }
   });
