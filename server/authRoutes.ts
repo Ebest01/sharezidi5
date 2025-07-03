@@ -192,13 +192,17 @@ export function setupAuthRoutes(app: Express) {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { email, password } = req.body;
+      console.log("[DEBUG] Login attempt:", { email, hasPassword: !!password });
 
       // Special admin login bypass for development
       if (email === "AxDMIxN" && password === "AZQ00001xx") {
         console.log("[Admin] Development admin login bypassing email system");
 
         // Check if admin user exists, create if not
+        console.log("[DEBUG] Checking for admin user in database...");
         let adminUser = await storage.getUserByEmail("deshabunda2@gmail.com");
+        console.log("[DEBUG] Admin user query result:", adminUser ? { id: adminUser.id, username: adminUser.username, email: adminUser.email } : "NOT FOUND");
+        
         if (!adminUser) {
           // Create admin user
           const hashedPassword = await bcrypt.hash("AZQ00001xx", 10);
@@ -219,9 +223,11 @@ export function setupAuthRoutes(app: Express) {
 
         // Store admin in session
         (req.session as any).userId = adminUser.id;
+        console.log("[DEBUG] Admin stored in session with ID:", adminUser.id);
 
         // Return admin user data
         const { password: _, ...userWithoutPassword } = adminUser;
+        console.log("[DEBUG] Returning admin user data:", { id: userWithoutPassword.id, username: userWithoutPassword.username, email: userWithoutPassword.email });
         return res.json({
           message: "Admin login successful",
           user: userWithoutPassword,

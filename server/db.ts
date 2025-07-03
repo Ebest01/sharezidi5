@@ -13,3 +13,19 @@ if (!process.env.DATABASE_URL) {
 
 export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 export const db = drizzle({ client: pool, schema });
+
+// Test database connection on startup
+(async () => {
+  try {
+    console.log("[DATABASE] Testing connection...");
+    const result = await pool.query('SELECT 1 as test');
+    console.log("[DATABASE] Connection successful:", result.rows[0]);
+    
+    // Test table access
+    console.log("[DATABASE] Testing users table access...");
+    const userCount = await db.select().from(schema.users).limit(1);
+    console.log("[DATABASE] Users table accessible, sample count:", userCount.length);
+  } catch (error) {
+    console.error("[DATABASE] Connection or table access failed:", error);
+  }
+})();
