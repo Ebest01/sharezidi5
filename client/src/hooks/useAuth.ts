@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 interface User {
   id: number;
   email: string;
+  username?: string;
   transferCount: number;
   isPro: boolean;
   isGuest?: boolean;
@@ -39,18 +40,26 @@ export const useAuth = () => {
         credentials: 'include'
       });
       
+      console.log('Auth check response:', response.status, response.ok);
+      
       if (response.ok) {
         const userData = await response.json();
+        console.log('Received user data:', userData);
         setUser(userData);
       } else {
+        console.log('Auth check failed, checking localStorage');
         // Fallback to localStorage for guest users
         const savedUser = localStorage.getItem('shareZidiUser');
         if (savedUser) {
           try {
-            setUser(JSON.parse(savedUser));
+            const parsedUser = JSON.parse(savedUser);
+            console.log('Using localStorage user:', parsedUser);
+            setUser(parsedUser);
           } catch (error) {
             localStorage.removeItem('shareZidiUser');
           }
+        } else {
+          console.log('No user found in localStorage');
         }
       }
     } catch (error) {
@@ -59,7 +68,9 @@ export const useAuth = () => {
       const savedUser = localStorage.getItem('shareZidiUser');
       if (savedUser) {
         try {
-          setUser(JSON.parse(savedUser));
+          const parsedUser = JSON.parse(savedUser);
+          console.log('Using localStorage user (after error):', parsedUser);
+          setUser(parsedUser);
         } catch (error) {
           localStorage.removeItem('shareZidiUser');
         }

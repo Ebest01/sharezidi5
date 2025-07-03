@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Lock, User, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const loginSchema = z.object({
   email: z.string().min(1, "Email or username is required"),
@@ -25,6 +26,7 @@ interface LoginPageProps {
 export default function LoginPage({ onLoginSuccess, onSignUpClick }: LoginPageProps) {
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
+  const { login } = useAuth();
 
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -41,6 +43,15 @@ export default function LoginPage({ onLoginSuccess, onSignUpClick }: LoginPagePr
       return response.json();
     },
     onSuccess: (data) => {
+      console.log('Login success, received data:', data);
+      // Update authentication state with user data
+      if (data && data.user) {
+        login(data.user);
+      } else if (data && data.id) {
+        // Handle case where user data is directly in response
+        login(data);
+      }
+      
       toast({
         title: "Login successful!",
         description: `Welcome back!`,
