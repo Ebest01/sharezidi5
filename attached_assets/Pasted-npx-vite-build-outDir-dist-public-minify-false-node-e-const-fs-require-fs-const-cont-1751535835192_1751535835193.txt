@@ -1,0 +1,51 @@
+npx vite build --outDir dist/public --minify=false && node -e "
+const fs = require('fs');
+const content = fs.readFileSync('dist/public/assets/index.html', 'utf8');
+console.log('Build files created:', fs.readdirSync('dist/public/assets/').length);
+"> > > > 
+vite v5.4.19 building for production...
+transforming (97) ../node_modules/lucide-react/dist/esm/icons/alarm-clock-oBrowserslist: browsers data (caniuse-lite) is 9 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+transforming (112) ../node_modules/lucide-react/dist/esm/icons/align-horizo[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+128|  
+129|  /* FontAwesome icons - load from CDN */
+130|  @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+131|  
+✓ 1681 modules transformed.
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /workspace/client/src/lib/transferUtils.ts is dynamically imported by /workspace/client/src/components/ShareZidiApp.tsx but also statically imported by /workspace/client/src/components/FileSelector.tsx, /workspace/client/src/hooks/useFileTransfer.ts, dynamic import will not move module into another chunk.
+
+dist/public/index.html                      0.75 kB │ gzip:   0.44 kB
+dist/public/assets/index-FtNjP8Ex.css      93.35 kB │ gzip:  15.13 kB
+dist/public/assets/jszip.min-Brk49w6k.js  145.87 kB │ gzip:  33.75 kB
+dist/public/assets/index-C4Cz0d9W.js      762.58 kB │ gzip: 157.65 kB
+✓ built in 9.96s
+npm notice
+npm notice New major version of npm available! 10.9.2 -> 11.4.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.4.2
+npm notice To update run: npm install -g npm@11.4.2
+npm notice
+node:fs:441
+    return binding.readFileUtf8(path, stringToFlags(options.flag));
+                   ^
+
+Error: ENOENT: no such file or directory, open 'dist/public/assets/index.html'
+    at Object.readFileSync (node:fs:441:20)
+    at [eval]:3:20
+    at runScriptInThisContext (node:internal/vm:209:10)
+    at node:internal/process/execution:449:12
+    at [eval]-wrapper:6:24
+    at runScriptInContext (node:internal/process/execution:447:60)
+    at evalFunction (node:internal/process/execution:87:30)
+    at evalScript (node:internal/process/execution:99:3)
+    at node:internal/main/eval_string:74:3 {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'dist/public/assets/index.html'
+}
+
+Node.js v22.17.0
+$ 
