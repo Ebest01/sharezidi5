@@ -9,6 +9,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  createFullUser(user: typeof users.$inferInsert): Promise<User>;
   updateUserTransferCount(id: number): Promise<User | undefined>;
   upgradeUserToPro(id: number): Promise<User | undefined>;
   updateUserPassword(id: number, hashedPassword: string): Promise<User | undefined>;
@@ -29,6 +30,14 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db
       .insert(users)
       .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async createFullUser(userData: typeof users.$inferInsert): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
       .returning();
     return user;
   }
