@@ -3,6 +3,10 @@ import path from "path";
 import { WebSocketServer, WebSocket } from "ws";
 import { createServer } from "http";
 import { FileTransferService } from "./services/fileTransferService.js";
+import { setupAuthRoutes } from "./authRoutes.js";
+// Google Auth not needed for production admin login
+import session from "express-session";
+import connectPg from "connect-pg-simple";
 import fs from "fs";
 
 const app = express();
@@ -49,28 +53,24 @@ wss.on("connection", (ws: WebSocket, request) => {
   });
 });
 
-// Basic API routes (no database for production)
-app.get("/api/auth/user", (req, res) => {
-  res.json({
-    id: "guest",
-    email: "guest@sharezidi.com",
-    transferCount: 0,
-    isPro: false,
-    isGuest: true,
-  });
-});
+// Session configuration for production
+const PostgresSessionStore = connectPg(session);
+app.use(session({
+  store: new PostgresSessionStore({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: true,
+  }),
+  secret: process.env.SESSION_SECRET || 'production-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false, // Set to true if using HTTPS
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
 
-app.post("/api/auth/register", (req, res) => {
-  res.json({ success: true, message: "Registration disabled in production" });
-});
-
-app.post("/api/auth/login", (req, res) => {
-  res.json({ success: true, message: "Login disabled in production" });
-});
-
-app.post("/api/auth/logout", (req, res) => {
-  res.json({ success: true });
-});
+// Setup authentication routes (admin login only)
+setupAuthRoutes(app);
 
 // Health check with detailed status
 app.get("/health", (req, res) => {
@@ -129,7 +129,7 @@ for (const p of possiblePaths) {
       console.log(`  ❌ Directory doesn't exist`);
     }
   } catch (e) {
-    console.log(`  ❌ Error checking path: ${e.message}`);
+    console.log(`  ❌ Error checking path: ${(e as Error).message}`);
   }
 }
 
