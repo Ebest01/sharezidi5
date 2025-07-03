@@ -81,7 +81,7 @@ export default function LandingPage({ onAuthSuccess }: LandingPageProps) {
             </Button>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Users className="h-4 w-4" />
-              <span>No registration required • Start in seconds</span>
+              <span>Quick and Easy • Start in seconds</span>
             </div>
           </div>
         </div>
