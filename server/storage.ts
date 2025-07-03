@@ -17,13 +17,27 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
+    console.log("[DATABASE] getUser called with ID:", id);
+    try {
+      const [user] = await db.select().from(users).where(eq(users.id, id));
+      console.log("[DATABASE] getUser result:", user ? { id: user.id, username: user.username, email: user.email } : "NOT FOUND");
+      return user || undefined;
+    } catch (error) {
+      console.error("[DATABASE] getUser error:", error);
+      return undefined;
+    }
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
-    return user || undefined;
+    console.log("[DATABASE] getUserByEmail called with:", email);
+    try {
+      const [user] = await db.select().from(users).where(eq(users.email, email));
+      console.log("[DATABASE] getUserByEmail result:", user ? { id: user.id, username: user.username, email: user.email } : "NOT FOUND");
+      return user || undefined;
+    } catch (error) {
+      console.error("[DATABASE] getUserByEmail error:", error);
+      return undefined;
+    }
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
