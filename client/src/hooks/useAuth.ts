@@ -81,6 +81,7 @@ export const useAuth = () => {
   };
 
   const login = (userData: User) => {
+    console.log('useAuth.login called with:', userData);
     setUser(userData);
     localStorage.setItem('shareZidiUser', JSON.stringify(userData));
   };

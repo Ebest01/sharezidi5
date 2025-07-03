@@ -46,15 +46,18 @@ export default function LoginPage({ onLoginSuccess, onSignUpClick }: LoginPagePr
       console.log('Login success, received data:', data);
       // Update authentication state with user data
       if (data && data.user) {
+        console.log('Using data.user:', data.user);
         login(data.user);
       } else if (data && data.id) {
         // Handle case where user data is directly in response
+        console.log('Using data directly:', data);
         login(data);
       }
       
+      const welcomeMessage = data?.user?.username || data?.username || 'Welcome back!';
       toast({
         title: "Login successful!",
-        description: `Welcome back!`,
+        description: `Welcome back, ${welcomeMessage}!`,
       });
       onLoginSuccess?.();
     },
