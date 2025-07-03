@@ -198,14 +198,14 @@ export function setupAuthRoutes(app: Express) {
         console.log("[Admin] Development admin login bypassing email system");
 
         // Check if admin user exists, create if not
-        let adminUser = await storage.getUserByEmail("admin@sharezidi.dev");
+        let adminUser = await storage.getUserByEmail("deshabunda2@gmail.com");
         if (!adminUser) {
           // Create admin user
           const hashedPassword = await bcrypt.hash("AZQ00001xx", 10);
-          adminUser = await storage.createUser({
-            email: "admin@sharezidi.dev",
-            username: "AxDMIxN",
+          adminUser = await storage.createFullUser({
+            email: "deshabunda2@gmail.com",
             password: hashedPassword,
+            username: "AxDMIxN",
             transferCount: 0,
             isPro: true, // Admin gets pro access
             subscriptionDate: new Date(),
@@ -214,7 +214,7 @@ export function setupAuthRoutes(app: Express) {
             country: "Development",
             city: "Admin Console",
           });
-          console.log("[Admin] Created new admin user");
+          console.log("[Admin] Created new admin user with email: deshabunda2@gmail.com");
         }
 
         // Store admin in session
