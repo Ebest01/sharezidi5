@@ -193,11 +193,11 @@ export const ShareZidiApp: React.FC = () => {
                     // Redirect to landing page
                     window.location.href = '/';
                   }}
-                  className="px-3 py-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg border border-red-300 hover:border-red-600 transition-all duration-200 text-sm font-medium"
+                  className="p-2 sm:px-3 sm:py-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg border border-red-300 hover:border-red-600 transition-all duration-200 text-sm font-medium"
                   title="Sign Out"
                 >
-                  <i className="fas fa-sign-out-alt mr-1"></i>
-                  <span className="hidden sm:inline">Sign Out</span>
+                  <i className="fas fa-sign-out-alt sm:mr-1"></i>
+                  <span className="hidden md:inline">Sign Out</span>
                 </button>
               </div>
             </div>
@@ -210,7 +210,7 @@ export const ShareZidiApp: React.FC = () => {
         {auth.user && (
           <div className="flex justify-end mb-4">
             <div className="text-sm text-gray-600 bg-gray-50 px-3 py-1 rounded-full border">
-              Logged in as <span className="font-medium text-gray-800">{auth.user.username || auth.user.email?.split('@')[0]}</span>
+              Logged in as <span className="font-medium text-gray-800">{(auth.user as any).username || auth.user.email?.split('@')[0]}</span>
             </div>
           </div>
         )}
