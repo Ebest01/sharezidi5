@@ -173,8 +173,23 @@ export const ShareZidiApp: React.FC = () => {
               <button 
                 onClick={() => window.location.reload()}
                 className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+                title="Refresh"
               >
                 <i className="fas fa-sync-alt text-sm"></i>
+              </button>
+              <button 
+                onClick={() => {
+                  // Clear any stored user data
+                  localStorage.removeItem('user');
+                  localStorage.removeItem('transferCount');
+                  localStorage.removeItem('lastReset');
+                  // Redirect to landing page
+                  window.location.href = '/';
+                }}
+                className="p-2 text-red-500 hover:text-red-700 rounded-lg hover:bg-red-50 transition-colors"
+                title="Sign Out"
+              >
+                <i className="fas fa-sign-out-alt text-sm"></i>
               </button>
             </div>
           </div>
