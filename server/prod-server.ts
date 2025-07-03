@@ -148,13 +148,36 @@ if (!distPath) {
 console.log(`🎯 Using static path: ${distPath}`);
 console.log("=== END DEBUGGING ===");
 
-// Serve static files
-app.use(express.static(distPath));
+// Serve static files with proper MIME types
+app.use(express.static(distPath, {
+  // Set proper MIME types for assets
+  setHeaders: (res, path) => {
+    if (path.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    } else if (path.endsWith('.mjs')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    } else if (path.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    }
+  }
+}));
 
-// Catch-all handler for SPA
+// Catch-all handler for SPA (only for non-asset requests)
 app.get("*", (req, res) => {
+  // Don't serve index.html for asset requests
+  if (req.url.startsWith('/assets/') || 
+      req.url.startsWith('/static/') || 
+      req.url.endsWith('.js') || 
+      req.url.endsWith('.css') || 
+      req.url.endsWith('.png') || 
+      req.url.endsWith('.svg') || 
+      req.url.endsWith('.ico')) {
+    console.log(`Asset request 404: ${req.url}`);
+    return res.status(404).send('Asset not found');
+  }
+
   const indexPath = path.join(distPath, "index.html");
-  console.log(`Serving index.html from: ${indexPath}`);
+  console.log(`Serving SPA route ${req.url} from: ${indexPath}`);
 
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
