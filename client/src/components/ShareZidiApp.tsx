@@ -11,6 +11,7 @@ import { MobileTransferGuard } from './MobileTransferGuard';
 import { ZipProgress } from './ZipProgress';
 import { AuthModal } from './AuthModal';
 import { UsageBanner } from './UsageBanner';
+import { QrCode, RotateCcw, LogOut } from 'lucide-react';
 import type { Device } from '@shared/types';
 
 export const ShareZidiApp: React.FC = () => {
@@ -169,14 +170,14 @@ export const ShareZidiApp: React.FC = () => {
                   className="p-2 text-blue-600 hover:text-blue-700 rounded-lg hover:bg-blue-50 transition-colors"
                   title="Connect Mobile Device"
                 >
-                  <i className="fas fa-qrcode text-sm"></i>
+                  <QrCode className="h-4 w-4" />
                 </button>
                 <button 
                   onClick={() => window.location.reload()}
                   className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
                   title="Refresh"
                 >
-                  <i className="fas fa-sync-alt text-sm"></i>
+                  <RotateCcw className="h-4 w-4" />
                 </button>
                 <button 
                   onClick={async () => {
@@ -196,7 +197,7 @@ export const ShareZidiApp: React.FC = () => {
                   className="p-2 sm:px-3 sm:py-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg border border-red-300 hover:border-red-600 transition-all duration-200 text-sm font-medium"
                   title="Sign Out"
                 >
-                  <i className="fas fa-sign-out-alt sm:mr-1"></i>
+                  <LogOut className="h-4 w-4 sm:mr-1" />
                   <span className="hidden md:inline">Sign Out</span>
                 </button>
               </div>
