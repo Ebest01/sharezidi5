@@ -3,6 +3,7 @@ import { Router, Route, Switch } from "wouter";
 import { ShareZidiApp } from "./components/ShareZidiApp";
 import LandingPage from "./pages/landing-page";
 import LoginPage from "./pages/login-page";
+import AuthPage from "./pages/auth-page";
 import "./index.css";
 
 function App() {
@@ -59,21 +60,48 @@ function App() {
   return (
     <Router>
       <Switch>
-        {/* Dedicated login page route */}
+        {/* Landing page always at root */}
+        <Route path="/">
+          <LandingPage onAuthSuccess={handleAuthSuccess} />
+        </Route>
+
+        {/* Dedicated login page */}
         <Route path="/login">
           <LoginPage 
-            onLoginSuccess={handleAuthSuccess}
+            onLoginSuccess={() => {
+              handleAuthSuccess();
+              window.location.href = "/start";
+            }}
             onSignUpClick={() => window.location.href = "/auth"}
           />
         </Route>
 
-        {/* Authentication state-based routing */}
-        <Route path="*">
-          {!isAuthenticated ? (
-            <LandingPage onAuthSuccess={handleAuthSuccess} />
-          ) : (
+        {/* Main ShareZidi app - requires authentication */}
+        <Route path="/start">
+          {isAuthenticated ? (
             <ShareZidiApp />
+          ) : (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
+              <div className="text-center p-8 bg-white rounded-lg shadow-lg">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Access Denied</h2>
+                <p className="text-gray-600 mb-6">Please log in to access ShareZidi</p>
+                <button 
+                  onClick={() => window.location.href = "/login"}
+                  className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700"
+                >
+                  Go to Login
+                </button>
+              </div>
+            </div>
           )}
+        </Route>
+
+        {/* Full authentication page */}
+        <Route path="/auth">
+          <AuthPage onAuthSuccess={() => {
+            handleAuthSuccess();
+            window.location.href = "/start";
+          }} />
         </Route>
       </Switch>
     </Router>
