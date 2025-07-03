@@ -206,6 +206,15 @@ export const ShareZidiApp: React.FC = () => {
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-8">
+        {/* User Info */}
+        {auth.user && (
+          <div className="flex justify-end mb-4">
+            <div className="text-sm text-gray-600 bg-gray-50 px-3 py-1 rounded-full border">
+              Logged in as <span className="font-medium text-gray-800">{auth.user.username || auth.user.email?.split('@')[0]}</span>
+            </div>
+          </div>
+        )}
+
         {/* Usage Banner */}
         <UsageBanner user={auth.user} onUpgrade={handleUpgrade} />
 
