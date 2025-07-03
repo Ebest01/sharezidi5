@@ -56,10 +56,12 @@ wss.on("connection", (ws: WebSocket, request) => {
 app.get("/api/auth/user", (req, res) => {
   const sessionId = req.headers.authorization?.replace('Bearer ', '') || 
                    req.headers.cookie?.match(/sessionId=([^;]+)/)?.[1];
+  
+  const session = sessions.get(sessionId);
    console.log("OUT CHECK SESSION");
    console.log(session);
-  const session = sessions.get(sessionId);
-  
+
+	
   if (session && session.userId === "admin") {
      console.log("CHECK SESSION");
 	  console.log(session);
