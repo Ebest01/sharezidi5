@@ -140,7 +140,7 @@ export const ShareZidiApp: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header Section */}
       <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-6 py-4">
+        <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <img 
@@ -150,47 +150,55 @@ export const ShareZidiApp: React.FC = () => {
               />
             </div>
             
-            {/* Connection Status */}
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-2 text-sm">
+            {/* Connection Status and Actions */}
+            <div className="flex items-center space-x-2 text-sm">
+              <div className="hidden sm:flex items-center space-x-2">
                 <div className={`w-2 h-2 rounded-full ${
-                  websocket.isConnected ? 'bg-success' : 'bg-error'
+                  websocket.isConnected ? 'bg-green-500' : 'bg-red-500'
                 }`}></div>
                 <span className="text-gray-600">
                   {websocket.isConnected ? 'Connected' : 'Disconnected'}
                 </span>
               </div>
-              <div className="text-primary font-medium">
-                ID: <span className="text-secondary">{websocket.userId}</span>
+              <div className="text-blue-600 font-medium text-xs sm:text-sm">
+                ID: <span className="text-gray-600">{websocket.userId}</span>
               </div>
-              <button 
-                onClick={() => setShowConnectionHelper(true)}
-                className="p-2 text-primary hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors mr-2"
-                title="Connect Mobile Device"
-              >
-                <i className="fas fa-qrcode text-sm"></i>
-              </button>
-              <button 
-                onClick={() => window.location.reload()}
-                className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-                title="Refresh"
-              >
-                <i className="fas fa-sync-alt text-sm"></i>
-              </button>
-              <button 
-                onClick={() => {
-                  // Clear any stored user data
-                  localStorage.removeItem('user');
-                  localStorage.removeItem('transferCount');
-                  localStorage.removeItem('lastReset');
-                  // Redirect to landing page
-                  window.location.href = '/';
-                }}
-                className="p-2 text-red-500 hover:text-red-700 rounded-lg hover:bg-red-50 transition-colors"
-                title="Sign Out"
-              >
-                <i className="fas fa-sign-out-alt text-sm"></i>
-              </button>
+              <div className="flex items-center space-x-1">
+                <button 
+                  onClick={() => setShowConnectionHelper(true)}
+                  className="p-2 text-blue-600 hover:text-blue-700 rounded-lg hover:bg-blue-50 transition-colors"
+                  title="Connect Mobile Device"
+                >
+                  <i className="fas fa-qrcode text-sm"></i>
+                </button>
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+                  title="Refresh"
+                >
+                  <i className="fas fa-sync-alt text-sm"></i>
+                </button>
+                <button 
+                  onClick={async () => {
+                    try {
+                      // Clear server-side session
+                      await fetch('/api/auth/logout', { method: 'POST' });
+                    } catch (error) {
+                      console.log('Logout request failed, clearing client data anyway');
+                    }
+                    // Clear any stored user data
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('transferCount');
+                    localStorage.removeItem('lastReset');
+                    // Redirect to landing page
+                    window.location.href = '/';
+                  }}
+                  className="p-2 text-red-500 hover:text-red-700 rounded-lg hover:bg-red-50 transition-colors border border-red-200"
+                  title="Sign Out"
+                >
+                  <i className="fas fa-sign-out-alt text-sm"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>
