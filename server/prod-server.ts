@@ -60,6 +60,8 @@ app.get("/api/auth/user", (req, res) => {
   const session = sessions.get(sessionId);
   
   if (session && session.userId === "admin") {
+     console.log("CHECK SESSION");
+	  console.log(session);
     return res.json({
       id: 1,
       email: "deshabunda2@gmail.com",
