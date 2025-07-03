@@ -1,8 +1,6 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import AuthPage from "./auth-page";
 import { 
   Zap, 
   Shield, 
@@ -19,11 +17,6 @@ interface LandingPageProps {
 }
 
 export default function LandingPage({ onAuthSuccess }: LandingPageProps) {
-  const [showAuth, setShowAuth] = useState(false);
-
-  if (showAuth) {
-    return <AuthPage onAuthSuccess={onAuthSuccess} />;
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-purple-950 dark:via-gray-900 dark:to-blue-950">
@@ -41,13 +34,22 @@ export default function LandingPage({ onAuthSuccess }: LandingPageProps) {
               <p className="text-xs text-muted-foreground">File Transfer Made Simple</p>
             </div>
           </div>
-          <Button 
-            onClick={() => setShowAuth(true)}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-          >
-            Login / Sign Up
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => window.location.href = "/login"}
+              variant="outline"
+              className="border-purple-200 text-purple-600 hover:bg-purple-50"
+            >
+              Sign In
+            </Button>
+            <Button 
+              onClick={() => window.location.href = "/auth"}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            >
+              Sign Up
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -73,7 +75,7 @@ export default function LandingPage({ onAuthSuccess }: LandingPageProps) {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button 
               size="lg" 
-              onClick={() => setShowAuth(true)}
+              onClick={() => window.location.href = "/auth"}
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-lg px-8 py-6"
             >
               Get Started Free
