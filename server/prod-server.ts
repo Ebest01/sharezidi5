@@ -9,6 +9,9 @@ const app = express();
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: false, limit: "50mb" }));
 
+// Session setup for admin authentication
+const sessions = new Map(); // Simple in-memory session store for production
+
 // Request logging
 app.use((req, res, next) => {
   const start = Date.now();
@@ -49,8 +52,25 @@ wss.on("connection", (ws: WebSocket, request) => {
   });
 });
 
-// Basic API routes (no database for production)
+// Updated auth endpoints with admin support
 app.get("/api/auth/user", (req, res) => {
+  const sessionId = req.headers.authorization?.replace('Bearer ', '') || 
+                   req.headers.cookie?.match(/sessionId=([^;]+)/)?.[1];
+  
+  const session = sessions.get(sessionId);
+  
+  if (session && session.userId === "admin") {
+    return res.json({
+      id: 1,
+      email: "deshabunda2@gmail.com",
+      username: "AxDMIxN",
+      transferCount: 0,
+      isPro: true,
+      isGuest: false,
+    });
+  }
+  
+  // Return guest for unauthenticated users
   res.json({
     id: "guest",
     email: "guest@sharezidi.com",
@@ -65,10 +85,38 @@ app.post("/api/auth/register", (req, res) => {
 });
 
 app.post("/api/auth/login", (req, res) => {
-  res.json({ success: true, message: "Login disabled in production" });
+  const { email, password } = req.body;
+  
+  // Check for admin credentials
+  if ((email === "AxDMIxN" || email === "deshabunda2@gmail.com") && password === "AZQ00001xx") {
+    const sessionId = Math.random().toString(36).substring(2, 15);
+    sessions.set(sessionId, { userId: "admin", createdAt: Date.now() });
+    
+    // Set session cookie
+    res.cookie('sessionId', sessionId, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
+    
+    return res.json({
+      success: true,
+      user: {
+        id: 1,
+        email: "deshabunda2@gmail.com",
+        username: "AxDMIxN",
+        transferCount: 0,
+        isPro: true,
+        isGuest: false
+      }
+    });
+  }
+  
+  res.status(401).json({ error: "Invalid credentials" });
 });
 
 app.post("/api/auth/logout", (req, res) => {
+  const sessionId = req.headers.cookie?.match(/sessionId=([^;]+)/)?.[1];
+  if (sessionId) {
+    sessions.delete(sessionId);
+  }
+  res.clearCookie('sessionId');
   res.json({ success: true });
 });
 
@@ -84,6 +132,7 @@ app.get("/health", (req, res) => {
       heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024) + "MB",
     },
     pid: process.pid,
+    activeSessions: sessions.size,
   });
 });
 
@@ -166,6 +215,16 @@ app.get("*", (req, res) => {
 
 const port = parseInt(process.env.PORT || "3001");
 
+// Clean up old sessions periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [sessionId, session] of sessions.entries()) {
+    if (now - session.createdAt > 24 * 60 * 60 * 1000) { // 24 hours
+      sessions.delete(sessionId);
+    }
+  }
+}, 60 * 60 * 1000); // Clean up every hour
+
 // Graceful shutdown handling
 process.on("SIGTERM", () => {
   console.log("SIGTERM received, shutting down gracefully");
@@ -200,6 +259,7 @@ httpServer
     console.log(`WebSocket server available at /ws`);
     console.log(`Process ID: ${process.pid}`);
     console.log(`Health check: http://localhost:${port}/health`);
+    console.log(`Admin login: AxDMIxN / AZQ00001xx`);
   })
   .on("error", (err) => {
     if (err.code === "EADDRINUSE") {
