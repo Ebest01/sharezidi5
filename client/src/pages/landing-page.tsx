@@ -182,7 +182,7 @@ export default function LandingPage({ onAuthSuccess }: LandingPageProps) {
           </p>
           <Button 
             size="lg" 
-            onClick={() => setShowAuth(true)}
+            onClick={() => window.location.href = "/auth"}
             variant="secondary"
             className="bg-white text-purple-600 hover:bg-gray-100 text-lg px-8 py-6"
           >
