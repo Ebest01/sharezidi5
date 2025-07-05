@@ -26238,7 +26238,7 @@ var require_websocket = __commonJS({
     var http = __require("http");
     var net = __require("net");
     var tls = __require("tls");
-    var { randomBytes, createHash } = __require("crypto");
+    var { randomBytes: randomBytes2, createHash } = __require("crypto");
     var { Duplex, Readable } = __require("stream");
     var { URL: URL2 } = __require("url");
     var PerMessageDeflate = require_permessage_deflate();
@@ -26765,7 +26765,7 @@ var require_websocket = __commonJS({
         }
       }
       const defaultPort = isSecure ? 443 : 80;
-      const key = randomBytes(16).toString("base64");
+      const key = randomBytes2(16).toString("base64");
       const request = isSecure ? https.request : http.request;
       const protocolSet = /* @__PURE__ */ new Set();
       let perMessageDeflate;
@@ -39014,8 +39014,46 @@ var db = drizzle({ client: pool, schema: schema_exports });
   }
 })();
 
+// server/utils/passwordGenerator.ts
+function generatePassword() {
+  const uppercase = Array.from(
+    { length: 3 },
+    () => String.fromCharCode(65 + Math.floor(Math.random() * 26))
+  ).join("");
+  const digits = Array.from(
+    { length: 6 },
+    () => Math.floor(Math.random() * 10).toString()
+  ).join("");
+  const lowercase = Array.from(
+    { length: 2 },
+    () => String.fromCharCode(97 + Math.floor(Math.random() * 26))
+  ).join("");
+  return uppercase + digits + lowercase;
+}
+function extractUsernameFromEmail(email) {
+  return email.split("@")[0];
+}
+function validateEmail(email) {
+  const emailRegex2 = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex2.test(email);
+}
+
 // server/prod-server-with-db.ts
+import { scrypt, randomBytes, timingSafeEqual } from "crypto";
+import { promisify } from "util";
 import fs from "fs";
+var scryptAsync = promisify(scrypt);
+async function hashPassword(password) {
+  const salt = randomBytes(16).toString("hex");
+  const buf = await scryptAsync(password, salt, 64);
+  return `${buf.toString("hex")}.${salt}`;
+}
+async function comparePasswords(supplied, stored) {
+  const [hashed, salt] = stored.split(".");
+  const hashedBuf = Buffer.from(hashed, "hex");
+  const suppliedBuf = await scryptAsync(supplied, salt, 64);
+  return timingSafeEqual(hashedBuf, suppliedBuf);
+}
 var app = (0, import_express.default)();
 app.use(import_express.default.json({ limit: "50mb" }));
 app.use(import_express.default.urlencoded({ extended: false, limit: "50mb" }));
@@ -39100,7 +39138,7 @@ app.get("/api/auth/user", async (req, res) => {
   });
   try {
     if (sessionId) {
-      const user = await db.select().from(users).where(users.username.eq(sessionId)).limit(1);
+      const user = await db.select().from(users).where(eq(users.username, sessionId)).limit(1);
       if (user.length > 0) {
         console.log("[DEBUG] \u2705 Database user found:", user[0].email);
         console.log("[DEBUG] ===== AUTH CHECK END (DATABASE USER) =====");
@@ -39133,6 +39171,96 @@ app.get("/api/auth/user", async (req, res) => {
       isPro: false,
       isGuest: true
     });
+  }
+});
+app.post("/api/register", async (req, res) => {
+  console.log("[REGISTER] ===== REGISTRATION START =====");
+  try {
+    const { email } = req.body;
+    if (!email || !validateEmail(email)) {
+      console.log("[REGISTER] Invalid email:", email);
+      return res.status(400).json({ error: "Valid email is required" });
+    }
+    const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    if (existingUser.length > 0) {
+      console.log("[REGISTER] User already exists:", email);
+      return res.status(400).json({ error: "User with this email already exists" });
+    }
+    const generatedPassword = generatePassword();
+    const hashedPassword = await hashPassword(generatedPassword);
+    const username = extractUsernameFromEmail(email);
+    const ip = GeolocationService.extractIPAddress(req);
+    const locationData = await GeolocationService.getLocationData(ip);
+    const newUser = await db.insert(users).values({
+      email,
+      username,
+      password: hashedPassword,
+      transferCount: 0,
+      isPro: false,
+      ipAddress: ip,
+      country: locationData?.country || "Unknown",
+      countryCode: locationData?.country_code || "",
+      region: locationData?.region || "",
+      city: locationData?.city || "",
+      timezone: locationData?.timezone || "",
+      latitude: locationData?.latitude || "",
+      longitude: locationData?.longitude || "",
+      isp: locationData?.isp || ""
+    }).returning();
+    console.log("[REGISTER] \u2705 User created successfully:", email);
+    console.log("[REGISTER] Generated password:", generatedPassword);
+    console.log("[REGISTER] ===== REGISTRATION END =====");
+    res.status(201).json({
+      success: true,
+      user: {
+        id: newUser[0].id,
+        email: newUser[0].email,
+        username: newUser[0].username
+      },
+      generatedPassword,
+      message: "Registration successful! Please save your password."
+    });
+  } catch (error) {
+    console.error("[REGISTER] Registration error:", error);
+    res.status(500).json({ error: "Registration failed" });
+  }
+});
+app.post("/api/login", async (req, res) => {
+  console.log("[LOGIN] ===== LOGIN START =====");
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      console.log("[LOGIN] Missing email or password");
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+    const user = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    if (user.length === 0) {
+      console.log("[LOGIN] User not found:", email);
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+    const passwordMatch = await comparePasswords(password, user[0].password || "");
+    if (!passwordMatch) {
+      console.log("[LOGIN] Invalid password for:", email);
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+    console.log("[LOGIN] \u2705 Login successful:", email);
+    console.log("[LOGIN] ===== LOGIN END =====");
+    res.json({
+      success: true,
+      user: {
+        id: user[0].id.toString(),
+        email: user[0].email,
+        username: user[0].username,
+        transferCount: user[0].transferCount,
+        isPro: user[0].isPro,
+        isGuest: false
+      },
+      sessionToken: user[0].username
+      // Use username as session token for simplicity
+    });
+  } catch (error) {
+    console.error("[LOGIN] Login error:", error);
+    res.status(500).json({ error: "Login failed" });
   }
 });
 app.get("/health", async (req, res) => {

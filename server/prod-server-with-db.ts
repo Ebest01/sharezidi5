@@ -6,7 +6,27 @@ import { FileTransferService } from "./services/fileTransferService.js";
 import { GeolocationService } from "./services/geolocationService.js";
 import { db } from "./db.js";
 import { visitors, users, type InsertVisitor } from "@shared/schema";
+import { eq } from "drizzle-orm";
+import { generatePassword, extractUsernameFromEmail, validateEmail } from "./utils/passwordGenerator.js";
+import { scrypt, randomBytes, timingSafeEqual } from "crypto";
+import { promisify } from "util";
 import fs from "fs";
+
+const scryptAsync = promisify(scrypt);
+
+// Password hashing functions
+async function hashPassword(password: string) {
+  const salt = randomBytes(16).toString("hex");
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString("hex")}.${salt}`;
+}
+
+async function comparePasswords(supplied: string, stored: string) {
+  const [hashed, salt] = stored.split(".");
+  const hashedBuf = Buffer.from(hashed, "hex");
+  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
+  return timingSafeEqual(hashedBuf, suppliedBuf);
+}
 
 const app = express();
 app.use(express.json({ limit: "50mb" }));
@@ -118,8 +138,8 @@ app.get("/api/auth/user", async (req, res) => {
 
   try {
     if (sessionId) {
-      // Try to find user by session ID in database
-      const user = await db.select().from(users).where(users.username.eq(sessionId)).limit(1);
+      // Try to find user by session ID in database  
+      const user = await db.select().from(users).where(eq(users.username, sessionId)).limit(1);
       
       if (user.length > 0) {
         console.log("[DEBUG] ✅ Database user found:", user[0].email);
@@ -155,6 +175,122 @@ app.get("/api/auth/user", async (req, res) => {
       isPro: false,
       isGuest: true
     });
+  }
+});
+
+// Registration endpoint - email only, auto-generate password
+app.post("/api/register", async (req, res) => {
+  console.log("[REGISTER] ===== REGISTRATION START =====");
+  
+  try {
+    const { email } = req.body;
+    
+    if (!email || !validateEmail(email)) {
+      console.log("[REGISTER] Invalid email:", email);
+      return res.status(400).json({ error: "Valid email is required" });
+    }
+    
+    // Check if user already exists
+    const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    if (existingUser.length > 0) {
+      console.log("[REGISTER] User already exists:", email);
+      return res.status(400).json({ error: "User with this email already exists" });
+    }
+    
+    // Generate password and create user
+    const generatedPassword = generatePassword();
+    const hashedPassword = await hashPassword(generatedPassword);
+    const username = extractUsernameFromEmail(email);
+    
+    // Get geolocation data
+    const ip = GeolocationService.extractIPAddress(req);
+    const locationData = await GeolocationService.getLocationData(ip);
+    
+    const newUser = await db.insert(users).values({
+      email,
+      username,
+      password: hashedPassword,
+      transferCount: 0,
+      isPro: false,
+      ipAddress: ip,
+      country: locationData?.country || 'Unknown',
+      countryCode: locationData?.country_code || '',
+      region: locationData?.region || '',
+      city: locationData?.city || '',
+      timezone: locationData?.timezone || '',
+      latitude: locationData?.latitude || '',
+      longitude: locationData?.longitude || '',
+      isp: locationData?.isp || ''
+    }).returning();
+    
+    console.log("[REGISTER] ✅ User created successfully:", email);
+    console.log("[REGISTER] Generated password:", generatedPassword);
+    console.log("[REGISTER] ===== REGISTRATION END =====");
+    
+    res.status(201).json({
+      success: true,
+      user: {
+        id: newUser[0].id,
+        email: newUser[0].email,
+        username: newUser[0].username
+      },
+      generatedPassword: generatedPassword,
+      message: "Registration successful! Please save your password."
+    });
+    
+  } catch (error) {
+    console.error("[REGISTER] Registration error:", error);
+    res.status(500).json({ error: "Registration failed" });
+  }
+});
+
+// Login endpoint
+app.post("/api/login", async (req, res) => {
+  console.log("[LOGIN] ===== LOGIN START =====");
+  
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      console.log("[LOGIN] Missing email or password");
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+    
+    // Find user by email
+    const user = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    
+    if (user.length === 0) {
+      console.log("[LOGIN] User not found:", email);
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+    
+    // Verify password
+    const passwordMatch = await comparePasswords(password, user[0].password || '');
+    
+    if (!passwordMatch) {
+      console.log("[LOGIN] Invalid password for:", email);
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+    
+    console.log("[LOGIN] ✅ Login successful:", email);
+    console.log("[LOGIN] ===== LOGIN END =====");
+    
+    res.json({
+      success: true,
+      user: {
+        id: user[0].id.toString(),
+        email: user[0].email,
+        username: user[0].username,
+        transferCount: user[0].transferCount,
+        isPro: user[0].isPro,
+        isGuest: false
+      },
+      sessionToken: user[0].username // Use username as session token for simplicity
+    });
+    
+  } catch (error) {
+    console.error("[LOGIN] Login error:", error);
+    res.status(500).json({ error: "Login failed" });
   }
 });
 
