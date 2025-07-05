@@ -4,6 +4,7 @@ import { ShareZidiApp } from "./components/ShareZidiApp";
 import LandingPage from "./pages/landing-page";
 import LoginPage from "./pages/login-page";
 import AuthPage from "./pages/auth-page";
+import DbTestPage from "./pages/db-test-page";
 import "./index.css";
 
 function App() {
@@ -102,6 +103,11 @@ function App() {
             handleAuthSuccess();
             window.location.href = "/start";
           }} />
+        </Route>
+
+        {/* Database testing page */}
+        <Route path="/dbtest">
+          <DbTestPage />
         </Route>
       </Switch>
     </Router>

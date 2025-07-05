@@ -294,6 +294,36 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
+// Database test endpoint - get all users
+app.get("/api/dbtest/users", async (req, res) => {
+  console.log("[DBTEST] ===== FETCHING ALL USERS =====");
+  
+  try {
+    const allUsers = await db.select({
+      id: users.id,
+      email: users.email,
+      username: users.username,
+      transferCount: users.transferCount,
+      isPro: users.isPro,
+      createdAt: users.createdAt,
+      country: users.country,
+      city: users.city
+    }).from(users).orderBy(users.createdAt);
+    
+    console.log(`[DBTEST] ✅ Found ${allUsers.length} users in database`);
+    
+    res.json({
+      success: true,
+      count: allUsers.length,
+      users: allUsers
+    });
+    
+  } catch (error) {
+    console.error("[DBTEST] Error fetching users:", error);
+    res.status(500).json({ error: "Failed to fetch users from database" });
+  }
+});
+
 // Health check endpoint
 app.get("/health", async (req, res) => {
   const dbStatus = await testDatabaseConnection();
