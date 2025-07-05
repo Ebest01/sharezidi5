@@ -1,0 +1,94 @@
+[WebSocket] New connection from: 10.0.1.9
+[FileTransfer] User 03kwo9 (Unknown Device) connected
+[WebSocket] New connection from: 10.0.1.9
+[FileTransfer] User wlb0tf (Unknown Device) connected
+[FileTransfer] Broadcasting device list: [
+  'Device ahrco0 (ahrco0)',
+  'Device 65pmfq (65pmfq)',
+  'Device 3u74wj (3u74wj)',
+  'Device 5q3ww6 (5q3ww6)',
+  'Device 03kwo9 (03kwo9)',
+  'Device wlb0tf (wlb0tf)'
+]
+[FileTransfer] Broadcasting device list: [
+  'Device ahrco0 (ahrco0)',
+  'Device 65pmfq (65pmfq)',
+  'Device 3u74wj (3u74wj)',
+  'Device 5q3ww6 (5q3ww6)',
+  'Device 03kwo9 (03kwo9)',
+  'Device wlb0tf (wlb0tf)'
+]
+[FileTransfer] Broadcasting device list: [
+  'Device ahrco0 (ahrco0)',
+  'Device 65pmfq (65pmfq)',
+  'Device 3u74wj (3u74wj)',
+  'Device 5q3ww6 (5q3ww6)',
+  'Device 03kwo9 (03kwo9)',
+  'Device wlb0tf (wlb0tf)'
+]
+[FileTransfer] Broadcasting device list: [
+  'Device ahrco0 (ahrco0)',
+  'Device 65pmfq (65pmfq)',
+  'Device 3u74wj (3u74wj)',
+  'Device 5q3ww6 (5q3ww6)',
+  'Device 03kwo9 (03kwo9)',
+  'Device wlb0tf (wlb0tf)'
+]
+Serving SPA route /start from: /workspace/dist/public/index.html
+Asset request 404: /assets/index-B4IrbEwt.js
+GET /assets/index-B4IrbEwt.js 404 in 1ms
+Asset request 404: /assets/index-DPEYnbFL.css
+GET /assets/index-DPEYnbFL.css 404 in 1ms
+Serving SPA route /start from: /workspace/dist/public/index.html
+[DEBUG] ===== AUTH CHECK START =====
+[DEBUG] Session lookup: {
+  sessionId: '67bghgfjqn',
+  cookieHeader: 'sessionId=67bghgfjqn',
+  authHeader: undefined
+}
+[DEBUG] Session found: undefined
+[DEBUG] No valid session - returning guest
+[DEBUG] ===== AUTH CHECK END (GUEST) =====
+GET /api/auth/user 200 in 4ms
+[DEBUG] ===== AUTH CHECK START =====
+[DEBUG] Session lookup: {
+  sessionId: '67bghgfjqn',
+  cookieHeader: 'sessionId=67bghgfjqn',
+  authHeader: undefined
+}
+[DEBUG] Session found: undefined
+[DEBUG] No valid session - returning guest
+[DEBUG] ===== AUTH CHECK END (GUEST) =====
+GET /api/auth/user 200 in 1ms
+[WebSocket] New connection from: 10.0.1.9
+[FileTransfer] User zgi5bn (Unknown Device) connected
+[FileTransfer] Broadcasting device list: [
+  'Device ahrco0 (ahrco0)',
+  'Device 65pmfq (65pmfq)',
+  'Device 3u74wj (3u74wj)',
+  'Device 5q3ww6 (5q3ww6)',
+  'Device 03kwo9 (03kwo9)',
+  'Device wlb0tf (wlb0tf)',
+  'Device zgi5bn (zgi5bn)'
+]
+Serving SPA route /login from: /workspace/dist/public/index.html
+[DEBUG] ===== AUTH CHECK START =====
+[DEBUG] Session lookup: {
+  sessionId: '67bghgfjqn',
+  cookieHeader: 'sessionId=67bghgfjqn',
+  authHeader: undefined
+}
+[DEBUG] Session found: undefined
+[DEBUG] No valid session - returning guest
+[DEBUG] ===== AUTH CHECK END (GUEST) =====
+GET /api/auth/user 200 in 1ms
+[DEBUG] ===== AUTH CHECK START =====
+[DEBUG] Session lookup: {
+  sessionId: '67bghgfjqn',
+  cookieHeader: 'sessionId=67bghgfjqn',
+  authHeader: undefined
+}
+[DEBUG] Session found: undefined
+[DEBUG] No valid session - returning guest
+[DEBUG] ===== AUTH CHECK END (GUEST) =====
+GET /api/auth/user 200 in 1ms
