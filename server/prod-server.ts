@@ -52,13 +52,36 @@ wss.on("connection", (ws: WebSocket, request) => {
   });
 });
 
+// Database connection debugging
+console.log("[DEBUG] ===== DATABASE CONNECTION SETUP =====");
+console.log("[DEBUG] DATABASE_URL exists:", !!process.env.DATABASE_URL);
+console.log("[DEBUG] DATABASE_URL preview:", process.env.DATABASE_URL ? 
+  process.env.DATABASE_URL.substring(0, 30) + "..." : "NOT SET");
+
 // PostgreSQL session configuration for production
 const PostgresSessionStore = connectPg(session);
+
+// Test database connection
+const sessionStore = new PostgresSessionStore({
+  conString: process.env.DATABASE_URL,
+  createTableIfMissing: true,
+});
+
+// Add store event listeners for debugging
+sessionStore.on('connect', () => {
+  console.log("[DEBUG] Session store connected to database successfully");
+});
+
+sessionStore.on('disconnect', () => {
+  console.log("[DEBUG] Session store disconnected from database");
+});
+
+sessionStore.on('error', (err) => {
+  console.error("[DEBUG] Session store error:", err);
+});
+
 app.use(session({
-  store: new PostgresSessionStore({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: true,
-  }),
+  store: sessionStore,
   secret: process.env.SESSION_SECRET || 'production-secret-key',
   resave: false,
   saveUninitialized: false,
@@ -68,8 +91,22 @@ app.use(session({
   }
 }));
 
+console.log("[DEBUG] ===== SESSION MIDDLEWARE CONFIGURED =====");
+
+// Session debugging middleware
+app.use((req, res, next) => {
+  if (req.url.includes('/api/auth')) {
+    console.log(`[DEBUG] Auth request: ${req.method} ${req.url}`);
+    console.log(`[DEBUG] Session ID: ${req.sessionID}`);
+    console.log(`[DEBUG] Session userId: ${(req.session as any)?.userId}`);
+    console.log(`[DEBUG] Cookie header: ${req.headers.cookie}`);
+  }
+  next();
+});
+
 // Setup authentication routes with database backing
 setupAuthRoutes(app);
+console.log("[DEBUG] ===== AUTH ROUTES CONFIGURED =====");
 
 // Health check with detailed status
 app.get("/health", (req, res) => {

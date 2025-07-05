@@ -192,7 +192,13 @@ export function setupAuthRoutes(app: Express) {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { email, password } = req.body;
+      console.log("[DEBUG] ===== LOGIN ATTEMPT START =====");
       console.log("[DEBUG] Login attempt:", { email, hasPassword: !!password });
+      console.log("[DEBUG] Session before login:", {
+        sessionId: req.sessionID,
+        userId: (req.session as any)?.userId,
+        sessionExists: !!req.session
+      });
 
       // Special admin login bypass for development
       if (email === "AxDMIxN" && password === "AZQ00001xx") {
@@ -224,10 +230,25 @@ export function setupAuthRoutes(app: Express) {
         // Store admin in session
         (req.session as any).userId = adminUser.id;
         console.log("[DEBUG] Admin stored in session with ID:", adminUser.id);
+        console.log("[DEBUG] Session after admin storage:", {
+          sessionId: req.sessionID,
+          userId: (req.session as any)?.userId,
+          sessionExists: !!req.session
+        });
+
+        // Save session explicitly
+        req.session.save((err) => {
+          if (err) {
+            console.error("[DEBUG] Session save error:", err);
+          } else {
+            console.log("[DEBUG] Session saved successfully");
+          }
+        });
 
         // Return admin user data
         const { password: _, ...userWithoutPassword } = adminUser;
         console.log("[DEBUG] Returning admin user data:", { id: userWithoutPassword.id, username: userWithoutPassword.username, email: userWithoutPassword.email });
+        console.log("[DEBUG] ===== LOGIN ATTEMPT END (ADMIN SUCCESS) =====");
         return res.json({
           message: "Admin login successful",
           user: userWithoutPassword,
@@ -269,9 +290,25 @@ export function setupAuthRoutes(app: Express) {
 
       // Store user in session
       (req.session as any).userId = user.id;
+      console.log("[DEBUG] Regular user stored in session with ID:", user.id);
+      console.log("[DEBUG] Session after user storage:", {
+        sessionId: req.sessionID,
+        userId: (req.session as any)?.userId,
+        sessionExists: !!req.session
+      });
+
+      // Save session explicitly
+      req.session.save((err) => {
+        if (err) {
+          console.error("[DEBUG] Session save error:", err);
+        } else {
+          console.log("[DEBUG] Session saved successfully");
+        }
+      });
 
       // Return user without password
       const { password: _, ...userWithoutPassword } = user;
+      console.log("[DEBUG] ===== LOGIN ATTEMPT END (USER SUCCESS) =====");
       res.json(userWithoutPassword);
     } catch (error) {
       console.error("Login error:", error);
@@ -282,28 +319,48 @@ export function setupAuthRoutes(app: Express) {
   // Get current user endpoint
   app.get("/api/auth/user", async (req, res) => {
     try {
+      console.log("[DEBUG] ===== AUTH CHECK START =====");
       const userId = (req.session as any)?.userId;
-      console.log("[Auth Check] Session user ID:", userId);
-      console.log("[Auth Check] Session exists:", !!req.session);
+      console.log("[DEBUG] Session details:", {
+        sessionId: req.sessionID,
+        userId: userId,
+        sessionExists: !!req.session,
+        sessionData: req.session,
+        headers: {
+          cookie: req.headers.cookie,
+          authorization: req.headers.authorization
+        }
+      });
       
       if (!userId) {
-        console.log("[Auth Check] No userId in session - returning 401");
+        console.log("[DEBUG] No userId in session - returning 401");
+        console.log("[DEBUG] ===== AUTH CHECK END (NO SESSION) =====");
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      console.log("[Auth Check] Looking up user in database:", userId);
+      console.log("[DEBUG] Looking up user in database with ID:", userId, "type:", typeof userId);
       const user = await storage.getUser(userId);
+      console.log("[DEBUG] Database query result:", user ? { 
+        id: user.id, 
+        username: user.username, 
+        email: user.email,
+        type: typeof user.id
+      } : "NOT FOUND");
+      
       if (!user) {
-        console.log("[Auth Check] User not found in database - returning 401");
+        console.log("[DEBUG] User not found in database - returning 401");
+        console.log("[DEBUG] ===== AUTH CHECK END (USER NOT FOUND) =====");
         return res.status(401).json({ error: "User not found" });
       }
 
-      console.log("[Auth Check] User found, returning data:", user.email);
+      console.log("[DEBUG] User found, returning data:", user.email);
+      console.log("[DEBUG] ===== AUTH CHECK END (SUCCESS) =====");
       // Return user without password
       const { password: _, ...userWithoutPassword } = user;
       res.json(userWithoutPassword);
     } catch (error) {
-      console.error("[Auth Check] Error:", error);
+      console.error("[DEBUG] Auth check error:", error);
+      console.log("[DEBUG] ===== AUTH CHECK END (ERROR) =====");
       res.status(500).json({ error: "Failed to get user" });
     }
   });
