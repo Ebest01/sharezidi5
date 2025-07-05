@@ -4,7 +4,9 @@ import { setupVite, serveStatic, log } from "./vite";
 import { setupAuthRoutes } from "./authRoutes";
 import { GeolocationService } from "./services/geolocationService";
 import { db } from "./db";
-import { visitors, type InsertVisitor } from "@shared/schema";
+import { visitors, users, type InsertVisitor } from "@shared/schema";
+import { generatePassword, extractUsernameFromEmail } from "./utils/passwordGenerator";
+import { eq } from "drizzle-orm";
 
 const app = express();
 app.use(express.json());
@@ -133,6 +135,97 @@ app.use((req, res, next) => {
 (async () => {
   // Setup authentication routes first
   setupAuthRoutes(app);
+  
+  // Add database test endpoints
+  app.post("/api/register", async (req, res) => {
+    console.log("[REGISTER] ===== REGISTRATION REQUEST =====");
+    console.log("[REGISTER] Request body:", req.body);
+    
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+      
+      // Check if user already exists
+      const existingUser = await db.select().from(users).where(eq(users.email, email));
+      if (existingUser.length > 0) {
+        return res.status(400).json({ error: "User already exists" });
+      }
+      
+      // Generate password and username
+      const password = generatePassword();
+      const username = extractUsernameFromEmail(email);
+      
+      // Get location data
+      const ip = GeolocationService.extractIPAddress(req);
+      const locationData = await GeolocationService.getLocationData(ip);
+      
+      // Create user
+      const [newUser] = await db.insert(users).values({
+        email: email,
+        username: username,
+        password: password,
+        transferCount: 0,
+        isPro: false,
+        sessionId: GeolocationService.generateSessionId(),
+        ipAddress: ip,
+        country: locationData?.country || null,
+        countryCode: locationData?.country_code || null,
+        region: locationData?.region || null,
+        city: locationData?.city || null,
+        timezone: locationData?.timezone || null,
+        latitude: locationData?.latitude || null,
+        longitude: locationData?.longitude || null,
+        isp: locationData?.isp || null,
+        userAgent: req.headers['user-agent'] || null,
+        referrer: req.headers.referer || null
+      }).returning();
+      
+      console.log("[REGISTER] ✅ User created successfully:", email);
+      console.log("[REGISTER] Generated password:", password);
+      
+      res.json({
+        success: true,
+        user: newUser,
+        message: "Registration successful"
+      });
+      
+    } catch (error) {
+      console.error("[REGISTER] Registration error:", error);
+      res.status(500).json({ error: "Registration failed" });
+    }
+  });
+  
+  app.get("/api/dbtest/users", async (req, res) => {
+    console.log("[DBTEST] ===== FETCHING ALL USERS =====");
+    
+    try {
+      const allUsers = await db.select({
+        id: users.id,
+        email: users.email,
+        username: users.username,
+        transferCount: users.transferCount,
+        isPro: users.isPro,
+        createdAt: users.createdAt,
+        country: users.country,
+        city: users.city
+      }).from(users).orderBy(users.createdAt);
+      
+      console.log(`[DBTEST] ✅ Found ${allUsers.length} users in database`);
+      
+      res.json({
+        success: true,
+        count: allUsers.length,
+        users: allUsers
+      });
+      
+    } catch (error) {
+      console.error("[DBTEST] Error fetching users:", error);
+      res.status(500).json({ error: "Failed to fetch users from database" });
+    }
+  });
   
   const server = await registerRoutes(app);
 
