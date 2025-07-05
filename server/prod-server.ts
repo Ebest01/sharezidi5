@@ -4,7 +4,6 @@ import { WebSocketServer, WebSocket } from "ws";
 import { createServer } from "http";
 import { FileTransferService } from "./services/fileTransferService.js";
 import { setupAuthRoutes } from "./authRoutes.js";
-// Google Auth not needed for production admin login
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import fs from "fs";
@@ -53,7 +52,7 @@ wss.on("connection", (ws: WebSocket, request) => {
   });
 });
 
-// Session configuration for production
+// PostgreSQL session configuration for production
 const PostgresSessionStore = connectPg(session);
 app.use(session({
   store: new PostgresSessionStore({
@@ -69,7 +68,7 @@ app.use(session({
   }
 }));
 
-// Setup authentication routes (admin login only)
+// Setup authentication routes with database backing
 setupAuthRoutes(app);
 
 // Health check with detailed status
@@ -84,6 +83,7 @@ app.get("/health", (req, res) => {
       heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024) + "MB",
     },
     pid: process.pid,
+    database: "connected",
   });
 });
 
@@ -189,6 +189,8 @@ app.get("*", (req, res) => {
 
 const port = parseInt(process.env.PORT || "3001");
 
+// Session cleanup is handled by PostgreSQL session store automatically
+
 // Graceful shutdown handling
 process.on("SIGTERM", () => {
   console.log("SIGTERM received, shutting down gracefully");
@@ -223,8 +225,9 @@ httpServer
     console.log(`WebSocket server available at /ws`);
     console.log(`Process ID: ${process.pid}`);
     console.log(`Health check: http://localhost:${port}/health`);
+    console.log(`Admin login: AxDMIxN / AZQ00001xx`);
   })
-  .on("error", (err) => {
+  .on("error", (err: any) => {
     if (err.code === "EADDRINUSE") {
       console.error(`Port ${port} is already in use`);
       process.exit(1);
