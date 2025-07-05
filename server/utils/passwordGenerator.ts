@@ -10,8 +10,8 @@ export function generatePassword(): string {
     String.fromCharCode(65 + Math.floor(Math.random() * 26))
   ).join('');
   
-  // Generate 5 digits
-  const digits = Array.from({ length: 5 }, () => 
+  // Generate 6 digits
+  const digits = Array.from({ length: 6 }, () => 
     Math.floor(Math.random() * 10).toString()
   ).join('');
   
