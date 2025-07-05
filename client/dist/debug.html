@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ShareZidi Asset Debug</title>
+    <style>
+        body { font-family: system-ui; padding: 20px; background: #f0f0f0; }
+        .asset-check { margin: 10px 0; padding: 10px; background: white; border-radius: 5px; }
+        .success { border-left: 4px solid #10b981; }
+        .error { border-left: 4px solid #ef4444; }
+        .loading { border-left: 4px solid #f59e0b; }
+    </style>
+</head>
+<body>
+    <h1>ShareZidi Production Asset Debug</h1>
+    <p>Checking which assets are available...</p>
+    
+    <div id="results"></div>
+    
+    <script>
+        const assets = [
+            '/assets/index-Ds14f0OR.js',
+            '/assets/index-Ds14f0OR.css',
+            '/assets/index-DPEYnbFL.js',
+            '/assets/index-DPEYnbFL.css',
+            '/assets/index-D14f0OR.js',
+            '/assets/index-D14f0OR.css'
+        ];
+        
+        const results = document.getElementById('results');
+        
+        assets.forEach(async (asset) => {
+            const div = document.createElement('div');
+            div.className = 'asset-check loading';
+            div.innerHTML = `<strong>Checking:</strong> ${asset} <span>⏳</span>`;
+            results.appendChild(div);
+            
+            try {
+                const response = await fetch(asset);
+                if (response.ok) {
+                    div.className = 'asset-check success';
+                    div.innerHTML = `<strong>✅ Available:</strong> ${asset} (${response.status})`;
+                } else {
+                    div.className = 'asset-check error';
+                    div.innerHTML = `<strong>❌ Missing:</strong> ${asset} (${response.status})`;
+                }
+            } catch (error) {
+                div.className = 'asset-check error';
+                div.innerHTML = `<strong>❌ Error:</strong> ${asset} (${error.message})`;
+            }
+        });
+        
+        // Check auth endpoint
+        setTimeout(async () => {
+            const div = document.createElement('div');
+            div.className = 'asset-check loading';
+            div.innerHTML = `<strong>Checking:</strong> /api/auth/user <span>⏳</span>`;
+            results.appendChild(div);
+            
+            try {
+                const response = await fetch('/api/auth/user');
+                const data = await response.json();
+                div.className = 'asset-check success';
+                div.innerHTML = `<strong>✅ Auth API:</strong> ${JSON.stringify(data)}`;
+            } catch (error) {
+                div.className = 'asset-check error';
+                div.innerHTML = `<strong>❌ Auth Error:</strong> ${error.message}`;
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
