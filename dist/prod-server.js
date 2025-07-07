@@ -23726,10 +23726,10 @@ var require_express2 = __commonJS({
   }
 });
 
-// server/prod-server-with-db.ts
+// server/prod-server.ts
 var import_express = __toESM(require_express2(), 1);
 var import_path = __toESM(require("path"), 1);
-var import_ws3 = require("ws");
+var import_ws2 = require("ws");
 var import_http = require("http");
 
 // server/services/fileTransferService.ts
@@ -24255,10 +24255,10 @@ var GeolocationService = class {
 };
 
 // server/db.ts
-var import_serverless3 = require("@neondatabase/serverless");
+var import_pg3 = require("pg");
 
-// node_modules/drizzle-orm/neon-serverless/driver.js
-var import_serverless2 = require("@neondatabase/serverless");
+// node_modules/drizzle-orm/node-postgres/driver.js
+var import_pg2 = __toESM(require("pg"), 1);
 
 // node_modules/drizzle-orm/entity.js
 var entityKind = Symbol.for("drizzle:entityKind");
@@ -24926,7 +24926,7 @@ var WithSubquery = class extends Subquery {
 };
 
 // node_modules/drizzle-orm/version.js
-var version = "0.39.1";
+var version = "0.39.3";
 
 // node_modules/drizzle-orm/tracing.js
 var otel;
@@ -30475,8 +30475,8 @@ var PgDatabase = class {
   }
 };
 
-// node_modules/drizzle-orm/neon-serverless/session.js
-var import_serverless = require("@neondatabase/serverless");
+// node_modules/drizzle-orm/node-postgres/session.js
+var import_pg = __toESM(require("pg"), 1);
 
 // node_modules/drizzle-orm/pg-core/session.js
 var PgPreparedQuery = class {
@@ -30563,8 +30563,9 @@ var PgTransaction = class extends PgDatabase {
   }
 };
 
-// node_modules/drizzle-orm/neon-serverless/session.js
-var NeonPreparedQuery = class extends PgPreparedQuery {
+// node_modules/drizzle-orm/node-postgres/session.js
+var { Pool, types } = import_pg.default;
+var NodePgPreparedQuery = class extends PgPreparedQuery {
   constructor(client, queryString, params, logger, fields, name, _isResponseInArrayMode, customResultMapper) {
     super({ sql: queryString, params });
     this.client = client;
@@ -30579,19 +30580,19 @@ var NeonPreparedQuery = class extends PgPreparedQuery {
       types: {
         // @ts-ignore
         getTypeParser: (typeId, format) => {
-          if (typeId === import_serverless.types.builtins.TIMESTAMPTZ) {
+          if (typeId === types.builtins.TIMESTAMPTZ) {
             return (val) => val;
           }
-          if (typeId === import_serverless.types.builtins.TIMESTAMP) {
+          if (typeId === types.builtins.TIMESTAMP) {
             return (val) => val;
           }
-          if (typeId === import_serverless.types.builtins.DATE) {
+          if (typeId === types.builtins.DATE) {
             return (val) => val;
           }
-          if (typeId === import_serverless.types.builtins.INTERVAL) {
+          if (typeId === types.builtins.INTERVAL) {
             return (val) => val;
           }
-          return import_serverless.types.getTypeParser(typeId, format);
+          return types.getTypeParser(typeId, format);
         }
       }
     };
@@ -30602,52 +30603,74 @@ var NeonPreparedQuery = class extends PgPreparedQuery {
       types: {
         // @ts-ignore
         getTypeParser: (typeId, format) => {
-          if (typeId === import_serverless.types.builtins.TIMESTAMPTZ) {
+          if (typeId === types.builtins.TIMESTAMPTZ) {
             return (val) => val;
           }
-          if (typeId === import_serverless.types.builtins.TIMESTAMP) {
+          if (typeId === types.builtins.TIMESTAMP) {
             return (val) => val;
           }
-          if (typeId === import_serverless.types.builtins.DATE) {
+          if (typeId === types.builtins.DATE) {
             return (val) => val;
           }
-          if (typeId === import_serverless.types.builtins.INTERVAL) {
+          if (typeId === types.builtins.INTERVAL) {
             return (val) => val;
           }
-          return import_serverless.types.getTypeParser(typeId, format);
+          return types.getTypeParser(typeId, format);
         }
       }
     };
   }
-  static [entityKind] = "NeonPreparedQuery";
+  static [entityKind] = "NodePgPreparedQuery";
   rawQueryConfig;
   queryConfig;
   async execute(placeholderValues = {}) {
-    const params = fillPlaceholders(this.params, placeholderValues);
-    this.logger.logQuery(this.rawQueryConfig.text, params);
-    const { fields, client, rawQueryConfig: rawQuery, queryConfig: query, joinsNotNullableMap, customResultMapper } = this;
-    if (!fields && !customResultMapper) {
-      return client.query(rawQuery, params);
-    }
-    const result = await client.query(query, params);
-    return customResultMapper ? customResultMapper(result.rows) : result.rows.map((row) => mapResultRow(fields, row, joinsNotNullableMap));
+    return tracer.startActiveSpan("drizzle.execute", async () => {
+      const params = fillPlaceholders(this.params, placeholderValues);
+      this.logger.logQuery(this.rawQueryConfig.text, params);
+      const { fields, rawQueryConfig: rawQuery, client, queryConfig: query, joinsNotNullableMap, customResultMapper } = this;
+      if (!fields && !customResultMapper) {
+        return tracer.startActiveSpan("drizzle.driver.execute", async (span) => {
+          span?.setAttributes({
+            "drizzle.query.name": rawQuery.name,
+            "drizzle.query.text": rawQuery.text,
+            "drizzle.query.params": JSON.stringify(params)
+          });
+          return client.query(rawQuery, params);
+        });
+      }
+      const result = await tracer.startActiveSpan("drizzle.driver.execute", (span) => {
+        span?.setAttributes({
+          "drizzle.query.name": query.name,
+          "drizzle.query.text": query.text,
+          "drizzle.query.params": JSON.stringify(params)
+        });
+        return client.query(query, params);
+      });
+      return tracer.startActiveSpan("drizzle.mapResponse", () => {
+        return customResultMapper ? customResultMapper(result.rows) : result.rows.map((row) => mapResultRow(fields, row, joinsNotNullableMap));
+      });
+    });
   }
   all(placeholderValues = {}) {
-    const params = fillPlaceholders(this.params, placeholderValues);
-    this.logger.logQuery(this.rawQueryConfig.text, params);
-    return this.client.query(this.rawQueryConfig, params).then((result) => result.rows);
-  }
-  values(placeholderValues = {}) {
-    const params = fillPlaceholders(this.params, placeholderValues);
-    this.logger.logQuery(this.rawQueryConfig.text, params);
-    return this.client.query(this.queryConfig, params).then((result) => result.rows);
+    return tracer.startActiveSpan("drizzle.execute", () => {
+      const params = fillPlaceholders(this.params, placeholderValues);
+      this.logger.logQuery(this.rawQueryConfig.text, params);
+      return tracer.startActiveSpan("drizzle.driver.execute", (span) => {
+        span?.setAttributes({
+          "drizzle.query.name": this.rawQueryConfig.name,
+          "drizzle.query.text": this.rawQueryConfig.text,
+          "drizzle.query.params": JSON.stringify(params)
+        });
+        return this.client.query(this.rawQueryConfig, params).then((result) => result.rows);
+      });
+    });
   }
   /** @internal */
   isResponseInArrayMode() {
     return this._isResponseInArrayMode;
   }
 };
-var NeonSession = class _NeonSession extends PgSession {
+var NodePgSession = class _NodePgSession extends PgSession {
   constructor(client, dialect, schema, options = {}) {
     super(dialect);
     this.client = client;
@@ -30655,10 +30678,10 @@ var NeonSession = class _NeonSession extends PgSession {
     this.options = options;
     this.logger = options.logger ?? new NoopLogger();
   }
-  static [entityKind] = "NeonSession";
+  static [entityKind] = "NodePgSession";
   logger;
   prepareQuery(query, fields, name, isResponseInArrayMode, customResultMapper) {
-    return new NeonPreparedQuery(
+    return new NodePgPreparedQuery(
       this.client,
       query.sql,
       query.params,
@@ -30669,28 +30692,10 @@ var NeonSession = class _NeonSession extends PgSession {
       customResultMapper
     );
   }
-  async query(query, params) {
-    this.logger.logQuery(query, params);
-    const result = await this.client.query({
-      rowMode: "array",
-      text: query,
-      values: params
-    });
-    return result;
-  }
-  async queryObjects(query, params) {
-    return this.client.query(query, params);
-  }
-  async count(sql2) {
-    const res = await this.execute(sql2);
-    return Number(
-      res["rows"][0]["count"]
-    );
-  }
-  async transaction(transaction, config = {}) {
-    const session = this.client instanceof import_serverless.Pool ? new _NeonSession(await this.client.connect(), this.dialect, this.schema, this.options) : this;
-    const tx = new NeonTransaction(this.dialect, session, this.schema);
-    await tx.execute(sql`begin ${tx.getTransactionConfigSQL(config)}`);
+  async transaction(transaction, config) {
+    const session = this.client instanceof Pool ? new _NodePgSession(await this.client.connect(), this.dialect, this.schema, this.options) : this;
+    const tx = new NodePgTransaction(this.dialect, session, this.schema);
+    await tx.execute(sql`begin${config ? sql` ${tx.getTransactionConfigSQL(config)}` : void 0}`);
     try {
       const result = await transaction(tx);
       await tx.execute(sql`commit`);
@@ -30699,43 +30704,54 @@ var NeonSession = class _NeonSession extends PgSession {
       await tx.execute(sql`rollback`);
       throw error;
     } finally {
-      if (this.client instanceof import_serverless.Pool) {
+      if (this.client instanceof Pool) {
         session.client.release();
       }
     }
   }
+  async count(sql2) {
+    const res = await this.execute(sql2);
+    return Number(
+      res["rows"][0]["count"]
+    );
+  }
 };
-var NeonTransaction = class _NeonTransaction extends PgTransaction {
-  static [entityKind] = "NeonTransaction";
+var NodePgTransaction = class _NodePgTransaction extends PgTransaction {
+  static [entityKind] = "NodePgTransaction";
   async transaction(transaction) {
     const savepointName = `sp${this.nestedIndex + 1}`;
-    const tx = new _NeonTransaction(this.dialect, this.session, this.schema, this.nestedIndex + 1);
+    const tx = new _NodePgTransaction(
+      this.dialect,
+      this.session,
+      this.schema,
+      this.nestedIndex + 1
+    );
     await tx.execute(sql.raw(`savepoint ${savepointName}`));
     try {
       const result = await transaction(tx);
       await tx.execute(sql.raw(`release savepoint ${savepointName}`));
       return result;
-    } catch (e) {
+    } catch (err) {
       await tx.execute(sql.raw(`rollback to savepoint ${savepointName}`));
-      throw e;
+      throw err;
     }
   }
 };
 
-// node_modules/drizzle-orm/neon-serverless/driver.js
-var NeonDriver = class {
+// node_modules/drizzle-orm/node-postgres/driver.js
+var NodePgDriver = class {
   constructor(client, dialect, options = {}) {
     this.client = client;
     this.dialect = dialect;
     this.options = options;
   }
-  static [entityKind] = "NeonDriver";
+  static [entityKind] = "NodePgDriver";
   createSession(schema) {
-    return new NeonSession(this.client, this.dialect, schema, { logger: this.options.logger });
+    return new NodePgSession(this.client, this.dialect, schema, { logger: this.options.logger });
   }
 };
-var NeonDatabase = class extends PgDatabase {
-  static [entityKind] = "NeonServerlessDatabase";
+var NodePgDatabase = class extends PgDatabase {
+  static [entityKind] = "NodePgDatabase";
 };
 function construct(client, config = {}) {
   const dialect = new PgDialect({ casing: config.casing });
@@ -30757,29 +30773,26 @@ function construct(client, config = {}) {
       tableNamesMap: tablesConfig.tableNamesMap
     };
   }
-  const driver = new NeonDriver(client, dialect, { logger });
+  const driver = new NodePgDriver(client, dialect, { logger });
   const session = driver.createSession(schema);
-  const db2 = new NeonDatabase(dialect, session, schema);
+  const db2 = new NodePgDatabase(dialect, session, schema);
   db2.$client = client;
   return db2;
 }
 function drizzle(...params) {
   if (typeof params[0] === "string") {
-    const instance = new import_serverless2.Pool({
+    const instance = new import_pg2.default.Pool({
       connectionString: params[0]
     });
     return construct(instance, params[1]);
   }
   if (isConfig(params[0])) {
-    const { connection, client, ws: ws2, ...drizzleConfig } = params[0];
-    if (ws2) {
-      import_serverless2.neonConfig.webSocketConstructor = ws2;
-    }
+    const { connection, client, ...drizzleConfig } = params[0];
     if (client)
       return construct(client, drizzleConfig);
-    const instance = typeof connection === "string" ? new import_serverless2.Pool({
+    const instance = typeof connection === "string" ? new import_pg2.default.Pool({
       connectionString: connection
-    }) : new import_serverless2.Pool(connection);
+    }) : new import_pg2.default.Pool(connection);
     return construct(instance, drizzleConfig);
   }
   return construct(params[0], params[1]);
@@ -30790,9 +30803,6 @@ function drizzle(...params) {
   }
   drizzle2.mock = mock;
 })(drizzle || (drizzle = {}));
-
-// server/db.ts
-var import_ws2 = __toESM(require("ws"), 1);
 
 // shared/schema.ts
 var schema_exports = {};
@@ -35167,14 +35177,17 @@ var insertVisitorSchema = createInsertSchema(visitors).omit({
 });
 
 // server/db.ts
-import_serverless3.neonConfig.webSocketConstructor = import_ws2.default;
 if (!process.env.DATABASE_URL) {
   throw new Error(
     "DATABASE_URL must be set. Did you forget to provision a database?"
   );
 }
-var pool = new import_serverless3.Pool({ connectionString: process.env.DATABASE_URL });
-var db = drizzle({ client: pool, schema: schema_exports });
+var pool = new import_pg3.Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: false
+  // Disable SSL for local PostgreSQL service
+});
+var db = drizzle(pool, { schema: schema_exports });
 (async () => {
   try {
     console.log("[DATABASE] Testing connection...");
@@ -35212,7 +35225,7 @@ function validateEmail(email) {
   return emailRegex2.test(email);
 }
 
-// server/prod-server-with-db.ts
+// server/prod-server.ts
 var import_crypto = require("crypto");
 var import_util = require("util");
 var import_fs = __toESM(require("fs"), 1);
@@ -35287,17 +35300,17 @@ app.use(async (req, res, next) => {
 });
 var httpServer = (0, import_http.createServer)(app);
 var fileTransferService = new FileTransferService();
-var wss = new import_ws3.WebSocketServer({ server: httpServer, path: "/ws" });
-wss.on("connection", (ws2, request) => {
+var wss = new import_ws2.WebSocketServer({ server: httpServer, path: "/ws" });
+wss.on("connection", (ws, request) => {
   const userId = Math.random().toString(36).substring(2, 8);
   const ip = request.socket.remoteAddress;
   console.log(`[WebSocket] New connection from: ${ip}`);
-  fileTransferService.registerUser(userId, ws2);
-  ws2.on("close", () => {
+  fileTransferService.registerUser(userId, ws);
+  ws.on("close", () => {
     console.log(`[WebSocket] User ${userId} disconnected`);
     fileTransferService.unregisterUser(userId);
   });
-  ws2.on("error", (error) => {
+  ws.on("error", (error) => {
     console.error(`[WebSocket] Error for user ${userId}:`, error);
     fileTransferService.unregisterUser(userId);
   });
