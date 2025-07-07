@@ -27,6 +27,7 @@
     "@replit/vite-plugin-runtime-error-modal": "^0.0.3",
     "@sendgrid/mail": "^8.1.5",
     "@tailwindcss/postcss": "^4.1.11",
+    "@tailwindcss/typography": "^0.5.16",
     "@tanstack/react-query": "^5.81.5",
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.3",
