@@ -4,7 +4,7 @@
   "type": "module",
   "main": "server.cjs",
   "scripts": {
-    "start": "node server.cjs",
+    "start": "node production-server.cjs",
     "build": "echo 'MongoDB build complete'",
     "dev": "tsx server/index.ts"
   },
