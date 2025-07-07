@@ -1,30 +1,33 @@
 #!/bin/bash
-set -e
 
-echo "🔧 Building ShareZidi for production..."
+echo "🚀 Building ShareZidi with MongoDB (Simple Mode)"
 
-# 1. Build frontend with Vite
-echo "📦 Building frontend..."
-npx vite build --outDir=dist/public
+# Create simple package.json for production
+cat > package.json << 'EOF'
+{
+  "name": "sharezidi-mongo",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "main": "server.cjs",
+  "scripts": {
+    "start": "node server.cjs",
+    "build": "echo 'MongoDB build complete'"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "mongodb": "^6.3.0",
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}
+EOF
 
-# 2. Copy simple production server
-echo "🖥️ Setting up production server..."
-cp server/simple-prod-server.js dist/prod-server.js
+# Copy MongoDB server as main server
+cp server-mongo.cjs server.cjs
 
-# 3. Verify build
-echo "✅ Build verification..."
-if [ -f "dist/public/index.html" ] && [ -f "dist/prod-server.js" ]; then
-    echo "✅ Frontend: Built successfully"
-    echo "✅ Backend: Production server ready"
-    echo "✅ Build completed successfully!"
-    
-    # Show build size
-    echo "📊 Build size:"
-    du -h dist/public/ | tail -1
-    ls -lh dist/prod-server.js
-else
-    echo "❌ Build failed - missing files"
-    exit 1
-fi
-
-echo "🚀 Ready for deployment!"
+echo "✅ Simple MongoDB build complete"
+echo "📋 Start command: node server.cjs"
+echo "🔗 MongoDB URI: mongodb://szmdb_user:1!!!!!...Magics4321@sharezidi_v2_sharezidi_mdb:27017/sharezidi"

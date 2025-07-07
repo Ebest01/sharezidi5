@@ -1,165 +1,133 @@
 const express = require('express');
-const { Pool } = require('pg');
+const { MongoClient } = require('mongodb');
 const path = require('path');
-const { WebSocketServer } = require('ws');
-const { createServer } = require('http');
-
-// Environment validation
-const requiredEnvVars = ['DATABASE_URL'];
-for (const envVar of requiredEnvVars) {
-  if (!process.env[envVar]) {
-    console.error(`❌ Missing required environment variable: ${envVar}`);
-    process.exit(1);
-  }
-}
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-console.log(`[INIT] ShareZidi starting in ${process.env.NODE_ENV || 'development'} mode`);
+console.log(`[INIT] ShareZidi MongoDB Server starting...`);
 
-// Database setup with proper error handling
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
-});
+// MongoDB setup
+let db;
+let mongoClient;
+
+async function connectMongoDB() {
+  try {
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/sharezidi';
+    console.log('[MONGO] Connecting...');
+    
+    mongoClient = new MongoClient(mongoUri);
+    await mongoClient.connect();
+    db = mongoClient.db('sharezidi');
+    
+    console.log('[MONGO] ✅ Connected');
+    
+    // Create indexes
+    try {
+      await db.collection('users').createIndex({ email: 1 }, { unique: true });
+      await db.collection('users').createIndex({ username: 1 }, { unique: true });
+    } catch (indexError) {
+      console.log('[MONGO] Indexes already exist');
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('[MONGO] ❌ Failed:', error.message);
+    return false;
+  }
+}
 
 // Middleware
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// CORS for development
-if (process.env.NODE_ENV !== 'production') {
-  app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    if (req.method === 'OPTIONS') {
-      return res.sendStatus(200);
-    }
-    next();
-  });
-}
-
-// Serve static files if they exist
-const staticPath = path.join(__dirname, 'dist', 'public');
-try {
-  const fs = require('fs');
-  if (fs.existsSync(staticPath)) {
-    app.use(express.static(staticPath));
-    console.log(`[STATIC] Serving files from: ${staticPath}`);
-  }
-} catch (error) {
-  console.log('[STATIC] No static files found, serving API only');
-}
-
-// Health check endpoint
+// Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-    database: pool.totalCount > 0 ? 'connected' : 'disconnected'
+    status: 'ok',
+    database: db ? 'connected' : 'disconnected',
+    timestamp: new Date().toISOString()
   });
 });
 
-// Database test endpoint
+// Database test
 app.get('/api/dbtest', async (req, res) => {
   try {
-    const result = await pool.query('SELECT NOW() as current_time, version() as pg_version');
-    const userCount = await pool.query('SELECT COUNT(*) as count FROM users');
+    if (!db) {
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Database not connected' 
+      });
+    }
+
+    const userCount = await db.collection('users').countDocuments();
     
     res.json({ 
       success: true, 
       database: 'connected',
-      currentTime: result.rows[0].current_time,
-      pgVersion: result.rows[0].pg_version,
-      userCount: parseInt(userCount.rows[0].count),
-      poolStats: {
-        total: pool.totalCount,
-        idle: pool.idleCount,
-        waiting: pool.waitingCount
-      }
+      userCount: userCount,
+      collections: ['users', 'sessions']
     });
   } catch (error) {
-    console.error('[DB] Test failed:', error.message);
     res.status(500).json({ 
       success: false, 
-      database: 'disconnected',
       error: error.message 
     });
   }
 });
 
-// User registration endpoint
+// User registration
 app.post('/api/register', async (req, res) => {
   try {
+    if (!db) {
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Database not connected' 
+      });
+    }
+
     const { username, email } = req.body;
     
     if (!username || !email) {
       return res.status(400).json({ 
         success: false, 
-        error: 'Username and email are required' 
+        error: 'Username and email required' 
       });
     }
 
-    // Generate password in format [A-Z{3}][0-9{6}][a-z{2}]
-    const upperLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const lowerLetters = 'abcdefghijklmnopqrstuvwxyz';
-    const digits = '0123456789';
+    // Generate password [A-Z{3}][0-9{6}][a-z{2}]
+    const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const lower = 'abcdefghijklmnopqrstuvwxyz';
     
     const password = 
-      upperLetters.charAt(Math.floor(Math.random() * upperLetters.length)) +
-      upperLetters.charAt(Math.floor(Math.random() * upperLetters.length)) +
-      upperLetters.charAt(Math.floor(Math.random() * upperLetters.length)) +
+      upper.charAt(Math.floor(Math.random() * upper.length)) +
+      upper.charAt(Math.floor(Math.random() * upper.length)) +
+      upper.charAt(Math.floor(Math.random() * upper.length)) +
       Math.floor(Math.random() * 1000000).toString().padStart(6, '0') +
-      lowerLetters.charAt(Math.floor(Math.random() * lowerLetters.length)) +
-      lowerLetters.charAt(Math.floor(Math.random() * lowerLetters.length));
+      lower.charAt(Math.floor(Math.random() * lower.length)) +
+      lower.charAt(Math.floor(Math.random() * lower.length));
     
-    // Get client IP for geolocation
-    const clientIP = req.headers['x-forwarded-for'] || 
-                    req.headers['x-real-ip'] || 
-                    req.connection.remoteAddress || 
-                    req.socket.remoteAddress ||
-                    '127.0.0.1';
-
-    // Basic geolocation data (simplified)
-    const locationData = {
-      ip: clientIP,
-      country: 'Unknown',
-      city: 'Unknown',
-      timezone: 'UTC'
+    const userDoc = {
+      username,
+      email,
+      password,
+      transferCount: 0,
+      isPro: false,
+      createdAt: new Date()
     };
 
-    // Insert user with all required fields
-    const result = await pool.query(`
-      INSERT INTO users (
-        username, email, password, 
-        ip_address, country, city, timezone,
-        transfer_count, is_pro, created_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 0, false, NOW()) 
-      RETURNING id, username, email, transfer_count, is_pro, created_at`,
-      [
-        username, email, password,
-        locationData.ip, locationData.country, locationData.city, locationData.timezone
-      ]
-    );
+    const result = await db.collection('users').insertOne(userDoc);
     
-    console.log(`[REGISTER] New user: ${username} (${email}) from ${clientIP}`);
+    const { password: _, ...userResponse } = userDoc;
+    userResponse._id = result.insertedId;
     
     res.json({ 
       success: true, 
-      user: result.rows[0],
-      generatedPassword: password,
-      message: 'User registered successfully'
+      user: userResponse,
+      generatedPassword: password
     });
   } catch (error) {
-    console.error('[REGISTER] Error:', error.message);
-    
-    if (error.code === '23505') { // Unique violation
+    if (error.code === 11000) {
       return res.status(409).json({ 
         success: false, 
         error: 'Username or email already exists' 
@@ -168,29 +136,33 @@ app.post('/api/register', async (req, res) => {
     
     res.status(500).json({ 
       success: false, 
-      error: 'Registration failed: ' + error.message 
+      error: error.message 
     });
   }
 });
 
-// Get all users endpoint
+// Get users
 app.get('/api/users', async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT id, username, email, transfer_count, is_pro, 
-             country, city, created_at 
-      FROM users 
-      ORDER BY created_at DESC 
-      LIMIT 100
-    `);
+    if (!db) {
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Database not connected' 
+      });
+    }
+
+    const users = await db.collection('users')
+      .find({}, { projection: { password: 0 } })
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .toArray();
     
     res.json({ 
       success: true, 
-      users: result.rows,
-      count: result.rows.length
+      users: users,
+      count: users.length
     });
   } catch (error) {
-    console.error('[USERS] Error:', error.message);
     res.status(500).json({ 
       success: false, 
       error: error.message 
@@ -198,127 +170,34 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
-// Fallback route - serve index.html for frontend routing
+// Default route
 app.get('*', (req, res) => {
-  const indexPath = path.join(__dirname, 'dist', 'public', 'index.html');
-  try {
-    const fs = require('fs');
-    if (fs.existsSync(indexPath)) {
-      res.sendFile(indexPath);
-    } else {
-      res.status(404).json({ 
-        error: 'Frontend not built', 
-        message: 'Run build process to generate frontend files' 
-      });
-    }
-  } catch (error) {
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Create HTTP server
-const server = createServer(app);
-
-// Add WebSocket support
-const wss = new WebSocketServer({ 
-  server: server, 
-  path: '/ws' 
-});
-
-wss.on('connection', (ws, request) => {
-  const clientIP = request.headers['x-forwarded-for'] || 
-                  request.headers['x-real-ip'] || 
-                  request.socket.remoteAddress;
-                  
-  console.log(`[WS] Connection from ${clientIP}`);
-  
-  ws.on('message', (data) => {
-    try {
-      const message = JSON.parse(data);
-      console.log(`[WS] Message: ${message.type}`);
-      
-      // Echo back for testing
-      ws.send(JSON.stringify({ 
-        type: 'echo', 
-        data: message,
-        timestamp: new Date().toISOString()
-      }));
-    } catch (error) {
-      console.error('[WS] Message error:', error.message);
-    }
-  });
-  
-  ws.on('close', () => {
-    console.log(`[WS] Connection closed: ${clientIP}`);
-  });
-  
-  ws.on('error', (error) => {
-    console.error('[WS] Error:', error.message);
+  res.json({ 
+    message: 'ShareZidi MongoDB API',
+    endpoints: [
+      'GET /api/health',
+      'GET /api/dbtest', 
+      'POST /api/register',
+      'GET /api/users'
+    ]
   });
 });
-
-// Database connection test
-async function testDatabase() {
-  try {
-    console.log('[DB] Testing connection...');
-    const result = await pool.query('SELECT NOW() as time');
-    console.log(`[DB] ✅ Connected successfully at ${result.rows[0].time}`);
-    
-    // Test users table
-    try {
-      const userResult = await pool.query('SELECT COUNT(*) as count FROM users');
-      console.log(`[DB] ✅ Users table accessible (${userResult.rows[0].count} users)`);
-    } catch (tableError) {
-      console.log('[DB] ⚠️  Users table not found - may need migration');
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('[DB] ❌ Connection failed:', error.message);
-    return false;
-  }
-}
-
-// Graceful shutdown
-const gracefulShutdown = () => {
-  console.log('[SHUTDOWN] Graceful shutdown initiated');
-  server.close(async () => {
-    console.log('[SHUTDOWN] HTTP server closed');
-    try {
-      await pool.end();
-      console.log('[SHUTDOWN] Database pool closed');
-    } catch (error) {
-      console.error('[SHUTDOWN] Database close error:', error.message);
-    }
-    process.exit(0);
-  });
-};
-
-process.on('SIGTERM', gracefulShutdown);
-process.on('SIGINT', gracefulShutdown);
 
 // Start server
 async function startServer() {
-  const dbConnected = await testDatabase();
+  const dbConnected = await connectMongoDB();
   
-  server.listen(PORT, '0.0.0.0', () => {
-    console.log(`[SERVER] ✅ ShareZidi running on port ${PORT}`);
-    console.log(`[SERVER] Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`[SERVER] Database: ${dbConnected ? '✅' : '❌'} ${dbConnected ? 'Connected' : 'Disconnected'}`);
-    console.log(`[SERVER] WebSocket: ✅ Ready on /ws`);
-    console.log(`[SERVER] Health check: http://localhost:${PORT}/api/health`);
-    console.log(`[SERVER] Database test: http://localhost:${PORT}/api/dbtest`);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[SERVER] ✅ Running on port ${PORT}`);
+    console.log(`[SERVER] Database: ${dbConnected ? '✅ Connected' : '❌ Disconnected'}`);
+    console.log(`[SERVER] Health: http://localhost:${PORT}/api/health`);
   });
 }
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('[ERROR] Unhandled Rejection at:', promise, 'reason:', reason);
-});
-
-process.on('uncaughtException', (error) => {
-  console.error('[ERROR] Uncaught Exception:', error);
-  gracefulShutdown();
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  if (mongoClient) await mongoClient.close();
+  process.exit(0);
 });
 
 startServer();

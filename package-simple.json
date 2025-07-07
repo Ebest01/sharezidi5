@@ -1,15 +1,15 @@
 {
-  "name": "sharezidi",
+  "name": "sharezidi-mongo",
   "version": "1.0.0",
   "type": "commonjs",
-  "main": "server.js",
+  "main": "server.cjs",
   "scripts": {
-    "start": "node server.js",
-    "build": "echo 'No build needed - production ready'"
+    "start": "node server.cjs",
+    "build": "echo 'MongoDB build complete'"
   },
   "dependencies": {
     "express": "^4.19.2",
-    "pg": "^8.12.0",
+    "mongodb": "^6.3.0",
     "ws": "^8.18.0"
   },
   "engines": {
