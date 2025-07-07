@@ -1,0 +1,111 @@
+
+[WARNING] Starting server without database connection
+[SERVER] ShareZidi production server running on port 5000
+[SERVER] Database: ❌ Disconnected
+[SERVER] WebSocket: ✅ Ready on /ws
+
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/prod-server.js
+
+[DATABASE] Testing connection...
+[DEBUG] ===== PRODUCTION SERVER WITH DATABASE STARTING =====
+[DEBUG] Environment: { NODE_ENV: 'production', PORT: '5000', DATABASE_URL_EXISTS: true }
+[DEBUG] Serving static files from: /workspace/dist/public
+[DATABASE] Testing PostgreSQL connection...
+[DATABASE] Connection or table access failed: ErrorEvent {
+[SERVER] ShareZidi production server running on port 5000
+  [Symbol(kTarget)]: WebSocket {
+    _events: [Object: null prototype] {
+      error: [Function],
+      message: [Function],
+      close: [Function],
+      open: [Function]
+    },
+    _eventsCount: 4,
+    _maxListeners: undefined,
+    _binaryType: 'arraybuffer',
+    _closeCode: 1006,
+    _closeFrameReceived: false,
+    _closeFrameSent: false,
+    _closeMessage: <Buffer >,
+    _closeTimer: null,
+    _errorEmitted: true,
+    _extensions: {},
+    _paused: false,
+    _protocol: '',
+    _readyState: 3,
+    _receiver: null,
+    _sender: null,
+    _socket: null,
+    _bufferedAmount: 0,
+    _isServer: false,
+    _redirects: 0,
+    _autoPong: true,
+    _url: 'wss://sharezidi_v2_sharezidi_db/v2',
+    _req: null,
+    [Symbol(shapeMode)]: false,
+    [Symbol(kCapture)]: false
+  },
+  [Symbol(kType)]: 'error',
+  [Symbol(kError)]: Error: connect ECONNREFUSED 10.0.1.8:443
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+    errno: -111,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '10.0.1.8',
+    port: 443
+  },
+  [Symbol(kMessage)]: 'connect ECONNREFUSED 10.0.1.8:443'
+}
+[DATABASE] ❌ PostgreSQL connection failed: ErrorEvent {
+  [Symbol(kTarget)]: WebSocket {
+    _events: [Object: null prototype] {
+      error: [Function],
+      message: [Function],
+      close: [Function],
+      open: [Function]
+    },
+    _eventsCount: 4,
+    _maxListeners: undefined,
+    _binaryType: 'arraybuffer',
+    _closeCode: 1006,
+    _closeFrameReceived: false,
+    _closeFrameSent: false,
+    _closeMessage: <Buffer >,
+    _closeTimer: null,
+    _errorEmitted: true,
+    _extensions: {},
+    _paused: false,
+    _protocol: '',
+    _readyState: 3,
+    _receiver: null,
+    _sender: null,
+    _socket: null,
+    _bufferedAmount: 0,
+    _isServer: false,
+    _redirects: 0,
+    _autoPong: true,
+    _url: 'wss://sharezidi_v2_sharezidi_db/v2',
+    _req: null,
+    [Symbol(shapeMode)]: false,
+    [Symbol(kCapture)]: false
+  },
+  [Symbol(kType)]: 'error',
+  [Symbol(kError)]: Error: connect ECONNREFUSED 10.0.1.8:443
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+    errno: -111,
+    code: 'ECONNREFUSED',
+[SERVER] Database: ❌ Disconnected
+    syscall: 'connect',
+    address: '10.0.1.8',
+    port: 443
+  },
+  [Symbol(kMessage)]: 'connect ECONNREFUSED 10.0.1.8:443'
+}
+[WARNING] Starting server without database connection
+[SERVER] WebSocket: ✅ Ready on /ws
+npm error path /workspace
+npm error command failed
+npm error signal SIGTERM
+npm error command sh -c NODE_ENV=production node dist/prod-server.js
+npm error A complete log of this run can be found in: /tmp/npm_cache/_logs/2025-07-07T02_15_02_874Z-debug-0.log
