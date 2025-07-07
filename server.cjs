@@ -14,9 +14,12 @@ let mongoClient;
 async function connectMongoDB() {
   try {
     const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/sharezidi';
-    console.log('[MONGO] Connecting...');
+    console.log('[MONGO] Connecting to:', mongoUri.replace(/\/\/.*@/, '//*****@'));
     
-    mongoClient = new MongoClient(mongoUri);
+    mongoClient = new MongoClient(mongoUri, {
+      authSource: 'admin',
+      directConnection: true
+    });
     await mongoClient.connect();
     db = mongoClient.db('sharezidi');
     
