@@ -12,8 +12,8 @@ app.use(express.urlencoded({ extended: false, limit: "50mb" }));
 
 // CORRECT MongoDB connection using EXACT EasyPanel credentials
 const username = 'szmdb_user';
-const password = '1!!!!!...Magics4321';
-const host = 'sharezidi_mdb';
+const password = '11!!!!...Magics4321';
+const host = 'sharezidi_v2_sharezidi_mdb';
 const port = '27017';
 
 // URL encode the password to handle special characters
@@ -245,7 +245,7 @@ app.get('*', (req, res) => {
   res.json({ 
     message: 'ShareZidi MongoDB API - Using Correct EasyPanel Credentials',
     status: db ? 'database-connected' : 'database-disconnected',
-    credentials: 'szmdb_user@sharezidi_mdb:27017',
+    credentials: 'szmdb_user@sharezidi_v2_sharezidi_mdb:27017',
     endpoints: [
       'GET /api/health',
       'GET /api/dbtest', 
