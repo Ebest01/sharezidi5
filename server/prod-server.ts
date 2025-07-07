@@ -3,17 +3,93 @@ import path from "path";
 import { WebSocketServer, WebSocket } from "ws";
 import { createServer } from "http";
 import { FileTransferService } from "./services/fileTransferService.js";
+import { GeolocationService } from "./services/geolocationService.js";
+import { db } from "./db.js";
+import { visitors, users, type InsertVisitor } from "@shared/schema";
+import { eq } from "drizzle-orm";
+import { generatePassword, extractUsernameFromEmail, validateEmail } from "./utils/passwordGenerator.js";
+import { scrypt, randomBytes, timingSafeEqual } from "crypto";
+import { promisify } from "util";
 import fs from "fs";
+
+const scryptAsync = promisify(scrypt);
+
+// Password hashing functions
+async function hashPassword(password: string) {
+  const salt = randomBytes(16).toString("hex");
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString("hex")}.${salt}`;
+}
+
+async function comparePasswords(supplied: string, stored: string) {
+  const [hashed, salt] = stored.split(".");
+  const hashedBuf = Buffer.from(hashed, "hex");
+  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
+  return timingSafeEqual(hashedBuf, suppliedBuf);
+}
 
 const app = express();
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: false, limit: "50mb" }));
 
-// Request logging
-app.use((req, res, next) => {
-  const start = Date.now();
-  const originalSend = res.send;
+console.log("[DEBUG] ===== PRODUCTION SERVER WITH DATABASE STARTING =====");
+console.log("[DEBUG] Environment:", {
+  NODE_ENV: process.env.NODE_ENV,
+  PORT: process.env.PORT,
+  DATABASE_URL_EXISTS: !!process.env.DATABASE_URL
+});
 
+// Test database connection
+async function testDatabaseConnection() {
+  try {
+    console.log("[DATABASE] Testing PostgreSQL connection...");
+    const result = await db.execute("SELECT 1 as test");
+    console.log("[DATABASE] ✅ PostgreSQL connection successful:", result);
+    
+    // Test users table access
+    const userCount = await db.select().from(users).limit(1);
+    console.log("[DATABASE] ✅ Users table accessible, sample data:", userCount.length > 0 ? userCount[0] : "No users yet");
+    
+    return true;
+  } catch (error) {
+    console.error("[DATABASE] ❌ PostgreSQL connection failed:", error);
+    return false;
+  }
+}
+
+// Request logging with visitor tracking
+app.use(async (req, res, next) => {
+  const start = Date.now();
+  const ip = GeolocationService.extractIPAddress(req);
+  
+  // Log visitor if it's a page request (not API or asset)
+  if (!req.url.startsWith('/api/') && !req.url.startsWith('/assets/') && !req.url.includes('.')) {
+    try {
+      const locationData = await GeolocationService.getLocationData(ip);
+      const visitorData: InsertVisitor = {
+        sessionId: GeolocationService.generateSessionId(),
+        ipAddress: ip,
+        userAgent: req.get('User-Agent') || '',
+        referer: req.get('Referer') || '',
+        requestPath: req.url,
+        country: locationData?.country || 'Unknown',
+        countryCode: locationData?.country_code || '',
+        region: locationData?.region || '',
+        city: locationData?.city || '',
+        timezone: locationData?.timezone || '',
+        latitude: locationData?.latitude || '',
+        longitude: locationData?.longitude || '',
+        isp: locationData?.isp || '',
+      };
+      
+      await db.insert(visitors).values(visitorData);
+      console.log(`[Visitor] ${ip} from ${visitorData.city}, ${visitorData.country} requesting ${req.url}`);
+    } catch (error) {
+      console.log(`[Visitor] ${ip} requesting ${req.url} (geolocation failed)`);
+    }
+  }
+
+  const originalSend = res.send;
   res.send = function (data) {
     const duration = Date.now() - start;
     console.log(`${req.method} ${req.url} ${res.statusCode} in ${duration}ms`);
@@ -34,8 +110,6 @@ wss.on("connection", (ws: WebSocket, request) => {
   const ip = request.socket.remoteAddress;
 
   console.log(`[WebSocket] New connection from: ${ip}`);
-
-  // Register user with file transfer service
   fileTransferService.registerUser(userId, ws);
 
   ws.on("close", () => {
@@ -49,292 +123,291 @@ wss.on("connection", (ws: WebSocket, request) => {
   });
 });
 
-// Simple in-memory session store for production
-const sessions = new Map<string, { userId: string; createdAt: number }>();
-
-console.log("[DEBUG] ===== SIMPLE PRODUCTION SERVER STARTING =====");
-console.log("[DEBUG] Environment:", {
-  NODE_ENV: process.env.NODE_ENV,
-  PORT: process.env.PORT,
-  DATABASE_URL_EXISTS: !!process.env.DATABASE_URL
-});
-
-// Simplified authentication endpoints
-app.get("/api/auth/user", (req, res) => {
+// Database-backed authentication endpoints
+app.get("/api/auth/user", async (req, res) => {
   console.log("[DEBUG] ===== AUTH CHECK START =====");
   
-  const sessionId = req.headers.authorization?.replace('Bearer ', '') || 
+  const sessionId = req.headers.authorization?.replace("Bearer ", "") || 
                    req.headers.cookie?.match(/sessionId=([^;]+)/)?.[1];
   
   console.log("[DEBUG] Session lookup:", {
-    sessionId: sessionId,
+    sessionId,
     cookieHeader: req.headers.cookie,
     authHeader: req.headers.authorization
   });
-  
-  const session = sessions.get(sessionId || '');
-  console.log("[DEBUG] Session found:", session);
-  
-  if (session && session.userId === "admin") {
-    console.log("[DEBUG] Admin session valid - returning admin user");
-    console.log("[DEBUG] ===== AUTH CHECK END (SUCCESS) =====");
-    return res.json({
-      id: 1,
-      email: "deshabunda2@gmail.com",
-      username: "AxDMIxN",
+
+  try {
+    if (sessionId) {
+      // Try to find user by session ID in database  
+      const user = await db.select().from(users).where(eq(users.username, sessionId)).limit(1);
+      
+      if (user.length > 0) {
+        console.log("[DEBUG] ✅ Database user found:", user[0].email);
+        console.log("[DEBUG] ===== AUTH CHECK END (DATABASE USER) =====");
+        return res.json({
+          id: user[0].id.toString(),
+          email: user[0].email,
+          username: user[0].username,
+          transferCount: user[0].transferCount,
+          isPro: user[0].isPro,
+          isGuest: false
+        });
+      }
+    }
+    
+    // Return guest user if no valid session
+    console.log("[DEBUG] No valid session - returning guest");
+    console.log("[DEBUG] ===== AUTH CHECK END (GUEST) =====");
+    res.json({
+      id: "guest",
+      email: "guest@sharezidi.com",
       transferCount: 0,
-      isPro: true,
-      isGuest: false,
+      isPro: false,
+      isGuest: true
+    });
+  } catch (error) {
+    console.error("[DEBUG] Database error in auth check:", error);
+    console.log("[DEBUG] ===== AUTH CHECK END (ERROR - GUEST) =====");
+    res.json({
+      id: "guest",
+      email: "guest@sharezidi.com",
+      transferCount: 0,
+      isPro: false,
+      isGuest: true
     });
   }
-  
-  console.log("[DEBUG] No valid session - returning guest");
-  console.log("[DEBUG] ===== AUTH CHECK END (GUEST) =====");
-  res.json({
-    id: "guest",
-    email: "guest@sharezidi.com",
-    transferCount: 0,
-    isPro: false,
-    isGuest: true,
-  });
 });
 
-app.post("/api/auth/register", (req, res) => {
-  console.log("[DEBUG] Registration attempt (disabled in production)");
-  res.json({ success: true, message: "Registration disabled in production" });
-});
-
-app.post("/api/auth/login", (req, res) => {
-  console.log("[DEBUG] ===== LOGIN ATTEMPT START =====");
-  const { email, password } = req.body;
-  console.log("[DEBUG] Login attempt:", { email, hasPassword: !!password });
+// Registration endpoint - email only, auto-generate password
+app.post("/api/register", async (req, res) => {
+  console.log("[REGISTER] ===== REGISTRATION START =====");
   
-  // Check for admin credentials
-  if ((email === "AxDMIxN" || email === "deshabunda2@gmail.com") && password === "AZQ00001xx") {
-    const sessionId = Math.random().toString(36).substring(2, 15);
-    const sessionData = { userId: "admin", createdAt: Date.now() };
-    sessions.set(sessionId, sessionData);
+  try {
+    const { email } = req.body;
     
-    console.log("[DEBUG] Admin login successful:", {
-      sessionId: sessionId,
-      sessionData: sessionData,
-      totalSessions: sessions.size
-    });
+    if (!email || !validateEmail(email)) {
+      console.log("[REGISTER] Invalid email:", email);
+      return res.status(400).json({ error: "Valid email is required" });
+    }
     
-    // Set session cookie
-    res.cookie('sessionId', sessionId, { 
-      httpOnly: true, 
-      maxAge: 24 * 60 * 60 * 1000,
-      path: '/'
-    });
+    // Check if user already exists
+    const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    if (existingUser.length > 0) {
+      console.log("[REGISTER] User already exists:", email);
+      return res.status(400).json({ error: "User with this email already exists" });
+    }
     
-    console.log("[DEBUG] ===== LOGIN ATTEMPT END (SUCCESS) =====");
-    return res.json({
+    // Generate password and create user
+    const generatedPassword = generatePassword();
+    const hashedPassword = await hashPassword(generatedPassword);
+    const username = extractUsernameFromEmail(email);
+    
+    // Get geolocation data
+    const ip = GeolocationService.extractIPAddress(req);
+    const locationData = await GeolocationService.getLocationData(ip);
+    
+    const newUser = await db.insert(users).values({
+      email,
+      username,
+      password: hashedPassword,
+      transferCount: 0,
+      isPro: false,
+      ipAddress: ip,
+      country: locationData?.country || 'Unknown',
+      countryCode: locationData?.country_code || '',
+      region: locationData?.region || '',
+      city: locationData?.city || '',
+      timezone: locationData?.timezone || '',
+      latitude: locationData?.latitude || '',
+      longitude: locationData?.longitude || '',
+      isp: locationData?.isp || ''
+    }).returning();
+    
+    console.log("[REGISTER] ✅ User created successfully:", email);
+    console.log("[REGISTER] Generated password:", generatedPassword);
+    console.log("[REGISTER] ===== REGISTRATION END =====");
+    
+    res.status(201).json({
       success: true,
       user: {
-        id: 1,
-        email: "deshabunda2@gmail.com",
-        username: "AxDMIxN",
-        transferCount: 0,
-        isPro: true,
-        isGuest: false
-      }
+        id: newUser[0].id,
+        email: newUser[0].email,
+        username: newUser[0].username
+      },
+      generatedPassword: generatedPassword,
+      message: "Registration successful! Please save your password."
     });
+    
+  } catch (error) {
+    console.error("[REGISTER] Registration error:", error);
+    res.status(500).json({ error: "Registration failed" });
   }
+});
+
+// Login endpoint
+app.post("/api/login", async (req, res) => {
+  console.log("[LOGIN] ===== LOGIN START =====");
   
-  console.log("[DEBUG] Invalid credentials");
-  console.log("[DEBUG] ===== LOGIN ATTEMPT END (FAILED) =====");
-  res.status(401).json({ error: "Invalid credentials" });
-});
-
-app.post("/api/auth/logout", (req, res) => {
-  console.log("[DEBUG] Logout attempt");
-  const sessionId = req.headers.cookie?.match(/sessionId=([^;]+)/)?.[1];
-  if (sessionId) {
-    sessions.delete(sessionId);
-    console.log("[DEBUG] Session deleted:", sessionId);
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      console.log("[LOGIN] Missing email or password");
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+    
+    // Find user by email
+    const user = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    
+    if (user.length === 0) {
+      console.log("[LOGIN] User not found:", email);
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+    
+    // Verify password
+    const passwordMatch = await comparePasswords(password, user[0].password || '');
+    
+    if (!passwordMatch) {
+      console.log("[LOGIN] Invalid password for:", email);
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+    
+    console.log("[LOGIN] ✅ Login successful:", email);
+    console.log("[LOGIN] ===== LOGIN END =====");
+    
+    res.json({
+      success: true,
+      user: {
+        id: user[0].id.toString(),
+        email: user[0].email,
+        username: user[0].username,
+        transferCount: user[0].transferCount,
+        isPro: user[0].isPro,
+        isGuest: false
+      },
+      sessionToken: user[0].username // Use username as session token for simplicity
+    });
+    
+  } catch (error) {
+    console.error("[LOGIN] Login error:", error);
+    res.status(500).json({ error: "Login failed" });
   }
-  res.clearCookie('sessionId');
-  res.json({ success: true });
 });
 
-// Health check with detailed status
-app.get("/health", (req, res) => {
-  const memUsage = process.memoryUsage();
+// Database test endpoint - get all users
+app.get("/api/dbtest/users", async (req, res) => {
+  console.log("[DBTEST] ===== FETCHING ALL USERS =====");
+  
+  try {
+    const allUsers = await db.select({
+      id: users.id,
+      email: users.email,
+      username: users.username,
+      transferCount: users.transferCount,
+      isPro: users.isPro,
+      createdAt: users.createdAt,
+      country: users.country,
+      city: users.city
+    }).from(users).orderBy(users.createdAt);
+    
+    console.log(`[DBTEST] ✅ Found ${allUsers.length} users in database`);
+    
+    res.json({
+      success: true,
+      count: allUsers.length,
+      users: allUsers
+    });
+    
+  } catch (error) {
+    console.error("[DBTEST] Error fetching users:", error);
+    res.status(500).json({ error: "Failed to fetch users from database" });
+  }
+});
+
+// Health check endpoint
+app.get("/health", async (req, res) => {
+  const dbStatus = await testDatabaseConnection();
   res.json({
     status: "ok",
     timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    memory: {
-      rss: Math.round(memUsage.rss / 1024 / 1024) + "MB",
-      heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024) + "MB",
-    },
-    pid: process.pid,
-    activeSessions: sessions.size,
-    environment: process.env.NODE_ENV || 'development'
+    database: dbStatus ? "connected" : "disconnected",
+    connectedDevices: fileTransferService.getConnectedUserCount?.() || 0
   });
 });
 
-// Error handler
-app.use((err: any, req: any, res: any, next: any) => {
-  const status = err.status || err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
-  console.error("Server error:", err);
-  res.status(status).json({ message });
+// Analytics endpoint (database-powered)
+app.get("/api/analytics", async (req, res) => {
+  try {
+    const totalVisitors = await db.select().from(visitors);
+    const totalUsers = await db.select().from(users);
+    
+    // Group by country
+    const countryStats = totalVisitors.reduce((acc, visitor) => {
+      const country = visitor.country || 'Unknown';
+      acc[country] = (acc[country] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    res.json({
+      totalVisitors: totalVisitors.length,
+      totalUsers: totalUsers.length,
+      countryBreakdown: Object.entries(countryStats)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 10)
+        .map(([country, count]) => ({ country, count })),
+      recentVisitors: totalVisitors
+        .slice(-10)
+        .map(v => ({
+          city: v.city,
+          country: v.country,
+          timestamp: v.createdAt,
+          path: v.requestPath
+        }))
+    });
+  } catch (error) {
+    console.error("[Analytics] Database error:", error);
+    res.status(500).json({ error: "Analytics unavailable" });
+  }
 });
 
-// DEBUGGING: Find the correct static file path
-console.log("=== DEBUGGING STATIC FILE PATHS ===");
-console.log("Current working directory:", process.cwd());
+// Static file serving
+const publicPath = path.join(process.cwd(), "dist", "public");
+console.log("[DEBUG] Serving static files from:", publicPath);
 
-const possiblePaths = [
-  path.resolve(process.cwd(), "dist", "public"),
-  path.resolve(process.cwd(), "client", "dist"),
-  path.resolve(process.cwd(), "dist"),
-  path.resolve("/app/dist/public"),
-  path.resolve("/app/client/dist"),
-  path.resolve("/app/dist"),
-];
-
-let distPath;
-for (const p of possiblePaths) {
-  console.log(`Checking path: ${p}`);
-  try {
-    if (fs.existsSync(p)) {
-      const files = fs.readdirSync(p);
-      console.log(
-        `  📁 Directory exists, files: ${files.slice(0, 5).join(", ")}${files.length > 5 ? "..." : ""}`,
-      );
-
-      if (fs.existsSync(path.join(p, "index.html"))) {
-        distPath = p;
-        console.log(`  ✅ Found index.html at: ${distPath}`);
-        break;
-      } else {
-        console.log(`  ❌ No index.html found`);
-      }
-    } else {
-      console.log(`  ❌ Directory doesn't exist`);
-    }
-  } catch (e) {
-    console.log(`  ❌ Error checking path: ${(e as Error).message}`);
-  }
-}
-
-if (!distPath) {
-  console.error("❌ Could not find index.html in any expected location");
-  console.log("Available directories:");
-  try {
-    const rootFiles = fs.readdirSync(process.cwd());
-    console.log(`Root directory files: ${rootFiles.join(", ")}`);
-  } catch (e) {
-    console.error("Can't read root directory");
-  }
-  distPath = path.resolve(process.cwd(), "dist", "public"); // fallback
-}
-
-console.log(`🎯 Using static path: ${distPath}`);
-console.log("=== END DEBUGGING ===");
-
-// Serve static files with proper MIME types
-app.use(express.static(distPath, {
-  setHeaders: (res, path) => {
-    if (path.endsWith('.js')) {
-      res.setHeader('Content-Type', 'application/javascript');
-    } else if (path.endsWith('.mjs')) {
-      res.setHeader('Content-Type', 'application/javascript');
-    } else if (path.endsWith('.css')) {
-      res.setHeader('Content-Type', 'text/css');
-    }
-  }
-}));
-
-// Catch-all handler for SPA (only for non-asset requests)
-app.get("*", (req, res) => {
-  // Don't serve index.html for asset requests
-  if (req.url.startsWith('/assets/') || 
-      req.url.startsWith('/static/') || 
-      req.url.endsWith('.js') || 
-      req.url.endsWith('.css') || 
-      req.url.endsWith('.png') || 
-      req.url.endsWith('.svg') || 
-      req.url.endsWith('.ico')) {
+// Serve static assets
+app.use("/assets", (req, res, next) => {
+  const assetPath = path.join(publicPath, "assets", req.url);
+  
+  if (!fs.existsSync(assetPath)) {
     console.log(`Asset request 404: ${req.url}`);
-    return res.status(404).send('Asset not found');
+    return res.status(404).send("Asset not found");
   }
+  
+  res.sendFile(assetPath);
+});
 
-  const indexPath = path.join(distPath, "index.html");
+// SPA routing - serve index.html for all non-API routes
+app.get("*", (req, res) => {
+  const indexPath = path.join(publicPath, "index.html");
   console.log(`Serving SPA route ${req.url} from: ${indexPath}`);
+  res.sendFile(indexPath);
+});
 
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    console.error(`❌ index.html not found at: ${indexPath}`);
-    res.status(404).send("index.html not found");
+const PORT = process.env.PORT || 5000;
+
+// Start server with database connection test
+async function startServer() {
+  const dbConnected = await testDatabaseConnection();
+  
+  if (!dbConnected) {
+    console.warn("[WARNING] Starting server without database connection");
   }
-});
-
-const port = parseInt(process.env.PORT || "3001");
-
-// Clean up old sessions periodically (every hour)
-setInterval(() => {
-  const now = Date.now();
-  let cleaned = 0;
-  for (const [sessionId, session] of sessions.entries()) {
-    if (now - session.createdAt > 24 * 60 * 60 * 1000) { // 24 hours
-      sessions.delete(sessionId);
-      cleaned++;
-    }
-  }
-  if (cleaned > 0) {
-    console.log(`[DEBUG] Cleaned ${cleaned} expired sessions`);
-  }
-}, 60 * 60 * 1000);
-
-// Graceful shutdown handling
-process.on("SIGTERM", () => {
-  console.log("SIGTERM received, shutting down gracefully");
-  httpServer.close(() => {
-    console.log("Server closed");
-    process.exit(0);
+  
+  httpServer.listen(PORT, "0.0.0.0", () => {
+    console.log(`[SERVER] ShareZidi production server running on port ${PORT}`);
+    console.log(`[SERVER] Database: ${dbConnected ? '✅ Connected' : '❌ Disconnected'}`);
+    console.log(`[SERVER] WebSocket: ✅ Ready on /ws`);
   });
-});
+}
 
-process.on("SIGINT", () => {
-  console.log("SIGINT received, shutting down gracefully");
-  httpServer.close(() => {
-    console.log("Server closed");
-    process.exit(0);
-  });
-});
-
-// Handle uncaught exceptions
-process.on("uncaughtException", (err) => {
-  console.error("Uncaught Exception:", err);
-  process.exit(1);
-});
-
-process.on("unhandledRejection", (reason, promise) => {
-  console.error("Unhandled Rejection at:", promise, "reason:", reason);
-});
-
-httpServer
-  .listen(port, "0.0.0.0", () => {
-    console.log(`ShareZidi production server running on port ${port}`);
-    console.log(`Serving static files from: ${distPath}`);
-    console.log(`WebSocket server available at /ws`);
-    console.log(`Process ID: ${process.pid}`);
-    console.log(`Health check: http://localhost:${port}/health`);
-    console.log(`Admin login: AxDMIxN / AZQ00001xx`);
-    console.log(`Active sessions: ${sessions.size}`);
-    console.log("[DEBUG] ===== SERVER STARTUP COMPLETE =====");
-  })
-  .on("error", (err: any) => {
-    if (err.code === "EADDRINUSE") {
-      console.error(`Port ${port} is already in use`);
-      process.exit(1);
-    } else {
-      console.error("Server error:", err);
-      process.exit(1);
-    }
-  });
+startServer().catch(console.error);
