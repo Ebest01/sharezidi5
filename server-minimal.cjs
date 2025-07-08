@@ -1,6 +1,7 @@
 // Minimal server for EasyPanel debugging
 const express = require('express');
 const path = require('path');
+const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -8,6 +9,31 @@ const PORT = process.env.PORT || 5000;
 console.log(`[MINIMAL] Starting server on port ${PORT}`);
 console.log(`[MINIMAL] Environment: ${process.env.NODE_ENV || 'development'}`);
 console.log(`[MINIMAL] Working directory: ${process.cwd()}`);
+
+// Database connection
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+// Initialize database table
+async function initDatabase() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS test_users (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        username VARCHAR(255) NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('[DATABASE] ✅ test_users table ready');
+  } catch (error) {
+    console.error('[DATABASE] ❌ Failed to initialize database:', error.message);
+  }
+}
+
+initDatabase();
 
 // Basic middleware
 app.use(express.json());
@@ -60,32 +86,38 @@ app.post('/api/register', async (req, res) => {
   }
   
   try {
-    const newUser = {
-      email: email,
-      username: username || email.split('@')[0],
-      password: password, // In production, this should be hashed
-      createdAt: new Date().toISOString(),
-      transferCount: 0,
-      isPro: false
-    };
+    const result = await pool.query(
+      'INSERT INTO test_users (email, username, password) VALUES ($1, $2, $3) RETURNING id, email, username, created_at',
+      [email, username || email.split('@')[0], password]
+    );
     
-    console.log(`[MINIMAL] Creating user:`, newUser);
+    const newUser = result.rows[0];
+    console.log(`[DATABASE] ✅ User created:`, newUser);
     
     res.json({
       success: true,
       message: 'User registered successfully',
       user: {
+        id: newUser.id,
         email: newUser.email,
         username: newUser.username,
-        createdAt: newUser.createdAt
+        createdAt: newUser.created_at
       }
     });
   } catch (error) {
-    console.error(`[MINIMAL] Registration error:`, error);
-    res.status(500).json({
-      success: false,
-      error: 'Registration failed: ' + error.message
-    });
+    console.error(`[DATABASE] ❌ Registration error:`, error);
+    
+    if (error.code === '23505') { // Unique violation
+      res.status(400).json({
+        success: false,
+        error: 'Email already exists'
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: 'Registration failed: ' + error.message
+      });
+    }
   }
 });
 
