@@ -8,6 +8,7 @@ const PORT = process.env.PORT || 5000;
 console.log(`[MINIMAL] Starting server on port ${PORT}`);
 console.log(`[MINIMAL] Environment: ${process.env.NODE_ENV || 'development'}`);
 console.log(`[MINIMAL] Working directory: ${process.cwd()}`);
+console.log(`[MINIMAL] Version: 1.1 with /simpledbtest endpoint`);
 
 // Basic middleware
 app.use(express.json());
@@ -30,8 +31,9 @@ app.get('/', (req, res) => {
   res.json({ 
     message: 'ShareZidi Minimal Server',
     status: 'running',
-    endpoints: ['/api/health', '/test'],
-    port: PORT
+    endpoints: ['/api/health', '/test', '/simpledbtest'],
+    port: PORT,
+    version: '1.1'
   });
 });
 
