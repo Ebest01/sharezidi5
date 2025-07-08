@@ -71,19 +71,25 @@ connectToMongo();
 // Basic middleware
 app.use(express.json());
 
-// Serve static files from multiple locations
-const staticPaths = [
-  path.join(__dirname, 'dist', 'public'),
-  path.join(__dirname, 'assets'),
-  path.join(__dirname, 'client', 'src')
-];
-
-staticPaths.forEach(staticPath => {
-  if (fs.existsSync(staticPath)) {
-    console.log(`[MINIMAL] Serving static files from: ${staticPath}`);
-    app.use(express.static(staticPath));
+// Serve static files with proper MIME types
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
+app.use('/src', express.static(path.join(__dirname, 'client/src'), {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.tsx') || path.endsWith('.ts')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    }
+    if (path.endsWith('.jsx') || path.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    }
   }
-});
+}));
+
+// Check for built React app
+const builtPath = path.join(__dirname, 'dist', 'public');
+if (fs.existsSync(builtPath)) {
+  console.log(`[MINIMAL] Serving built React app from: ${builtPath}`);
+  app.use(express.static(builtPath));
+}
 
 // Health check without MongoDB
 app.get('/api/health', (req, res) => {
@@ -97,19 +103,29 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// For production: serve React app from index.html
+// Check for React app files
 const indexPath = path.join(__dirname, 'index.html');
+const builtIndexPath = path.join(__dirname, 'dist', 'public', 'index.html');
 const hasReactApp = fs.existsSync(indexPath);
+const hasBuiltApp = fs.existsSync(builtIndexPath);
 
-// Serve the React application for main routes
-if (hasReactApp) {
-  // Serve React app for main routes (not API routes)
+console.log(`[MINIMAL] React app check: index.html=${hasReactApp}, built=${hasBuiltApp}`);
+
+// Serve the React application for main routes  
+if (hasBuiltApp) {
+  // Production: serve built React app
   app.get(['/', '/auth', '/start', '/login'], (req, res) => {
-    console.log(`[MINIMAL] Serving React app for: ${req.path}`);
+    console.log(`[MINIMAL] Serving built React app for: ${req.path}`);
+    res.sendFile(builtIndexPath);
+  });
+} else if (hasReactApp) {
+  // Development: serve development React app
+  app.get(['/', '/auth', '/start', '/login'], (req, res) => {
+    console.log(`[MINIMAL] Serving dev React app for: ${req.path}`);
     res.sendFile(indexPath);
   });
 } else {
-  // Fallback: serve JSON response if no React app built
+  // Fallback: serve JSON response if no React app
   app.get('/', (req, res) => {
     console.log(`[MINIMAL] Root requested (no React app found)`);
     res.json({ 
@@ -380,12 +396,13 @@ app.use((err, req, res, next) => {
 });
 
 // Catch-all handler for client-side routing (must be last)
-if (hasReactApp) {
+if (hasBuiltApp || hasReactApp) {
   app.get('*', (req, res) => {
     // Only serve React app for non-API routes
     if (!req.path.startsWith('/api/') && !req.path.startsWith('/simpledbtest')) {
+      const servePath = hasBuiltApp ? builtIndexPath : indexPath;
       console.log(`[MINIMAL] Serving React app for catch-all route: ${req.path}`);
-      res.sendFile(indexPath);
+      res.sendFile(servePath);
     } else {
       res.status(404).json({ error: 'API endpoint not found' });
     }
