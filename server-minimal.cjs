@@ -30,9 +30,9 @@ app.get('/', (req, res) => {
   res.json({ 
     message: 'ShareZidi Database Test Server',
     status: 'running',
-    endpoints: ['/api/health', '/test', '/simpledbtest'],
+    endpoints: ['/api/health', '/test', '/simpledbtest', '/api/register', '/api/users'],
     port: PORT,
-    version: '2.0.0',
+    version: '2.1.0',
     deployed: new Date().toISOString()
   });
 });
@@ -45,6 +45,82 @@ app.get('/test', (req, res) => {
     server: 'minimal',
     timestamp: new Date().toISOString()
   });
+});
+
+// Register user endpoint
+app.post('/api/register', async (req, res) => {
+  console.log(`[MINIMAL] Register user requested:`, req.body);
+  const { email, password, username } = req.body;
+  
+  if (!email || !password) {
+    return res.status(400).json({
+      success: false,
+      error: 'Email and password are required'
+    });
+  }
+  
+  try {
+    const newUser = {
+      email: email,
+      username: username || email.split('@')[0],
+      password: password, // In production, this should be hashed
+      createdAt: new Date().toISOString(),
+      transferCount: 0,
+      isPro: false
+    };
+    
+    console.log(`[MINIMAL] Creating user:`, newUser);
+    
+    res.json({
+      success: true,
+      message: 'User registered successfully',
+      user: {
+        email: newUser.email,
+        username: newUser.username,
+        createdAt: newUser.createdAt
+      }
+    });
+  } catch (error) {
+    console.error(`[MINIMAL] Registration error:`, error);
+    res.status(500).json({
+      success: false,
+      error: 'Registration failed: ' + error.message
+    });
+  }
+});
+
+// Get users endpoint
+app.get('/api/users', async (req, res) => {
+  console.log(`[MINIMAL] Get users requested`);
+  
+  try {
+    // For minimal server, return mock data to test the interface
+    const mockUsers = [
+      {
+        email: 'test1@gmail.com',
+        username: 'test1',
+        createdAt: '2025-07-08T03:00:00.000Z'
+      },
+      {
+        email: 'test2@yahoo.com', 
+        username: 'test2',
+        createdAt: '2025-07-08T03:01:00.000Z'
+      }
+    ];
+    
+    res.json({
+      success: true,
+      users: mockUsers,
+      count: mockUsers.length
+    });
+  } catch (error) {
+    console.error(`[MINIMAL] Get users error:`, error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch users: ' + error.message,
+      users: []
+    });
+  }
 });
 
 // Simple database test page
@@ -190,7 +266,7 @@ app.use((err, req, res, next) => {
 // Start server
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`[MINIMAL] ✅ ShareZidi Database Test Server running on http://0.0.0.0:${PORT}`);
-  console.log(`[MINIMAL] ✅ Endpoints: /api/health, /test, /simpledbtest`);
+  console.log(`[MINIMAL] ✅ Endpoints: /api/health, /test, /simpledbtest, /api/register, /api/users`);
 });
 
 server.on('error', (err) => {
