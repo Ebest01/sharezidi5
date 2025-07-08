@@ -33,21 +33,35 @@ connectToMongo();
 // Basic middleware
 app.use(express.json());
 
-// Start Vite dev server for React app
-console.log(`[PRODUCTION] Starting Vite dev server for React app...`);
+// Start Vite dev server for React TypeScript compilation
+console.log(`[PRODUCTION] Starting Vite dev server for React TypeScript compilation...`);
 const viteProcess = spawn('npx', ['vite', '--host', '0.0.0.0', '--port', '5173'], {
-  stdio: 'inherit',
+  stdio: 'pipe',
   cwd: __dirname
 });
 
-// Proxy React app requests to Vite dev server
+// Log Vite output
+viteProcess.stdout.on('data', (data) => {
+  console.log(`[VITE] ${data.toString().trim()}`);
+});
+
+viteProcess.stderr.on('data', (data) => {
+  console.log(`[VITE ERROR] ${data.toString().trim()}`);
+});
+
+// Give Vite time to start
+setTimeout(() => {
+  console.log(`[PRODUCTION] Vite dev server running on port 5173 for TypeScript compilation`);
+}, 3000);
+
+// Proxy React app requests to Vite dev server for TypeScript compilation
 app.use('/', (req, res, next) => {
-  // Handle API routes directly
+  // Handle API routes and database test directly
   if (req.path.startsWith('/api/') || req.path.startsWith('/simpledbtest')) {
     return next();
   }
   
-  // Proxy everything else to Vite dev server
+  // Proxy React app requests to Vite for TypeScript compilation
   const fetch = require('node-fetch');
   const viteUrl = `http://localhost:5173${req.path}`;
   
@@ -59,10 +73,15 @@ app.use('/', (req, res, next) => {
       });
       return viteRes.text();
     })
-    .then(html => res.send(html))
+    .then(content => res.send(content))
     .catch(err => {
-      console.log(`[PRODUCTION] Vite proxy error for ${req.path}:`, err.message);
-      res.status(503).send('React app starting...');
+      console.log(`[VITE PROXY] Error for ${req.path}: ${err.message}`);
+      // Fallback - serve static index.html if Vite fails
+      if (req.path === '/' || !req.path.includes('.')) {
+        res.sendFile(path.join(__dirname, 'index.html'));
+      } else {
+        res.status(503).send('React app starting...');
+      }
     });
 });
 
