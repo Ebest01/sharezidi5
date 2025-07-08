@@ -99,6 +99,7 @@ ShareZidi is a real-time peer-to-peer file sharing application built with React 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Technical approach: Use highest level of programming logic and reasoning. Focus on efficient, intelligent solutions rather than complex trial-and-error approaches. Minimize back-and-forth by thinking through problems systematically before implementing.
 
 ## Recent Changes
 
@@ -151,6 +152,8 @@ Preferred communication style: Simple, everyday language.
 - Real data confirmed in both web interface and MongoDB Compass
 - Generated users like user4010@gmail.com and user9072@hotmail.com saved successfully
 - Production URL: https://sharezidi-v2-app5-servers.yoernx.easypanel.host/simpledbtest
+- **CONFIRMED**: Internal hostname `sharezidi_v2_shzidi_mdb2:27017` works perfectly in EasyPanel
+- Optimal performance using internal network rather than external IP routing
 
 ### July 8, 2025 - MONGODB CONNECTION FIXED WITH PUBLIC IP ✅
 - **RESOLVED**: Fixed MongoDB authentication by using public IP address (193.203.165.217:27017)
