@@ -112,7 +112,7 @@ const hasBuiltApp = fs.existsSync(builtIndexPath);
 
 console.log(`[MINIMAL] React app check: index.html=${hasReactApp}, built=${hasBuiltApp}`);
 
-// Serve the React application for main routes  
+// Serve the React application for main routes ONLY (not static files)
 if (hasBuiltApp) {
   // Production: serve built React app
   app.get(['/', '/auth', '/start', '/login'], (req, res) => {
@@ -148,6 +148,28 @@ app.get('/test', (req, res) => {
     test: 'working',
     server: 'minimal',
     timestamp: new Date().toISOString()
+  });
+});
+
+// Debug endpoint to test static file serving
+app.get('/debug/files', (req, res) => {
+  const srcPath = path.join(__dirname, 'src');
+  const mainJsPath = path.join(srcPath, 'main.js');
+  
+  console.log('[DEBUG] Checking file system:');
+  console.log(`[DEBUG] __dirname: ${__dirname}`);
+  console.log(`[DEBUG] srcPath: ${srcPath}`);
+  console.log(`[DEBUG] mainJsPath: ${mainJsPath}`);
+  console.log(`[DEBUG] src exists: ${fs.existsSync(srcPath)}`);
+  console.log(`[DEBUG] main.js exists: ${fs.existsSync(mainJsPath)}`);
+  
+  res.json({
+    __dirname: __dirname,
+    srcPath: srcPath,
+    mainJsPath: mainJsPath,
+    srcExists: fs.existsSync(srcPath),
+    mainJsExists: fs.existsSync(mainJsPath),
+    srcContents: fs.existsSync(srcPath) ? fs.readdirSync(srcPath) : 'directory not found'
   });
 });
 
