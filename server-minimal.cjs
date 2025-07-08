@@ -15,11 +15,10 @@ let db = null;
 
 async function connectToMongo() {
   try {
-    // URL encode the password to handle special characters
-    const password = encodeURIComponent('1!!!!...Magics4321');
-    const mongoUri = process.env.MONGODB_URI || `mongodb://szmdb_user:${password}@sharezidi_v2_sharezidi_mdb:27017/sharezidi`;
+    // Use new MongoDB credentials with simple password
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://shzmdb2:11xxshzMDB@sharezidi_v2_shzidi_mdb2:27017/sharezidi?tls=false';
     
-    console.log('[MONGO] Attempting connection with encoded credentials...');
+    console.log('[MONGO] Attempting connection to new MongoDB service...');
     const client = new MongoClient(mongoUri);
     await client.connect();
     db = client.db('sharezidi');
