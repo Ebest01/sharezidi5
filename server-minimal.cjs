@@ -13,62 +13,29 @@ console.log(`[MINIMAL] Working directory: ${process.cwd()}`);
 // MongoDB connection
 let db = null;
 
+// This is the WORKING connection string from Compass:
+const mongoUri = 'mongodb://shzmdb2:11xxshzMDB@193.203.165.217:27017/?ssl=false';
+
 async function connectToMongo() {
   try {
-    // Try multiple connection approaches
-    const credentials = {
-      username: 'shzmdb2',
-      password: '11xxshzMDB',
-      host: 'sharezidi_v2_shzidi_mdb2',
-      port: '27017'
-    };
+    console.log('[MONGO] Connecting...');
+    const client = new MongoClient(mongoUri);
     
-    // Try different URI formats
-    const uriFormats = [
-      // Format 1: Without database name in URI
-      `mongodb://${credentials.username}:${credentials.password}@${credentials.host}:${credentials.port}/?authSource=admin&tls=false`,
-      // Format 2: With explicit authSource
-      `mongodb://${credentials.username}:${credentials.password}@${credentials.host}:${credentials.port}/sharezidi?authSource=admin&tls=false`,
-      // Format 3: Default database
-      `mongodb://${credentials.username}:${credentials.password}@${credentials.host}:${credentials.port}/?tls=false`,
-      // Format 4: Environment variable corrected
-      process.env.MONGODB_URI?.replace('sharezidi_v2_sharezidi_mdb', 'sharezidi_v2_shzidi_mdb2')
-    ].filter(Boolean);
+    await client.connect();
+    db = client.db('sharezidi'); // This will create the database when you insert data
     
-    for (let i = 0; i < uriFormats.length; i++) {
-      const mongoUri = uriFormats[i];
-      console.log(`[MONGO] Attempt ${i + 1} - URI: ${mongoUri.replace(/\/\/.*@/, '//***:***@')}`);
-      
-      try {
-        const client = new MongoClient(mongoUri, {
-          connectTimeoutMS: 10000,
-          serverSelectionTimeoutMS: 5000,
-        });
-        
-        await client.connect();
-        db = client.db('sharezidi');
-        console.log('[MONGO] ✅ Connected successfully to MongoDB');
-        
-        // Test the connection
-        await db.command({ ping: 1 });
-        console.log('[MONGO] ✅ Database ping successful');
-        
-        // Test collection access
-        const testResult = await db.collection('users').countDocuments();
-        console.log('[MONGO] ✅ Users collection accessible, document count:', testResult);
-        return; // Success, exit function
-        
-      } catch (attemptError) {
-        console.log(`[MONGO] ❌ Attempt ${i + 1} failed:`, attemptError.message);
-        if (i === uriFormats.length - 1) {
-          throw attemptError; // Last attempt, throw error
-        }
-      }
-    }
+    console.log('[MONGO] ✅ Connected successfully!');
+    
+    // Test with a ping
+    await db.command({ ping: 1 });
+    console.log('[MONGO] ✅ Database accessible!');
+    
+    // Test collection access
+    const testResult = await db.collection('users').countDocuments();
+    console.log('[MONGO] ✅ Users collection accessible, document count:', testResult);
     
   } catch (error) {
-    console.error('[MONGO] ❌ All connection attempts failed:', error.message);
-    console.error('[MONGO] ❌ Full error:', error);
+    console.error('[MONGO] ❌ Failed:', error.message);
     db = null;
   }
 }
