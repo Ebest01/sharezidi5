@@ -5,7 +5,7 @@ const { createServer } = require('http');
 const { MongoClient } = require('mongodb');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json({ limit: "50mb" }));
