@@ -71,7 +71,7 @@ connectToMongo();
 // Basic middleware
 app.use(express.json());
 
-// Serve static files EXACTLY like development (working setup)
+// Serve static files with JSX/TypeScript transformation support
 app.use('/src', express.static(path.join(__dirname, 'src'), {
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.tsx') || filePath.endsWith('.ts') || filePath.endsWith('.jsx') || filePath.endsWith('.js')) {
@@ -81,6 +81,16 @@ app.use('/src', express.static(path.join(__dirname, 'src'), {
 }));
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use(express.static(__dirname)); // Serve all static files from root
+
+// Add JSX transformation middleware for .tsx files
+app.use('/src', (req, res, next) => {
+  if (req.path.endsWith('.tsx') && !req.path.endsWith('.js')) {
+    // For production, redirect .tsx requests to .js files
+    const jsPath = req.path.replace('.tsx', '.js');
+    return res.redirect(jsPath);
+  }
+  next();
+});
 
 // Check for built React app
 const builtPath = path.join(__dirname, 'dist', 'public');
