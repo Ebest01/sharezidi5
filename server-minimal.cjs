@@ -1,7 +1,7 @@
 // Minimal server for EasyPanel debugging
 const express = require('express');
 const path = require('path');
-const { Pool } = require('pg');
+const { MongoClient } = require('mongodb');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -10,30 +10,27 @@ console.log(`[MINIMAL] Starting server on port ${PORT}`);
 console.log(`[MINIMAL] Environment: ${process.env.NODE_ENV || 'development'}`);
 console.log(`[MINIMAL] Working directory: ${process.cwd()}`);
 
-// Database connection
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+// MongoDB connection
+let db = null;
 
-// Initialize database table
-async function initDatabase() {
+async function connectToMongo() {
   try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS test_users (
-        id SERIAL PRIMARY KEY,
-        email VARCHAR(255) UNIQUE NOT NULL,
-        username VARCHAR(255) NOT NULL,
-        password VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('[DATABASE] ✅ test_users table ready');
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://szmdb_user:11!!!!...Magics4321@sharezidi_v2_sharezidi_mdb:27017/sharezidi';
+    const client = new MongoClient(mongoUri);
+    await client.connect();
+    db = client.db('sharezidi');
+    console.log('[MONGO] ✅ Connected successfully to MongoDB');
+    
+    // Test the connection
+    await db.command({ ping: 1 });
+    console.log('[MONGO] ✅ Database ping successful');
   } catch (error) {
-    console.error('[DATABASE] ❌ Failed to initialize database:', error.message);
+    console.error('[MONGO] ❌ Failed to connect:', error.message);
+    db = null;
   }
 }
 
-initDatabase();
+connectToMongo();
 
 // Basic middleware
 app.use(express.json());
@@ -85,29 +82,40 @@ app.post('/api/register', async (req, res) => {
     });
   }
   
+  if (!db) {
+    return res.status(500).json({
+      success: false,
+      error: 'Database not connected'
+    });
+  }
+  
   try {
-    const result = await pool.query(
-      'INSERT INTO test_users (email, username, password) VALUES ($1, $2, $3) RETURNING id, email, username, created_at',
-      [email, username || email.split('@')[0], password]
-    );
+    const newUser = {
+      email: email,
+      username: username || email.split('@')[0],
+      password: password, // In production, this should be hashed
+      createdAt: new Date(),
+      transferCount: 0,
+      isPro: false
+    };
     
-    const newUser = result.rows[0];
-    console.log(`[DATABASE] ✅ User created:`, newUser);
+    const result = await db.collection('users').insertOne(newUser);
+    console.log(`[MONGO] ✅ User created with ID:`, result.insertedId);
     
     res.json({
       success: true,
       message: 'User registered successfully',
       user: {
-        id: newUser.id,
+        _id: result.insertedId,
         email: newUser.email,
         username: newUser.username,
-        createdAt: newUser.created_at
+        createdAt: newUser.createdAt
       }
     });
   } catch (error) {
-    console.error(`[DATABASE] ❌ Registration error:`, error);
+    console.error(`[MONGO] ❌ Registration error:`, error);
     
-    if (error.code === '23505') { // Unique violation
+    if (error.code === 11000) { // MongoDB duplicate key error
       res.status(400).json({
         success: false,
         error: 'Email already exists'
@@ -125,28 +133,40 @@ app.post('/api/register', async (req, res) => {
 app.get('/api/users', async (req, res) => {
   console.log(`[MINIMAL] Get users requested`);
   
+  if (!db) {
+    return res.status(500).json({
+      success: false,
+      error: 'Database not connected',
+      users: []
+    });
+  }
+  
   try {
-    // For minimal server, return mock data to test the interface
-    const mockUsers = [
-      {
-        email: 'test1@gmail.com',
-        username: 'test1',
-        createdAt: '2025-07-08T03:00:00.000Z'
-      },
-      {
-        email: 'test2@yahoo.com', 
-        username: 'test2',
-        createdAt: '2025-07-08T03:01:00.000Z'
-      }
-    ];
+    const users = await db.collection('users')
+      .find({})
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .toArray();
+
+    const formattedUsers = users.map(user => ({
+      _id: user._id.toString(),
+      email: user.email,
+      username: user.username,
+      password: user.password, // Showing password for testing purposes only
+      createdAt: user.createdAt,
+      transferCount: user.transferCount || 0,
+      isPro: user.isPro || false
+    }));
+
+    console.log(`[MONGO] ✅ Retrieved ${formattedUsers.length} users from database`);
     
     res.json({
       success: true,
-      users: mockUsers,
-      count: mockUsers.length
+      users: formattedUsers,
+      count: formattedUsers.length
     });
   } catch (error) {
-    console.error(`[MINIMAL] Get users error:`, error);
+    console.error(`[MONGO] ❌ Get users error:`, error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch users: ' + error.message,
