@@ -1,421 +1,181 @@
+// Production server with Vite dev server for React app
 const express = require('express');
-const path = require('path');
-const { WebSocketServer } = require('ws');
-const { createServer } = require('http');
 const { MongoClient } = require('mongodb');
+const path = require('path');
+const fs = require('fs');
+const { spawn } = require('child_process');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: false, limit: "50mb" }));
+console.log(`[PRODUCTION] Starting ShareZidi production server on port ${PORT}`);
 
-// Enhanced logging
-const log = (message, source = "express") => {
-  const timestamp = new Date().toLocaleTimeString();
-  console.log(`${timestamp} AM [${source}] ${message}`);
-};
+// MongoDB connection
+const MONGO_URI = 'mongodb://shzmdb2:11xxshzMDB@sharezidi_v2_shzidi_mdb2:27017/?ssl=false';
+let mongoClient = null;
+let isConnected = false;
 
-log(`Starting ShareZidi production server on port ${PORT}`);
-
-// MongoDB setup with EasyPanel credentials
-const username = 'szmdb_user';
-const password = '11!!!!...Magics4321';
-const host = 'sharezidi_v2_sharezidi_mdb';
-const port = '27017';
-
-const encodedPassword = encodeURIComponent(password);
-const mongoUrl = `mongodb://${username}:${encodedPassword}@${host}:${port}/?tls=false`;
-
-let db = null;
-let client = null;
-
-// Connect to MongoDB
 async function connectToMongo() {
   try {
-    log("Connecting to MongoDB...");
-    client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
-    await client.connect();
-    db = client.db('sharezidi');
-    log("✅ Connected to MongoDB successfully!");
-    return true;
+    console.log(`[MONGO] Connecting to MongoDB...`);
+    mongoClient = new MongoClient(MONGO_URI);
+    await mongoClient.connect();
+    isConnected = true;
+    console.log(`[MONGO] ✅ Connected successfully!`);
   } catch (error) {
-    log(`MongoDB connection failed: ${error.message}`);
-    return false;
+    console.error(`[MONGO] ❌ Connection failed:`, error.message);
+    isConnected = false;
   }
 }
 
-// Initialize database connection
 connectToMongo();
 
-// Health check endpoint
-app.get('/api/health', async (req, res) => {
-  let dbStatus = 'disconnected';
-  
-  if (db) {
-    try {
-      await db.query('SELECT 1');
-      dbStatus = 'connected';
-    } catch (error) {
-      log(`Health check database error: ${error.message}`);
-    }
-  }
+// Basic middleware
+app.use(express.json());
 
+// Start Vite dev server for React app
+console.log(`[PRODUCTION] Starting Vite dev server for React app...`);
+const viteProcess = spawn('npx', ['vite', '--host', '0.0.0.0', '--port', '5173'], {
+  stdio: 'inherit',
+  cwd: __dirname
+});
+
+// Proxy React app requests to Vite dev server
+app.use('/', (req, res, next) => {
+  // Handle API routes directly
+  if (req.path.startsWith('/api/') || req.path.startsWith('/simpledbtest')) {
+    return next();
+  }
+  
+  // Proxy everything else to Vite dev server
+  const fetch = require('node-fetch');
+  const viteUrl = `http://localhost:5173${req.path}`;
+  
+  fetch(viteUrl)
+    .then(viteRes => {
+      res.status(viteRes.status);
+      viteRes.headers.forEach((value, key) => {
+        res.setHeader(key, value);
+      });
+      return viteRes.text();
+    })
+    .then(html => res.send(html))
+    .catch(err => {
+      console.log(`[PRODUCTION] Vite proxy error for ${req.path}:`, err.message);
+      res.status(503).send('React app starting...');
+    });
+});
+
+// API Routes
+app.get('/api/health', (req, res) => {
   res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    database: dbStatus,
-    port: PORT
+    status: 'running',
+    mongodb: isConnected ? 'connected' : 'disconnected',
+    timestamp: new Date().toISOString()
   });
 });
 
-// Database test endpoint
-app.get('/api/dbtest', async (req, res) => {
-  if (!db) {
-    return res.json({
-      success: false,
-      error: 'Database not configured',
-      database: 'disconnected',
-      userCount: 0,
-      collections: []
-    });
-  }
-
-  try {
-    // Test connection
-    const testResult = await db.admin().ping();
-    
-    // Get user count
-    let userCount = 0;
-    try {
-      userCount = await db.collection('users').countDocuments();
-    } catch (error) {
-      log(`User count query failed: ${error.message}`);
-    }
-
-    // Get collections
-    const collections = await db.listCollections().toArray();
-    const collectionNames = collections.map(col => col.name);
-
-    res.json({ 
-      success: true, 
-      database: 'connected',
-      userCount: userCount,
-      collections: collectionNames,
-      version: 'MongoDB',
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    log(`Database test failed: ${error.message}`);
-    res.status(500).json({ 
-      success: false, 
-      database: 'disconnected',
-      error: error.message,
-      userCount: 0,
-      collections: []
-    });
-  }
-});
-
-// User registration endpoint
 app.post('/api/register', async (req, res) => {
-  const { username, email } = req.body;
-
-  if (!username || !email) {
-    return res.status(400).json({
-      success: false,
-      error: 'Username and email are required'
-    });
+  if (!isConnected) {
+    return res.status(500).json({ error: 'Database not connected' });
   }
-
-  if (!db) {
-    return res.status(500).json({
-      success: false,
-      error: 'Database not available'
-    });
-  }
-
+  
   try {
-    // Generate a simple password
-    const generatedPassword = `Pass${Math.floor(Math.random() * 10000)}`;
+    const { email, password, username } = req.body;
+    const db = mongoClient.db('sharezidi');
+    const users = db.collection('users');
     
-    // Check if user exists
-    const existingUser = await db.collection('users').findOne({
-      $or: [{ username }, { email }]
-    });
-
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        error: 'Username or email already exists'
-      });
-    }
-    
-    // Insert user
-    const userDoc = {
-      username,
+    const user = {
       email,
-      createdAt: new Date(),
-      transferCount: 0,
-      isPro: false,
-      generatedPassword
+      username: username || email.split('@')[0],
+      password,
+      createdAt: new Date()
     };
     
-    const result = await db.collection('users').insertOne(userDoc);
-    
-    res.json({
-      success: true,
-      user: {
-        _id: result.insertedId.toString(),
-        username: userDoc.username,
-        email: userDoc.email,
-        transferCount: userDoc.transferCount,
-        isPro: userDoc.isPro,
-        createdAt: userDoc.createdAt
-      },
-      generatedPassword: generatedPassword,
-      message: 'User created successfully'
-    });
-
-    log(`User created: ${username} (${email})`);
+    const result = await users.insertOne(user);
+    res.json({ success: true, userId: result.insertedId });
   } catch (error) {
-    log(`Registration failed: ${error.message}`);
-    res.status(500).json({
-      success: false,
-      error: 'Registration failed: ' + error.message
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Get all users endpoint
 app.get('/api/users', async (req, res) => {
-  if (!db) {
-    return res.json({
-      success: false,
-      error: 'Database not available',
-      users: []
-    });
+  if (!isConnected) {
+    return res.status(500).json({ error: 'Database not connected' });
   }
-
+  
   try {
-    const users = await db.collection('users')
-      .find({})
-      .sort({ createdAt: -1 })
-      .limit(100)
-      .toArray();
-
-    const formattedUsers = users.map(user => ({
-      _id: user._id.toString(),
-      username: user.username,
-      email: user.email,
-      transferCount: user.transferCount || 0,
-      isPro: user.isPro || false,
-      createdAt: user.createdAt,
-      ipAddress: user.ipAddress
-    }));
-
-    res.json({
-      success: true,
-      users: formattedUsers,
-      count: formattedUsers.length
-    });
+    const db = mongoClient.db('sharezidi');
+    const users = db.collection('users');
+    const userList = await users.find({}).limit(10).toArray();
+    res.json({ success: true, users: userList });
   } catch (error) {
-    log(`Failed to fetch users: ${error.message}`);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch users: ' + error.message,
-      users: []
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Simple database test page
+// Database test page
 app.get('/simpledbtest', (req, res) => {
-  log(`Database test page requested`);
-  res.send(`
-<!DOCTYPE html>
-<html lang="en">
+  res.send(`<!DOCTYPE html>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ShareZidi - Database Test</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
         .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #333; text-align: center; margin-bottom: 30px; }
-        .status { padding: 15px; margin: 20px 0; border-radius: 5px; text-align: center; font-weight: bold; }
-        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
-        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        h1 { color: #333; text-align: center; }
         .buttons { display: flex; gap: 15px; justify-content: center; margin: 30px 0; }
         button { padding: 12px 24px; font-size: 16px; border: none; border-radius: 5px; cursor: pointer; background: #007bff; color: white; }
-        button:hover { background: #0056b3; }
-        .output { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 20px; margin: 20px 0; min-height: 100px; font-family: monospace; white-space: pre-wrap; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔧 ShareZidi Database Test Interface</h1>
-        
-        <div class="status success">
-            ✅ Production Server Active
-        </div>
-        
-        <div class="status info">
-            Server running on port ${PORT} in production mode
-        </div>
-        
+        <h1>🔧 ShareZidi Database Test</h1>
         <div class="buttons">
-            <button onclick="testCreate()">CREATE</button>
-            <button onclick="testAdd()">ADD</button>
-            <button onclick="testShow()">SHOW</button>
+            <button onclick="generateUser()">Generate Random User</button>
+            <button onclick="addUserToDB()">Add to DB</button>
+            <button onclick="showAllUsers()">Show All Users</button>
         </div>
-        
-        <div class="output" id="output">Ready for database testing...</div>
-        
-        <div class="status warning">
-            Database operations ready for testing. Click buttons above to test functionality.
-        </div>
+        <div id="output">Ready for testing...</div>
     </div>
-
     <script>
-        async function testCreate() {
-            document.getElementById('output').textContent = 'Testing CREATE operation...';
-            try {
-                const response = await fetch('/api/health');
-                const data = await response.json();
-                document.getElementById('output').textContent = 
-                    'CREATE TEST RESULT:\\n' + JSON.stringify(data, null, 2);
-            } catch (error) {
-                document.getElementById('output').textContent = 'Error: ' + error.message;
-            }
+        let currentUser = null;
+        function generateUser() {
+            const email = 'user' + Math.floor(Math.random() * 10000) + '@gmail.com';
+            currentUser = { email, password: 'pass123' };
+            document.getElementById('output').textContent = 'Generated: ' + email;
         }
-        
-        async function testAdd() {
-            document.getElementById('output').textContent = 'Testing ADD operation...';
-            try {
-                const response = await fetch('/api/dbtest');
-                const data = await response.json();
-                document.getElementById('output').textContent = 
-                    'ADD TEST RESULT:\\n' + JSON.stringify(data, null, 2);
-            } catch (error) {
-                document.getElementById('output').textContent = 'Error: ' + error.message;
-            }
+        async function addUserToDB() {
+            if (!currentUser) return;
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(currentUser)
+            });
+            const data = await response.json();
+            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
         }
-        
-        async function testShow() {
-            document.getElementById('output').textContent = 'Testing SHOW operation...';
-            try {
-                const response = await fetch('/api/users');
-                const data = await response.json();
-                document.getElementById('output').textContent = 
-                    'SHOW TEST RESULT:\\n' + JSON.stringify(data, null, 2);
-            } catch (error) {
-                document.getElementById('output').textContent = 'Error: ' + error.message;
-            }
+        async function showAllUsers() {
+            const response = await fetch('/api/users');
+            const data = await response.json();
+            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
         }
     </script>
 </body>
-</html>
-  `);
-});
-
-// Serve static files from multiple possible locations
-const possiblePaths = [
-  path.resolve(process.cwd(), "dist", "public"),
-  path.resolve(process.cwd(), "client", "dist"),
-  path.resolve(process.cwd(), "dist"),
-  path.resolve(process.cwd(), "public")
-];
-
-let distPath;
-for (const p of possiblePaths) {
-  try {
-    const fs = require('fs');
-    if (fs.existsSync(path.join(p, "index.html"))) {
-      distPath = p;
-      log(`Found static files at: ${distPath}`);
-      break;
-    }
-  } catch (e) {
-    // Continue to next path
-  }
-}
-
-if (!distPath) {
-  log("No index.html found, using default path");
-  distPath = path.resolve(process.cwd(), "dist", "public");
-}
-
-app.use(express.static(distPath));
-
-// Catch-all handler for SPA routing
-app.get("*", (req, res) => {
-  const indexPath = path.join(distPath, "index.html");
-  log(`Serving SPA route: ${req.path} -> ${indexPath}`);
-  res.sendFile(indexPath);
-});
-
-// Create HTTP server
-const server = createServer(app);
-
-// WebSocket setup (basic implementation)
-const wss = new WebSocketServer({ server });
-
-wss.on("connection", (ws, request) => {
-  const clientIP = request.headers['x-forwarded-for'] || request.socket.remoteAddress;
-  log(`WebSocket connection from ${clientIP}`);
-
-  ws.on("message", (message) => {
-    try {
-      const data = JSON.parse(message.toString());
-      log(`WebSocket message: ${data.type}`);
-      
-      // Echo back for basic functionality
-      ws.send(JSON.stringify({
-        type: 'ack',
-        originalType: data.type,
-        timestamp: Date.now()
-      }));
-    } catch (error) {
-      log(`WebSocket message error: ${error.message}`);
-    }
-  });
-
-  ws.on("close", () => {
-    log(`WebSocket disconnected from ${clientIP}`);
-  });
-
-  // Send welcome message
-  ws.send(JSON.stringify({
-    type: 'welcome',
-    message: 'Connected to ShareZidi WebSocket',
-    timestamp: Date.now()
-  }));
-});
-
-// Error handling
-app.use((err, req, res, next) => {
-  log(`Server error: ${err.message}`);
-  res.status(500).json({ error: 'Internal server error' });
+</html>`);
 });
 
 // Start server
-server.listen(PORT, '0.0.0.0', () => {
-  log(`ShareZidi production server running on port ${PORT}`);
-  log(`Database: ${db ? 'Connected' : 'Not configured'}`);
-  log(`Static files: ${distPath}`);
-  log(`WebSocket: Enabled`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`[PRODUCTION] ✅ ShareZidi production server running on http://0.0.0.0:${PORT}`);
+  console.log(`[PRODUCTION] ✅ React app proxied from Vite dev server on port 5173`);
+  console.log(`[PRODUCTION] ✅ MongoDB: ${isConnected ? 'Connected' : 'Checking...'}`);
 });
 
-// Graceful shutdown
+// Cleanup on exit
 process.on('SIGTERM', () => {
-  log('SIGTERM received, shutting down gracefully');
-  server.close(() => {
-    if (db) {
-      db.end();
-    }
-    process.exit(0);
-  });
+  console.log('[PRODUCTION] Shutting down...');
+  if (viteProcess) viteProcess.kill();
+  if (mongoClient) mongoClient.close();
+  process.exit(0);
 });
