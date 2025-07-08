@@ -80,13 +80,19 @@ app.get('/simpledbtest', (req, res) => {
         </div>
         
         <div class="status info">
-            Testing database operations with CREATE, ADD, and SHOW functionality
+            Testing database operations: Generate → Add → Show user data
         </div>
         
         <div class="buttons">
-            <button onclick="testCreate()">CREATE</button>
-            <button onclick="testAdd()">ADD</button>
-            <button onclick="testShow()">SHOW</button>
+            <button onclick="generateUser()">Generate Random User</button>
+            <button onclick="addUserToDB()">Add Generated User to DB</button>
+            <button onclick="showAllUsers()">Show All Users from DB</button>
+        </div>
+        
+        <div id="generatedUser" class="output" style="display:none;">
+            <h3>Generated User:</h3>
+            <p><strong>Email:</strong> <span id="userEmail"></span></p>
+            <p><strong>Password:</strong> <span id="userPassword"></span></p>
         </div>
         
         <div class="output" id="output">Ready for database testing...</div>
@@ -97,39 +103,73 @@ app.get('/simpledbtest', (req, res) => {
     </div>
 
     <script>
-        async function testCreate() {
-            document.getElementById('output').textContent = 'Testing CREATE operation...';
+        let currentUser = null;
+        
+        function generateUser() {
+            const domains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'];
+            const randomName = 'user' + Math.floor(Math.random() * 10000);
+            const randomDomain = domains[Math.floor(Math.random() * domains.length)];
+            const email = randomName + '@' + randomDomain;
+            const password = 'pass' + Math.floor(Math.random() * 100000);
+            
+            currentUser = { email, password };
+            
+            document.getElementById('userEmail').textContent = email;
+            document.getElementById('userPassword').textContent = password;
+            document.getElementById('generatedUser').style.display = 'block';
+            document.getElementById('output').textContent = 'Random user generated successfully!';
+        }
+        
+        async function addUserToDB() {
+            if (!currentUser) {
+                document.getElementById('output').textContent = 'Please generate a user first!';
+                return;
+            }
+            
+            document.getElementById('output').textContent = 'Adding user to database...';
             try {
-                const response = await fetch('/api/health');
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: currentUser.email,
+                        password: currentUser.password,
+                        username: currentUser.email.split('@')[0]
+                    })
+                });
+                
                 const data = await response.json();
                 document.getElementById('output').textContent = 
-                    'CREATE TEST RESULT:\\n' + JSON.stringify(data, null, 2);
+                    'ADD USER RESULT:\\n' + JSON.stringify(data, null, 2);
             } catch (error) {
-                document.getElementById('output').textContent = 'Error: ' + error.message;
+                document.getElementById('output').textContent = 'Error adding user: ' + error.message;
             }
         }
         
-        async function testAdd() {
-            document.getElementById('output').textContent = 'Testing ADD operation...';
+        async function showAllUsers() {
+            document.getElementById('output').textContent = 'Fetching all users from database...';
             try {
-                const response = await fetch('/test');
+                const response = await fetch('/api/users');
                 const data = await response.json();
-                document.getElementById('output').textContent = 
-                    'ADD TEST RESULT:\\n' + JSON.stringify(data, null, 2);
+                
+                if (data.success && data.users) {
+                    let userList = 'ALL USERS FROM DATABASE:\\n\\n';
+                    data.users.forEach((user, index) => {
+                        userList += \`User \${index + 1}:\\n\`;
+                        userList += \`  Email: \${user.email}\\n\`;
+                        userList += \`  Username: \${user.username}\\n\`;
+                        userList += \`  Created: \${user.createdAt}\\n\\n\`;
+                    });
+                    userList += \`Total Users: \${data.users.length}\`;
+                    document.getElementById('output').textContent = userList;
+                } else {
+                    document.getElementById('output').textContent = 
+                        'SHOW USERS RESULT:\\n' + JSON.stringify(data, null, 2);
+                }
             } catch (error) {
-                document.getElementById('output').textContent = 'Error: ' + error.message;
-            }
-        }
-        
-        async function testShow() {
-            document.getElementById('output').textContent = 'Testing SHOW operation...';
-            try {
-                const response = await fetch('/');
-                const data = await response.json();
-                document.getElementById('output').textContent = 
-                    'SHOW TEST RESULT:\\n' + JSON.stringify(data, null, 2);
-            } catch (error) {
-                document.getElementById('output').textContent = 'Error: ' + error.message;
+                document.getElementById('output').textContent = 'Error fetching users: ' + error.message;
             }
         }
     </script>
