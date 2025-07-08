@@ -15,38 +15,59 @@ let db = null;
 
 async function connectToMongo() {
   try {
-    // Use corrected MongoDB URI with new service hostname
-    let mongoUri = process.env.MONGODB_URI;
+    // Try multiple connection approaches
+    const credentials = {
+      username: 'shzmdb2',
+      password: '11xxshzMDB',
+      host: 'sharezidi_v2_shzidi_mdb2',
+      port: '27017'
+    };
     
-    if (!mongoUri) {
-      console.error('[MONGO] ❌ MONGODB_URI environment variable not set');
-      db = null;
-      return;
+    // Try different URI formats
+    const uriFormats = [
+      // Format 1: Without database name in URI
+      `mongodb://${credentials.username}:${credentials.password}@${credentials.host}:${credentials.port}/?authSource=admin&tls=false`,
+      // Format 2: With explicit authSource
+      `mongodb://${credentials.username}:${credentials.password}@${credentials.host}:${credentials.port}/sharezidi?authSource=admin&tls=false`,
+      // Format 3: Default database
+      `mongodb://${credentials.username}:${credentials.password}@${credentials.host}:${credentials.port}/?tls=false`,
+      // Format 4: Environment variable corrected
+      process.env.MONGODB_URI?.replace('sharezidi_v2_sharezidi_mdb', 'sharezidi_v2_shzidi_mdb2')
+    ].filter(Boolean);
+    
+    for (let i = 0; i < uriFormats.length; i++) {
+      const mongoUri = uriFormats[i];
+      console.log(`[MONGO] Attempt ${i + 1} - URI: ${mongoUri.replace(/\/\/.*@/, '//***:***@')}`);
+      
+      try {
+        const client = new MongoClient(mongoUri, {
+          connectTimeoutMS: 10000,
+          serverSelectionTimeoutMS: 5000,
+        });
+        
+        await client.connect();
+        db = client.db('sharezidi');
+        console.log('[MONGO] ✅ Connected successfully to MongoDB');
+        
+        // Test the connection
+        await db.command({ ping: 1 });
+        console.log('[MONGO] ✅ Database ping successful');
+        
+        // Test collection access
+        const testResult = await db.collection('users').countDocuments();
+        console.log('[MONGO] ✅ Users collection accessible, document count:', testResult);
+        return; // Success, exit function
+        
+      } catch (attemptError) {
+        console.log(`[MONGO] ❌ Attempt ${i + 1} failed:`, attemptError.message);
+        if (i === uriFormats.length - 1) {
+          throw attemptError; // Last attempt, throw error
+        }
+      }
     }
     
-    // Fix hostname in the URI - replace old with new service name
-    mongoUri = mongoUri.replace('sharezidi_v2_sharezidi_mdb', 'sharezidi_v2_shzidi_mdb2');
-    
-    console.log('[MONGO] Attempting connection using corrected hostname...');
-    console.log('[MONGO] URI:', mongoUri.replace(/\/\/.*@/, '//***:***@')); // Hide credentials in logs
-    
-    const client = new MongoClient(mongoUri, {
-      connectTimeoutMS: 10000,
-      serverSelectionTimeoutMS: 5000,
-    });
-    await client.connect();
-    db = client.db('sharezidi');
-    console.log('[MONGO] ✅ Connected successfully to MongoDB');
-    
-    // Test the connection
-    await db.command({ ping: 1 });
-    console.log('[MONGO] ✅ Database ping successful');
-    
-    // Test collection access
-    const testResult = await db.collection('users').countDocuments();
-    console.log('[MONGO] ✅ Users collection accessible, document count:', testResult);
   } catch (error) {
-    console.error('[MONGO] ❌ Failed to connect:', error.message);
+    console.error('[MONGO] ❌ All connection attempts failed:', error.message);
     console.error('[MONGO] ❌ Full error:', error);
     db = null;
   }
