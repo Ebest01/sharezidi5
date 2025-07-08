@@ -71,18 +71,16 @@ connectToMongo();
 // Basic middleware
 app.use(express.json());
 
-// Serve static files with proper MIME types
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
-app.use('/src', express.static(path.join(__dirname, 'client/src'), {
-  setHeaders: (res, path) => {
-    if (path.endsWith('.tsx') || path.endsWith('.ts')) {
-      res.setHeader('Content-Type', 'application/javascript');
-    }
-    if (path.endsWith('.jsx') || path.endsWith('.js')) {
+// Serve static files EXACTLY like development (working setup)
+app.use('/src', express.static(path.join(__dirname, 'src'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.tsx') || filePath.endsWith('.ts') || filePath.endsWith('.jsx') || filePath.endsWith('.js')) {
       res.setHeader('Content-Type', 'application/javascript');
     }
   }
 }));
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
+app.use(express.static(__dirname)); // Serve all static files from root
 
 // Check for built React app
 const builtPath = path.join(__dirname, 'dist', 'public');
@@ -395,13 +393,18 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Catch-all handler for client-side routing (must be last)
+// Catch-all handler for client-side routing (must be last) - EXCLUDE static files
 if (hasBuiltApp || hasReactApp) {
   app.get('*', (req, res) => {
-    // Only serve React app for non-API routes
+    // CRITICAL: Skip catch-all for static files (JavaScript, CSS, images, etc.)
+    if (req.path.includes('.js') || req.path.includes('.css') || req.path.includes('.tsx') || req.path.includes('.ts') || req.path.includes('.svg') || req.path.includes('.png') || req.path.includes('.ico')) {
+      return res.status(404).json({ error: 'Static file not found', path: req.path });
+    }
+    
+    // Only serve React app for non-API, non-static routes
     if (!req.path.startsWith('/api/') && !req.path.startsWith('/simpledbtest')) {
       const servePath = hasBuiltApp ? builtIndexPath : indexPath;
-      console.log(`[MINIMAL] Serving React app for catch-all route: ${req.path}`);
+      console.log(`[MINIMAL] Serving React app for route: ${req.path}`);
       res.sendFile(servePath);
     } else {
       res.status(404).json({ error: 'API endpoint not found' });

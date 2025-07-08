@@ -1,0 +1,51 @@
+
+> sharezidi-mongo@1.0.0 start
+> node server-minimal.cjs
+
+[MINIMAL] Starting server on port 5000
+[MINIMAL] Environment: production
+[MINIMAL] Working directory: /workspace
+[MONGO] Attempting internal connection...
+[MINIMAL] React app check: index.html=true, built=false
+[MINIMAL] ✅ ShareZidi Database Test Server running on http://0.0.0.0:5000
+[MINIMAL] ✅ Endpoints: /api/health, /test, /simpledbtest, /api/register, /api/users
+[MINIMAL] ✅ React app: Available
+[MONGO] ✅ Connected via INTERNAL network
+[MONGO] ✅ Users collection accessible, document count: 5
+npm error path /workspace
+npm error command failed
+npm error signal SIGTERM
+npm error command sh -c node server-minimal.cjs
+npm error A complete log of this run can be found in: /tmp/npm_cache/_logs/2025-07-08T11_09_54_070Z-debug-0.log
+[MINIMAL] Serving React app for catch-all route: /src/main.js
+[MINIMAL] Serving React app for catch-all route: /src/main.js
+[MINIMAL] Serving React app for catch-all route: /vite.svg
+[MINIMAL] Serving React app for catch-all route: /vite.svg
+
+> sharezidi-mongo@1.0.0 start
+> node server-minimal.cjs
+
+[MINIMAL] Starting server on port 5000
+[MINIMAL] Environment: production
+[MINIMAL] Working directory: /workspace
+[MONGO] Attempting internal connection...
+[MINIMAL] React app check: index.html=true, built=false
+[MINIMAL] ✅ ShareZidi Database Test Server running on http://0.0.0.0:5000
+[MINIMAL] ✅ Endpoints: /api/health, /test, /simpledbtest, /api/register, /api/users
+[MINIMAL] ✅ React app: Available
+[MONGO] ✅ Connected via INTERNAL network
+[MONGO] ✅ Users collection accessible, document count: 5
+npm error path /workspace
+npm error command failed
+npm error signal SIGTERM
+npm error command sh -c node server-minimal.cjs
+npm error A complete log of this run can be found in: /tmp/npm_cache/_logs/2025-07-08T11_14_13_616Z-debug-0.log
+[MINIMAL] Serving dev React app for: /
+[MINIMAL] Serving React app for catch-all route: /src/main.js
+[MINIMAL] Serving React app for catch-all route: /vite.svg
+[MINIMAL] Serving React app for catch-all route: /vite.svg
+[MINIMAL] Serving dev React app for: /
+[MINIMAL] Serving React app for catch-all route: /src/main.js
+[MINIMAL] Serving React app for catch-all route: /vite.svg
+[MINIMAL] Serving React app for catch-all route: /vite.svg
+[MINIMAL] Serving React app for catch-all route: /favicon.ico
