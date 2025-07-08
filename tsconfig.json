@@ -23,7 +23,8 @@
       "@/pages/*": ["./src/pages/*"],
       "@/hooks/*": ["./src/hooks/*"],
       "@/ui/*": ["./src/components/ui/*"],
-      "@assets/*": ["./assets/*"]
+      "@assets/*": ["./assets/*"],
+      "@shared/*": ["./shared/*"]
     }
   },
   "include": ["src"],
