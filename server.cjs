@@ -73,7 +73,7 @@ app.use(express.json());
 
 // Serve static files with proper MIME types
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
-app.use('/src', express.static(path.join(__dirname, 'client/src'), {
+app.use('/src', express.static(path.join(__dirname, 'src'), {
   setHeaders: (res, path) => {
     if (path.endsWith('.tsx') || path.endsWith('.ts')) {
       res.setHeader('Content-Type', 'application/javascript');
@@ -83,6 +83,7 @@ app.use('/src', express.static(path.join(__dirname, 'client/src'), {
     }
   }
 }));
+console.log('[STATIC] Serving /src from:', path.join(__dirname, 'src'));
 
 // Check for built React app
 const builtPath = path.join(__dirname, 'dist', 'public');
