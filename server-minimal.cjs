@@ -1,6 +1,7 @@
 // Minimal server for EasyPanel debugging
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const { MongoClient } = require('mongodb');
 
 const app = express();
@@ -70,6 +71,20 @@ connectToMongo();
 // Basic middleware
 app.use(express.json());
 
+// Serve static files from multiple locations
+const staticPaths = [
+  path.join(__dirname, 'dist', 'public'),
+  path.join(__dirname, 'assets'),
+  path.join(__dirname, 'client', 'src')
+];
+
+staticPaths.forEach(staticPath => {
+  if (fs.existsSync(staticPath)) {
+    console.log(`[MINIMAL] Serving static files from: ${staticPath}`);
+    app.use(express.static(staticPath));
+  }
+});
+
 // Health check without MongoDB
 app.get('/api/health', (req, res) => {
   console.log(`[MINIMAL] Health check requested`);
@@ -82,18 +97,32 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Root endpoint
-app.get('/', (req, res) => {
-  console.log(`[MINIMAL] Root requested`);
-  res.json({ 
-    message: 'ShareZidi Database Test Server',
-    status: 'running',
-    endpoints: ['/api/health', '/test', '/simpledbtest', '/api/register', '/api/users'],
-    port: PORT,
-    version: '2.1.0',
-    deployed: new Date().toISOString()
+// For production: serve React app from index.html
+const indexPath = path.join(__dirname, 'index.html');
+const hasReactApp = fs.existsSync(indexPath);
+
+// Serve the React application for main routes
+if (hasReactApp) {
+  // Serve React app for main routes (not API routes)
+  app.get(['/', '/auth', '/start', '/login'], (req, res) => {
+    console.log(`[MINIMAL] Serving React app for: ${req.path}`);
+    res.sendFile(indexPath);
   });
-});
+} else {
+  // Fallback: serve JSON response if no React app built
+  app.get('/', (req, res) => {
+    console.log(`[MINIMAL] Root requested (no React app found)`);
+    res.json({ 
+      message: 'ShareZidi Database Test Server',
+      status: 'running',
+      endpoints: ['/api/health', '/test', '/simpledbtest', '/api/register', '/api/users'],
+      port: PORT,
+      version: '2.1.0',
+      deployed: new Date().toISOString(),
+      note: 'React app not built. Run npm run build to enable full UI.'
+    });
+  });
+}
 
 // Test endpoint
 app.get('/test', (req, res) => {
@@ -350,10 +379,24 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Catch-all handler for client-side routing (must be last)
+if (hasReactApp) {
+  app.get('*', (req, res) => {
+    // Only serve React app for non-API routes
+    if (!req.path.startsWith('/api/') && !req.path.startsWith('/simpledbtest')) {
+      console.log(`[MINIMAL] Serving React app for catch-all route: ${req.path}`);
+      res.sendFile(indexPath);
+    } else {
+      res.status(404).json({ error: 'API endpoint not found' });
+    }
+  });
+}
+
 // Start server
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`[MINIMAL] ✅ ShareZidi Database Test Server running on http://0.0.0.0:${PORT}`);
   console.log(`[MINIMAL] ✅ Endpoints: /api/health, /test, /simpledbtest, /api/register, /api/users`);
+  console.log(`[MINIMAL] ✅ React app: ${hasReactApp ? 'Available' : 'Not built'}`);
 });
 
 server.on('error', (err) => {
