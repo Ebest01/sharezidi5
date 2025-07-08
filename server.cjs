@@ -71,18 +71,20 @@ connectToMongo();
 // Basic middleware
 app.use(express.json());
 
-// Serve static files with proper MIME types
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
+// Serve static files with proper MIME types (same as development)
+app.use(express.static(__dirname)); // Serve all static files from root
 app.use('/src', express.static(path.join(__dirname, 'src'), {
-  setHeaders: (res, path) => {
-    if (path.endsWith('.tsx') || path.endsWith('.ts')) {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.tsx') || filePath.endsWith('.ts')) {
       res.setHeader('Content-Type', 'application/javascript');
     }
-    if (path.endsWith('.jsx') || path.endsWith('.js')) {
+    if (filePath.endsWith('.jsx') || filePath.endsWith('.js')) {
       res.setHeader('Content-Type', 'application/javascript');
     }
   }
 }));
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
+console.log('[STATIC] Serving static files from:', __dirname);
 console.log('[STATIC] Serving /src from:', path.join(__dirname, 'src'));
 
 // Check for built React app
