@@ -230,6 +230,97 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
+// Simple database test page
+app.get('/simpledbtest', (req, res) => {
+  log(`Database test page requested`);
+  res.send(`
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareZidi - Database Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; margin-bottom: 30px; }
+        .status { padding: 15px; margin: 20px 0; border-radius: 5px; text-align: center; font-weight: bold; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .buttons { display: flex; gap: 15px; justify-content: center; margin: 30px 0; }
+        button { padding: 12px 24px; font-size: 16px; border: none; border-radius: 5px; cursor: pointer; background: #007bff; color: white; }
+        button:hover { background: #0056b3; }
+        .output { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 20px; margin: 20px 0; min-height: 100px; font-family: monospace; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 ShareZidi Database Test Interface</h1>
+        
+        <div class="status success">
+            ✅ Production Server Active
+        </div>
+        
+        <div class="status info">
+            Server running on port ${PORT} in production mode
+        </div>
+        
+        <div class="buttons">
+            <button onclick="testCreate()">CREATE</button>
+            <button onclick="testAdd()">ADD</button>
+            <button onclick="testShow()">SHOW</button>
+        </div>
+        
+        <div class="output" id="output">Ready for database testing...</div>
+        
+        <div class="status warning">
+            Database operations ready for testing. Click buttons above to test functionality.
+        </div>
+    </div>
+
+    <script>
+        async function testCreate() {
+            document.getElementById('output').textContent = 'Testing CREATE operation...';
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                document.getElementById('output').textContent = 
+                    'CREATE TEST RESULT:\\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('output').textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        async function testAdd() {
+            document.getElementById('output').textContent = 'Testing ADD operation...';
+            try {
+                const response = await fetch('/api/dbtest');
+                const data = await response.json();
+                document.getElementById('output').textContent = 
+                    'ADD TEST RESULT:\\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('output').textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        async function testShow() {
+            document.getElementById('output').textContent = 'Testing SHOW operation...';
+            try {
+                const response = await fetch('/api/users');
+                const data = await response.json();
+                document.getElementById('output').textContent = 
+                    'SHOW TEST RESULT:\\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('output').textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
+  `);
+});
+
 // Serve static files from multiple possible locations
 const possiblePaths = [
   path.resolve(process.cwd(), "dist", "public"),
