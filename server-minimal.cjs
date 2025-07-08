@@ -15,8 +15,8 @@ let db = null;
 
 async function connectToMongo() {
   try {
-    // Use environment variable from EasyPanel
-    const mongoUri = process.env.MONGODB_URI;
+    // Use corrected MongoDB URI with new service hostname
+    let mongoUri = process.env.MONGODB_URI;
     
     if (!mongoUri) {
       console.error('[MONGO] ❌ MONGODB_URI environment variable not set');
@@ -24,10 +24,16 @@ async function connectToMongo() {
       return;
     }
     
-    console.log('[MONGO] Attempting connection using environment variable...');
+    // Fix hostname in the URI - replace old with new service name
+    mongoUri = mongoUri.replace('sharezidi_v2_sharezidi_mdb', 'sharezidi_v2_shzidi_mdb2');
+    
+    console.log('[MONGO] Attempting connection using corrected hostname...');
     console.log('[MONGO] URI:', mongoUri.replace(/\/\/.*@/, '//***:***@')); // Hide credentials in logs
     
-    const client = new MongoClient(mongoUri);
+    const client = new MongoClient(mongoUri, {
+      connectTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 5000,
+    });
     await client.connect();
     db = client.db('sharezidi');
     console.log('[MONGO] ✅ Connected successfully to MongoDB');
@@ -41,6 +47,7 @@ async function connectToMongo() {
     console.log('[MONGO] ✅ Users collection accessible, document count:', testResult);
   } catch (error) {
     console.error('[MONGO] ❌ Failed to connect:', error.message);
+    console.error('[MONGO] ❌ Full error:', error);
     db = null;
   }
 }
