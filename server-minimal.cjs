@@ -13,30 +13,55 @@ console.log(`[MINIMAL] Working directory: ${process.cwd()}`);
 // MongoDB connection
 let db = null;
 
-// This is the WORKING connection string from Compass:
-const mongoUri = 'mongodb://shzmdb2:11xxshzMDB@193.203.165.217:27017/?ssl=false';
+// Robust production approach with internal/external fallback:
+const MONGO_INTERNAL = 'mongodb://shzmdb2:11xxshzMDB@sharezidi_v2_shzidi_mdb2:27017/?ssl=false';
+const MONGO_EXTERNAL = 'mongodb://shzmdb2:11xxshzMDB@193.203.165.217:27017/?ssl=false';
 
 async function connectToMongo() {
+  // Try internal first (preferred for performance)
   try {
-    console.log('[MONGO] Connecting...');
-    const client = new MongoClient(mongoUri);
-    
+    console.log('[MONGO] Attempting internal connection...');
+    const client = new MongoClient(MONGO_INTERNAL, {
+      connectTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 5000,
+    });
     await client.connect();
-    db = client.db('sharezidi'); // This will create the database when you insert data
+    db = client.db('sharezidi');
     
-    console.log('[MONGO] ✅ Connected successfully!');
-    
-    // Test with a ping
+    // Test the connection
     await db.command({ ping: 1 });
-    console.log('[MONGO] ✅ Database accessible!');
+    console.log('[MONGO] ✅ Connected via INTERNAL network');
     
     // Test collection access
     const testResult = await db.collection('users').countDocuments();
     console.log('[MONGO] ✅ Users collection accessible, document count:', testResult);
-    
+    return;
   } catch (error) {
-    console.error('[MONGO] ❌ Failed:', error.message);
+    console.log('[MONGO] Internal failed:', error.message);
+  }
+  
+  // Fallback to external (working solution)
+  try {
+    console.log('[MONGO] Attempting external connection...');
+    const client = new MongoClient(MONGO_EXTERNAL, {
+      connectTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 10000,
+    });
+    await client.connect();
+    db = client.db('sharezidi');
+    
+    // Test the connection
+    await db.command({ ping: 1 });
+    console.log('[MONGO] ✅ Connected via EXTERNAL network');
+    
+    // Test collection access
+    const testResult = await db.collection('users').countDocuments();
+    console.log('[MONGO] ✅ Users collection accessible, document count:', testResult);
+  } catch (error) {
+    console.error('[MONGO] ❌ Both connections failed!');
+    console.error('[MONGO] ❌ External error:', error.message);
     db = null;
+    throw error;
   }
 }
 
