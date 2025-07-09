@@ -14,10 +14,12 @@ CRITICAL: You need to update THREE files in the GitHub repository:
 
 3. Then run these commands in your terminal:
    git add prod-server-v2.cjs package.json Procfile
-   git commit -m "Replace bundled server with CommonJS prod-server-v2.cjs - fix MongoDB ESM bundling error"
+   git commit -m "Fix MongoDB database consistency - use sharezidi database for both local and production"
    git push origin main
 
-IMPORTANT: The file was renamed from .js to .cjs because package.json has "type": "module" which forces .js files to use ES modules. The .cjs extension allows CommonJS require() syntax.
+IMPORTANT: 
+- The file was renamed from .js to .cjs because package.json has "type": "module" which forces .js files to use ES modules. The .cjs extension allows CommonJS require() syntax.
+- Updated MongoDB connection string to use "sharezidi" database consistently across all environments.
 
 The prod-server-v2.js file is ready and contains:
 - CommonJS require() instead of ESM bundling
