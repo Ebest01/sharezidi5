@@ -14,7 +14,7 @@ CRITICAL: You need to update THREE files in the GitHub repository:
 
 3. Then run these commands in your terminal:
    git add prod-server-v2.cjs package.json Procfile
-   git commit -m "Fix registration alert - show password and database name correctly"
+   git commit -m "Fix MongoDB database consistency - use sharezidi database for both local and production"
    git push origin main
 
 IMPORTANT: 
