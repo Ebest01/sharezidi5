@@ -5,7 +5,6 @@ import LandingPage from "./pages/landing-page";
 import LoginPage from "./pages/login-page";
 import AuthPage from "./pages/auth-page";
 import DbTestPage from "./pages/db-test-page";
-import SimpleDbTestPage from "./pages/simple-db-test";
 import "./index.css";
 
 function App() {
@@ -109,11 +108,6 @@ function App() {
         {/* Database testing page */}
         <Route path="/dbtest">
           <DbTestPage />
-        </Route>
-
-        {/* Simple database testing page (no CSS dependencies) */}
-        <Route path="/simpledbtest">
-          <SimpleDbTestPage />
         </Route>
       </Switch>
     </Router>
