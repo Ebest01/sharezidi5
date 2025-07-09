@@ -2,16 +2,14 @@
 
 ## For Easypanel Buildpacks Deployment
 
-**CRITICAL FIX**: Heroku Cloud Native Buildpack TOML format corrected
+**DEPLOYMENT READY**: Minimal TOML format with external MongoDB build
 
-**Root Cause**: project.toml used wrong format - needed Cloud Native Buildpack syntax
+**Final Configuration Applied**:
 
-**Solutions Applied**:
-
-1. **Correct TOML Format**: Updated to `[[io.buildpacks.build.env]]` syntax with schema-version 0.2
-2. **Heroku CNB Standard**: Uses proper `[[io.buildpacks.group]]` for buildpack specification  
-3. **Build Override**: `package.json` updated to use `./build-production.sh`
-4. **External Dependencies**: MongoDB, mongoose, stream externalized (156KB vs 2.8MB)
+1. **Minimal TOML**: Simplified to `[[buildpacks]]` format that works with all buildpack versions
+2. **External MongoDB Build**: `package.json` uses `./build-production.sh` (156KB vs 2.8MB bundled)
+3. **Direct Execution**: `Procfile` runs `node dist/prod-server.js` with production environment
+4. **Remote & Local Sync**: Both servers have matching configuration files ready for deployment
 
 **Manual Override Option**:
 In Easypanel dashboard, change build command from `npm run build` to:

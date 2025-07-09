@@ -4,7 +4,8 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 
-// Ensure we have the tools we need
+// Ensure NODE_ENV is set for build
+process.env.NODE_ENV = 'production';
 process.env.PATH = process.env.PATH + ':/workspace/node_modules/.bin';
 
 console.log('🚀 ShareZidi Heroku Prebuild Hook');
