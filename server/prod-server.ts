@@ -4,9 +4,8 @@ import { WebSocketServer, WebSocket } from "ws";
 import { createServer } from "http";
 import { FileTransferService } from "./services/fileTransferService.js";
 import { GeolocationService } from "./services/geolocationService.js";
-import { db } from "./db.js";
-import { visitors, users, type InsertVisitor } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { connectMongoDB } from "./db.js";
+import { Visitor, User, type InsertVisitor } from "@shared/schema";
 import { generatePassword, extractUsernameFromEmail, validateEmail } from "./utils/passwordGenerator.js";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
@@ -42,17 +41,17 @@ console.log("[DEBUG] Environment:", {
 // Test database connection
 async function testDatabaseConnection() {
   try {
-    console.log("[DATABASE] Testing PostgreSQL connection...");
-    const result = await db.execute("SELECT 1 as test");
-    console.log("[DATABASE] ✅ PostgreSQL connection successful:", result);
+    console.log("[DATABASE] Testing MongoDB connection...");
+    await connectMongoDB();
+    console.log("[DATABASE] ✅ MongoDB connection successful");
     
-    // Test users table access
-    const userCount = await db.select().from(users).limit(1);
-    console.log("[DATABASE] ✅ Users table accessible, sample data:", userCount.length > 0 ? userCount[0] : "No users yet");
+    // Test users collection access
+    const userCount = await User.countDocuments();
+    console.log("[DATABASE] ✅ Users collection accessible, count:", userCount);
     
     return true;
   } catch (error) {
-    console.error("[DATABASE] ❌ PostgreSQL connection failed:", error);
+    console.error("[DATABASE] ❌ MongoDB connection failed:", error);
     return false;
   }
 }
@@ -70,8 +69,7 @@ app.use(async (req, res, next) => {
         sessionId: GeolocationService.generateSessionId(),
         ipAddress: ip,
         userAgent: req.get('User-Agent') || '',
-        referer: req.get('Referer') || '',
-        requestPath: req.url,
+        referrer: req.get('Referer') || '',
         country: locationData?.country || 'Unknown',
         countryCode: locationData?.country_code || '',
         region: locationData?.region || '',
@@ -82,7 +80,7 @@ app.use(async (req, res, next) => {
         isp: locationData?.isp || '',
       };
       
-      await db.insert(visitors).values(visitorData);
+      await new Visitor(visitorData).save();
       console.log(`[Visitor] ${ip} from ${visitorData.city}, ${visitorData.country} requesting ${req.url}`);
     } catch (error) {
       console.log(`[Visitor] ${ip} requesting ${req.url} (geolocation failed)`);
@@ -139,17 +137,17 @@ app.get("/api/auth/user", async (req, res) => {
   try {
     if (sessionId) {
       // Try to find user by session ID in database  
-      const user = await db.select().from(users).where(eq(users.username, sessionId)).limit(1);
+      const user = await User.findOne({ username: sessionId });
       
-      if (user.length > 0) {
-        console.log("[DEBUG] ✅ Database user found:", user[0].email);
+      if (user) {
+        console.log("[DEBUG] ✅ Database user found:", user.email);
         console.log("[DEBUG] ===== AUTH CHECK END (DATABASE USER) =====");
         return res.json({
-          id: user[0].id.toString(),
-          email: user[0].email,
-          username: user[0].username,
-          transferCount: user[0].transferCount,
-          isPro: user[0].isPro,
+          id: user._id.toString(),
+          email: user.email,
+          username: user.username,
+          transferCount: user.transferCount,
+          isPro: user.isPro,
           isGuest: false
         });
       }
@@ -191,8 +189,8 @@ app.post("/api/register", async (req, res) => {
     }
     
     // Check if user already exists
-    const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
-    if (existingUser.length > 0) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       console.log("[REGISTER] User already exists:", email);
       return res.status(400).json({ error: "User with this email already exists" });
     }
@@ -206,7 +204,7 @@ app.post("/api/register", async (req, res) => {
     const ip = GeolocationService.extractIPAddress(req);
     const locationData = await GeolocationService.getLocationData(ip);
     
-    const newUser = await db.insert(users).values({
+    const newUser = await new User({
       email,
       username,
       password: hashedPassword,
@@ -221,7 +219,7 @@ app.post("/api/register", async (req, res) => {
       latitude: locationData?.latitude || '',
       longitude: locationData?.longitude || '',
       isp: locationData?.isp || ''
-    }).returning();
+    }).save();
     
     console.log("[REGISTER] ✅ User created successfully:", email);
     console.log("[REGISTER] Generated password:", generatedPassword);
@@ -230,9 +228,9 @@ app.post("/api/register", async (req, res) => {
     res.status(201).json({
       success: true,
       user: {
-        id: newUser[0].id,
-        email: newUser[0].email,
-        username: newUser[0].username
+        id: newUser._id,
+        email: newUser.email,
+        username: newUser.username
       },
       generatedPassword: generatedPassword,
       message: "Registration successful! Please save your password."
@@ -257,15 +255,15 @@ app.post("/api/login", async (req, res) => {
     }
     
     // Find user by email
-    const user = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    const user = await User.findOne({ email });
     
-    if (user.length === 0) {
+    if (!user) {
       console.log("[LOGIN] User not found:", email);
       return res.status(401).json({ error: "Invalid email or password" });
     }
     
     // Verify password
-    const passwordMatch = await comparePasswords(password, user[0].password || '');
+    const passwordMatch = await comparePasswords(password, user.password || '');
     
     if (!passwordMatch) {
       console.log("[LOGIN] Invalid password for:", email);
@@ -278,14 +276,14 @@ app.post("/api/login", async (req, res) => {
     res.json({
       success: true,
       user: {
-        id: user[0].id.toString(),
-        email: user[0].email,
-        username: user[0].username,
-        transferCount: user[0].transferCount,
-        isPro: user[0].isPro,
+        id: user._id.toString(),
+        email: user.email,
+        username: user.username,
+        transferCount: user.transferCount,
+        isPro: user.isPro,
         isGuest: false
       },
-      sessionToken: user[0].username // Use username as session token for simplicity
+      sessionToken: user.username // Use username as session token for simplicity
     });
     
   } catch (error) {
@@ -299,16 +297,16 @@ app.get("/api/dbtest/users", async (req, res) => {
   console.log("[DBTEST] ===== FETCHING ALL USERS =====");
   
   try {
-    const allUsers = await db.select({
-      id: users.id,
-      email: users.email,
-      username: users.username,
-      transferCount: users.transferCount,
-      isPro: users.isPro,
-      createdAt: users.createdAt,
-      country: users.country,
-      city: users.city
-    }).from(users).orderBy(users.createdAt);
+    const allUsers = await User.find({}, {
+      _id: 1,
+      email: 1,
+      username: 1,
+      transferCount: 1,
+      isPro: 1,
+      createdAt: 1,
+      country: 1,
+      city: 1
+    }).sort({ createdAt: 1 });
     
     console.log(`[DBTEST] ✅ Found ${allUsers.length} users in database`);
     
@@ -338,8 +336,8 @@ app.get("/health", async (req, res) => {
 // Analytics endpoint (database-powered)
 app.get("/api/analytics", async (req, res) => {
   try {
-    const totalVisitors = await db.select().from(visitors);
-    const totalUsers = await db.select().from(users);
+    const totalVisitors = await Visitor.find({});
+    const totalUsers = await User.find({});
     
     // Group by country
     const countryStats = totalVisitors.reduce((acc, visitor) => {
@@ -360,8 +358,8 @@ app.get("/api/analytics", async (req, res) => {
         .map(v => ({
           city: v.city,
           country: v.country,
-          timestamp: v.createdAt,
-          path: v.requestPath
+          timestamp: v.visitedAt,
+          path: v.sessionId
         }))
     });
   } catch (error) {
