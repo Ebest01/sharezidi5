@@ -80,6 +80,7 @@ app.use('/src', express.static(path.join(__dirname, 'src'), {
   }
 }));
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
+app.use('/node_modules', express.static(path.join(__dirname, 'node_modules'))); // Serve node_modules for ES imports
 app.use(express.static(__dirname)); // Serve all static files from root
 
 // Add JSX transformation middleware for .tsx files
