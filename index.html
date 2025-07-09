@@ -112,14 +112,34 @@
         background-clip: text;
       }
       
-      /* Responsive grid */
-      @media (min-width: 768px) {
-        .md\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .md\\:text-6xl { font-size: 3.75rem; line-height: 1; }
+      /* Responsive grid - fluid layout */
+      .grid-responsive {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+      }
+      
+      @media (max-width: 640px) {
+        .grid-responsive {
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+      }
+      
+      @media (min-width: 641px) and (max-width: 1023px) {
+        .grid-responsive {
+          grid-template-columns: repeat(2, 1fr);
+        }
       }
       
       @media (min-width: 1024px) {
-        .lg\\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .grid-responsive {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+      
+      @media (min-width: 768px) {
+        .md\\:text-6xl { font-size: 3.75rem; line-height: 1; }
       }
       
       /* Header styles */
@@ -318,7 +338,7 @@
                 </p>
               </div>
 
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid-responsive">
                 <div className="card">
                   <div className="card-icon bg-green-100">
                     <i className="fas fa-bolt text-green-600"></i>
