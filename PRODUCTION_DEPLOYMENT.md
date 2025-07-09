@@ -2,14 +2,14 @@
 
 ## For Easypanel Buildpacks Deployment
 
-**CRITICAL FIX**: MongoDB bundling errors fixed. Error was `TOML: incompatible types` in project.toml
+**CRITICAL FIX**: Heroku Cloud Native Buildpack TOML format corrected
 
-**Root Cause**: Invalid TOML syntax in project.toml causing buildpack failure
+**Root Cause**: project.toml used wrong format - needed Cloud Native Buildpack syntax
 
 **Solutions Applied**:
 
-1. **Fixed TOML Config**: Corrected `project.toml` syntax for Heroku buildpacks
-2. **Heroku Hooks**: Enhanced `heroku-prebuild.js` with fallback build support
+1. **Correct TOML Format**: Updated to `[[io.buildpacks.build.env]]` syntax with schema-version 0.2
+2. **Heroku CNB Standard**: Uses proper `[[io.buildpacks.group]]` for buildpack specification  
 3. **Build Override**: `package.json` updated to use `./build-production.sh`
 4. **External Dependencies**: MongoDB, mongoose, stream externalized (156KB vs 2.8MB)
 
