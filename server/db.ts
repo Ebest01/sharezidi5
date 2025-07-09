@@ -2,23 +2,39 @@ import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/sharezidi';
 
-if (!MONGODB_URI) {
-  throw new Error(
-    "MONGODB_URI must be set. Did you forget to configure your MongoDB connection?",
-  );
-}
-
-// MongoDB connection with proper configuration
+// MongoDB connection with simplified configuration
 export async function connectMongoDB() {
   try {
-    console.log("[MONGODB] Attempting to connect...");
+    console.log("[MONGODB] Connecting to:", MONGODB_URI.replace(/\/\/.*@/, '//***@'));
+    
+    // Close any existing connections
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+    }
+    
     await mongoose.connect(MONGODB_URI, {
-      // Modern connection options
-      maxPoolSize: 10,
+      bufferCommands: false,
+      maxPoolSize: 5,
       serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
+      socketTimeoutMS: 10000,
+      family: 4, // Use IPv4, skip trying IPv6
     });
-    console.log("[MONGODB] Connected successfully");
+    
+    console.log("[MONGODB] ✅ Connected successfully");
+    
+    // Set up connection event handlers
+    mongoose.connection.on('error', (error) => {
+      console.error("[MONGODB] Connection error:", error);
+    });
+    
+    mongoose.connection.on('disconnected', () => {
+      console.log("[MONGODB] Disconnected from MongoDB");
+    });
+    
+    mongoose.connection.on('reconnected', () => {
+      console.log("[MONGODB] Reconnected to MongoDB");
+    });
+    
     return mongoose.connection;
   } catch (error) {
     console.error("[MONGODB] Connection failed:", error);
@@ -28,19 +44,3 @@ export async function connectMongoDB() {
 
 // Export the connection for use in other modules
 export const db = mongoose.connection;
-
-// Test database connection on startup
-(async () => {
-  try {
-    console.log("[MONGODB] Initializing connection test...");
-    await connectMongoDB();
-    
-    // Test model access
-    console.log("[MONGODB] Testing User model access...");
-    const { User } = await import("@shared/schema");
-    const userCount = await User.countDocuments();
-    console.log("[MONGODB] User collection accessible, document count:", userCount);
-  } catch (error) {
-    console.error("[MONGODB] Connection or model access failed:", error);
-  }
-})();

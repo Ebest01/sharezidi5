@@ -6,6 +6,7 @@ import { GeolocationService } from "./services/geolocationService";
 import { connectMongoDB } from "./db";
 import { User, Visitor, type InsertVisitor, type IUser } from "@shared/schema";
 import { generatePassword, extractUsernameFromEmail } from "./utils/passwordGenerator";
+import mongoose from "mongoose";
 
 const app = express();
 app.use(express.json());
@@ -138,8 +139,9 @@ app.use((req, res, next) => {
     await connectMongoDB();
     console.log("[STARTUP] ✅ MongoDB connected successfully");
   } catch (error) {
-    console.error("[STARTUP] ❌ MongoDB connection failed:", error);
-    process.exit(1);
+    console.error("[STARTUP] ❌ MongoDB connection failed:", error.message);
+    console.log("[STARTUP] 🔄 Continuing with degraded functionality - database features disabled");
+    // Don't exit, continue with basic functionality
   }
   
   // Setup authentication routes first
@@ -155,6 +157,12 @@ app.use((req, res, next) => {
       
       if (!email) {
         return res.status(400).json({ error: "Email is required" });
+      }
+      
+      // Check if MongoDB is connected
+      if (mongoose.connection.readyState !== 1) {
+        console.log("[REGISTER] MongoDB not connected, registration unavailable");
+        return res.status(503).json({ error: "Database unavailable - please try again later" });
       }
       
       // Check if user already exists
