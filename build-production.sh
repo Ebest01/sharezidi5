@@ -1,18 +1,14 @@
 #!/bin/bash
 
-echo "🏗️  Building ShareZidi for production..."
+echo "Building ShareZidi production version..."
 
-# Clean previous builds
-rm -rf dist
-rm -rf client/dist
+# Build frontend with Vite
+echo "Building frontend..."
+vite build
 
-echo "📦 Building frontend..."
-# Build frontend only (no server dependencies that might fail)
-npx vite build --outDir client/dist --minify false
-
-echo "🖥️  Building server..."
-# Build server with simpler options
-npx esbuild server/prod-server.ts \
+# Build backend with proper externals for MongoDB
+echo "Building backend..."
+esbuild server/prod-server.ts \
   --platform=node \
   --bundle \
   --format=esm \
@@ -23,22 +19,11 @@ npx esbuild server/prod-server.ts \
   --external:fs \
   --external:http \
   --external:os \
-  --target=es2020
+  --external:mongodb \
+  --external:mongoose \
+  --external:crypto \
+  --external:util \
+  --external:stream \
+  --external:bcrypt
 
-echo "📋 Build summary:"
-if [ -f "client/dist/index.html" ]; then
-  echo "✅ Frontend built successfully"
-  echo "   📁 Frontend files: $(ls client/dist | wc -l) files"
-else
-  echo "❌ Frontend build failed"
-fi
-
-if [ -f "dist/prod-server.js" ]; then
-  echo "✅ Server built successfully"
-  echo "   📁 Server file: dist/prod-server.js"
-else
-  echo "❌ Server build failed"
-fi
-
-echo "🚀 Build complete! Ready for deployment."
-echo "💡 Copy both client/dist and dist/prod-server.js to production"
+echo "Production build complete!"
