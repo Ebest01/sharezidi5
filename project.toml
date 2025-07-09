@@ -1,12 +1,2 @@
-[_]
-schema-version = "0.2"
-
-[io.buildpacks]
-include = ["**"]
-
-[[io.buildpacks.group]]
-id = "heroku/nodejs"
-
-[[io.buildpacks.build.env]]
-name = "NODE_ENV"
-value = "production"
+[[buildpacks]]
+uri = "heroku/nodejs"
