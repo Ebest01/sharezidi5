@@ -72,6 +72,8 @@ connectToMongo();
 app.use(express.json());
 
 // Serve static files with proper MIME types (same as development)
+app.use('/node_modules', express.static(path.join(__dirname, 'node_modules'))); // Serve node_modules for local dependencies
+app.use('/dist', express.static(path.join(__dirname, 'dist'))); // Serve built assets
 app.use(express.static(__dirname)); // Serve all static files from root
 app.use('/src', express.static(path.join(__dirname, 'src'), {
   setHeaders: (res, filePath) => {
