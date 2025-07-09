@@ -242,6 +242,25 @@ app.use((req, res, next) => {
       res.status(500).json({ error: "Failed to fetch users from database" });
     }
   });
+
+  app.get("/api/dbtest/connection-info", async (req, res) => {
+    console.log("[DBTEST] ===== FETCHING CONNECTION INFO =====");
+    
+    try {
+      res.json({
+        success: true,
+        connectionState: mongoose.connection.readyState,
+        databaseName: mongoose.connection.db?.databaseName || 'Not connected',
+        host: mongoose.connection.host || 'Not connected',
+        port: mongoose.connection.port || 'Not connected',
+        collections: mongoose.connection.db ? await mongoose.connection.db.listCollections().toArray() : []
+      });
+      
+    } catch (error) {
+      console.error("[DBTEST] Error fetching connection info:", error);
+      res.status(500).json({ error: "Failed to fetch connection info" });
+    }
+  });
   
   const server = await registerRoutes(app);
 
