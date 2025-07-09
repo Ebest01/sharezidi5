@@ -1,0 +1,11 @@
+[build]
+include = [
+  "**"
+]
+
+[build.env]
+NODE_ENV = "production"
+BP_NODE_RUN_SCRIPTS = "build"
+
+[[build.buildpacks]]
+uri = "heroku/nodejs"

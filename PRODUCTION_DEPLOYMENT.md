@@ -2,8 +2,19 @@
 
 ## For Easypanel Buildpacks Deployment
 
-**IMPORTANT**: Change the build command in Easypanel from `npm run build` to:
+**CRITICAL FIX**: The deployment shows `dist/prod-server.js 2.8mb ⚠️` instead of our 156KB version.
 
+**Root Cause**: Easypanel buildpack ignores our build-production.sh and uses default npm build
+
+**Solutions Created**:
+
+1. **Heroku Hooks**: Added `heroku-prebuild.js` and `heroku-postbuild.js` to override build process
+2. **Custom Build Script**: `bin/build` executable for Heroku buildpack detection
+3. **Procfile**: Ensures correct start command
+4. **Project Config**: `project.toml` for buildpack settings
+
+**Manual Override Option**:
+In Easypanel dashboard, change build command from `npm run build` to:
 ```bash
 chmod +x build-production.sh && ./build-production.sh
 ```

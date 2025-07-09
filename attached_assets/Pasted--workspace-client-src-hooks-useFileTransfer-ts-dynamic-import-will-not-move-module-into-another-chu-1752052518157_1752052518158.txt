@@ -1,0 +1,40 @@
+/workspace/client/src/hooks/useFileTransfer.ts, dynamic import will not move module into another chunk.
+[builder] 
+[builder]       computing gzip size...
+[builder]       ../dist/public/index.html                      0.75 kB │ gzip:   0.44 kB
+[builder]       ../dist/public/assets/index-DzaxyMIY.css      76.95 kB │ gzip:  13.04 kB
+[builder]       ../dist/public/assets/jszip.min-BY4iawhP.js   97.13 kB │ gzip:  30.15 kB
+[builder]       ../dist/public/assets/index-Iz6hamx4.js      400.92 kB │ gzip: 120.04 kB
+[builder]       ✓ built in 11.15s
+[builder] 
+[builder]         dist/prod-server.js  2.8mb ⚠️
+[builder] 
+[builder]       ⚡ Done in 536ms
+[builder] 
+[builder]   - Done (12.7s)
+[builder] - Configuring default processes
+[builder]   - Adding default web process for `npm start`
+[builder] - Done (finished in 40.7s)
+===> EXPORTING
+[exporter] Adding layer 'heroku/nodejs-engine:available_parallelism'
+[exporter] Adding layer 'heroku/nodejs-engine:dist'
+[exporter] Adding layer 'heroku/nodejs-engine:web_env'
+[exporter] Adding layer 'heroku/nodejs-npm-install:npm_runtime_config'
+[exporter] Adding layer 'buildpacksio/lifecycle:launch.sbom'
+[exporter] Added 1/1 app layer(s)
+[exporter] Adding layer 'buildpacksio/lifecycle:launcher'
+[exporter] Adding layer 'buildpacksio/lifecycle:config'
+[exporter] Adding layer 'buildpacksio/lifecycle:process-types'
+[exporter] Adding label 'io.buildpacks.lifecycle.metadata'
+[exporter] Adding label 'io.buildpacks.build.metadata'
+[exporter] Adding label 'io.buildpacks.project.metadata'
+[exporter] Setting default process type 'web'
+[exporter] Saving easypanel/sharezidi_v2/app6_servers...
+[exporter] ERROR: failed to export: saving image: failed to fetch base layers: unexpected EOF
+ERROR: failed to build: executing lifecycle: failed with status code: 62
+##########################################
+### Error
+### Wed, 09 Jul 2025 09:08:44 GMT
+##########################################
+
+Command failed with exit code 1: pack build easypanel/sharezidi_v2/app6_servers --path /etc/easypanel/projects/sharezidi_v2/app6_servers/code/ --default-process web --network easypanel --env 'MONGODB_URI=mongodb://shzmdb2:11xxshzMDB@sharezidi_v2_shzidi_mdb2:27017/?ssl=false' --env 'NODE_ENV=production' --env 'PORT=5000' --env 'SESSION_SECRET=a526d34a196cbf6be23a4fe79399b1950f43372d0f0676a37fabcb5af9a7c03c' --env 'GIT_SHA=0467e829057193777fb5536743cd0ca4a91aa2aa' --builder 'heroku/builder:24'
