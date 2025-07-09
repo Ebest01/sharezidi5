@@ -1,70 +1,129 @@
-import { pgTable, serial, varchar, timestamp, integer, boolean } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+import mongoose, { Schema, Document } from 'mongoose';
+import { z } from 'zod';
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  email: varchar("email", { length: 255 }).notNull().unique(),
-  username: varchar("username", { length: 100 }),
-  password: varchar("password", { length: 255 }),
-  transferCount: integer("transfer_count").default(0),
-  isPro: boolean("is_pro").default(false),
-  subscriptionDate: timestamp("subscription_date"),
-  lastResetDate: timestamp("last_reset_date").defaultNow(),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-  // Geolocation tracking
-  ipAddress: varchar("ip_address", { length: 45 }), // IPv6 support
-  country: varchar("country", { length: 100 }),
-  countryCode: varchar("country_code", { length: 2 }),
-  region: varchar("region", { length: 100 }),
-  city: varchar("city", { length: 100 }),
-  timezone: varchar("timezone", { length: 50 }),
-  latitude: varchar("latitude", { length: 20 }),
-  longitude: varchar("longitude", { length: 20 }),
-  isp: varchar("isp", { length: 200 }),
+// User interface and schema
+export interface IUser extends Document {
+  _id: mongoose.Types.ObjectId;
+  email: string;
+  username: string;
+  password: string;
+  transferCount: number;
+  isPro: boolean;
+  subscriptionDate: Date;
+  lastResetDate: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  
+  // Geolocation fields for user registration analytics
+  ipAddress?: string;
+  country?: string;
+  countryCode?: string;
+  region?: string;
+  city?: string;
+  timezone?: string;
+  latitude?: string;
+  longitude?: string;
+  isp?: string;
+}
+
+const userSchema = new Schema<IUser>({
+  email: { type: String, required: true, unique: true, maxlength: 255 },
+  username: { type: String, maxlength: 100 },
+  password: { type: String, maxlength: 255 },
+  transferCount: { type: Number, default: 0 },
+  isPro: { type: Boolean, default: false },
+  subscriptionDate: { type: Date },
+  lastResetDate: { type: Date, default: Date.now },
+  
+  // Geolocation fields
+  ipAddress: { type: String, maxlength: 45 },
+  country: { type: String, maxlength: 100 },
+  countryCode: { type: String, maxlength: 2 },
+  region: { type: String, maxlength: 100 },
+  city: { type: String, maxlength: 100 },
+  timezone: { type: String, maxlength: 50 },
+  latitude: { type: String, maxlength: 20 },
+  longitude: { type: String, maxlength: 20 },
+  isp: { type: String, maxlength: 200 }
+}, {
+  timestamps: true // Automatically manage createdAt and updatedAt
 });
 
-// Visitor tracking for analytics
-export const visitors = pgTable("visitors", {
-  id: serial("id").primaryKey(),
-  sessionId: varchar("session_id", { length: 100 }).notNull(),
-  ipAddress: varchar("ip_address", { length: 45 }).notNull(),
-  userAgent: varchar("user_agent", { length: 500 }),
-  country: varchar("country", { length: 100 }),
-  countryCode: varchar("country_code", { length: 2 }),
-  region: varchar("region", { length: 100 }),
-  city: varchar("city", { length: 100 }),
-  timezone: varchar("timezone", { length: 50 }),
-  latitude: varchar("latitude", { length: 20 }),
-  longitude: varchar("longitude", { length: 20 }),
-  isp: varchar("isp", { length: 200 }),
-  referrer: varchar("referrer", { length: 500 }),
-  visitedAt: timestamp("visited_at").defaultNow(),
+// Visitor interface and schema
+export interface IVisitor extends Document {
+  _id: mongoose.Types.ObjectId;
+  sessionId: string;
+  ipAddress: string;
+  userAgent?: string;
+  country?: string;
+  countryCode?: string;
+  region?: string;
+  city?: string;
+  timezone?: string;
+  latitude?: string;
+  longitude?: string;
+  isp?: string;
+  referrer?: string;
+  visitedAt: Date;
+}
+
+const visitorSchema = new Schema<IVisitor>({
+  sessionId: { type: String, required: true, maxlength: 100 },
+  ipAddress: { type: String, required: true, maxlength: 45 },
+  userAgent: { type: String, maxlength: 500 },
+  country: { type: String, maxlength: 100 },
+  countryCode: { type: String, maxlength: 2 },
+  region: { type: String, maxlength: 100 },
+  city: { type: String, maxlength: 100 },
+  timezone: { type: String, maxlength: 50 },
+  latitude: { type: String, maxlength: 20 },
+  longitude: { type: String, maxlength: 20 },
+  isp: { type: String, maxlength: 200 },
+  referrer: { type: String, maxlength: 500 },
+  visitedAt: { type: Date, default: Date.now }
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  email: true,
-  password: true,
+// Create models
+export const User = mongoose.model<IUser>('User', userSchema);
+export const Visitor = mongoose.model<IVisitor>('Visitor', visitorSchema);
+
+// Zod schemas for validation
+export const insertUserSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
 });
 
-export const loginUserSchema = createInsertSchema(users).pick({
-  email: true,
-  password: true,
+export const loginUserSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
 });
 
-export const guestUserSchema = createInsertSchema(users).pick({
-  email: true,
-}).extend({
+export const guestUserSchema = z.object({
+  email: z.string().email(),
   password: z.string().optional(),
 });
 
-export const insertVisitorSchema = createInsertSchema(visitors).omit({
-  id: true,
-  visitedAt: true,
+export const insertVisitorSchema = z.object({
+  sessionId: z.string().max(100),
+  ipAddress: z.string().max(45),
+  userAgent: z.string().max(500).optional(),
+  country: z.string().max(100).optional(),
+  countryCode: z.string().max(2).optional(),
+  region: z.string().max(100).optional(),
+  city: z.string().max(100).optional(),
+  timezone: z.string().max(50).optional(),
+  latitude: z.string().max(20).optional(),
+  longitude: z.string().max(20).optional(),
+  isp: z.string().max(200).optional(),
+  referrer: z.string().max(500).optional(),
 });
 
+// Type exports
 export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+export type UserType = IUser;
 export type InsertVisitor = z.infer<typeof insertVisitorSchema>;
-export type Visitor = typeof visitors.$inferSelect;
+export type VisitorType = IVisitor;
+
+// Legacy type exports for compatibility
+export type User = IUser;
+export type Visitor = IVisitor;

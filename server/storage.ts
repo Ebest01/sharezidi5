@@ -1,100 +1,125 @@
-import { users, type User, type InsertUser } from "@shared/schema";
-import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { User, Visitor, type IUser, type InsertUser } from "@shared/schema";
+import { connectMongoDB } from "./db";
+import mongoose from "mongoose";
 
 // modify the interface with any CRUD methods
 // you might need
 
 export interface IStorage {
-  getUser(id: number): Promise<User | undefined>;
-  getUserByEmail(email: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
-  createFullUser(user: typeof users.$inferInsert): Promise<User>;
-  updateUserTransferCount(id: number): Promise<User | undefined>;
-  upgradeUserToPro(id: number): Promise<User | undefined>;
-  updateUserPassword(id: number, hashedPassword: string): Promise<User | undefined>;
+  getUser(id: string): Promise<IUser | undefined>;
+  getUserByEmail(email: string): Promise<IUser | undefined>;
+  createUser(user: InsertUser): Promise<IUser>;
+  createFullUser(user: Partial<IUser>): Promise<IUser>;
+  updateUserTransferCount(id: string): Promise<IUser | undefined>;
+  upgradeUserToPro(id: string): Promise<IUser | undefined>;
+  updateUserPassword(id: string, hashedPassword: string): Promise<IUser | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
-  async getUser(id: number): Promise<User | undefined> {
-    console.log("[DATABASE] getUser called with ID:", id);
+  constructor() {
+    // Ensure MongoDB connection is established
+    connectMongoDB().catch(console.error);
+  }
+
+  async getUser(id: string): Promise<IUser | undefined> {
+    console.log("[MONGODB] getUser called with ID:", id);
     try {
-      const [user] = await db.select().from(users).where(eq(users.id, id));
-      console.log("[DATABASE] getUser result:", user ? { id: user.id, username: user.username, email: user.email } : "NOT FOUND");
+      const user = await User.findById(id);
+      console.log("[MONGODB] getUser result:", user ? { id: user._id, username: user.username, email: user.email } : "NOT FOUND");
       return user || undefined;
     } catch (error) {
-      console.error("[DATABASE] getUser error:", error);
+      console.error("[MONGODB] getUser error:", error);
       return undefined;
     }
   }
 
-  async getUserByEmail(email: string): Promise<User | undefined> {
-    console.log("[DATABASE] getUserByEmail called with:", email);
+  async getUserByEmail(email: string): Promise<IUser | undefined> {
+    console.log("[MONGODB] getUserByEmail called with:", email);
     try {
-      const [user] = await db.select().from(users).where(eq(users.email, email));
-      console.log("[DATABASE] getUserByEmail result:", user ? { id: user.id, username: user.username, email: user.email } : "NOT FOUND");
+      const user = await User.findOne({ email });
+      console.log("[MONGODB] getUserByEmail result:", user ? { id: user._id, username: user.username, email: user.email } : "NOT FOUND");
       return user || undefined;
     } catch (error) {
-      console.error("[DATABASE] getUserByEmail error:", error);
+      console.error("[MONGODB] getUserByEmail error:", error);
       return undefined;
     }
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(insertUser)
-      .returning();
-    return user;
+  async createUser(insertUser: InsertUser): Promise<IUser> {
+    console.log("[MONGODB] createUser called with:", { email: insertUser.email });
+    try {
+      const user = new User(insertUser);
+      await user.save();
+      console.log("[MONGODB] createUser success:", { id: user._id, email: user.email });
+      return user;
+    } catch (error) {
+      console.error("[MONGODB] createUser error:", error);
+      throw error;
+    }
   }
 
-  async createFullUser(userData: typeof users.$inferInsert): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(userData)
-      .returning();
-    return user;
+  async createFullUser(userData: Partial<IUser>): Promise<IUser> {
+    console.log("[MONGODB] createFullUser called");
+    try {
+      const user = new User(userData);
+      await user.save();
+      console.log("[MONGODB] createFullUser success:", { id: user._id, email: user.email });
+      return user;
+    } catch (error) {
+      console.error("[MONGODB] createFullUser error:", error);
+      throw error;
+    }
   }
 
-  async updateUserTransferCount(id: number): Promise<User | undefined> {
-    // First get the current user to increment their transfer count
-    const currentUser = await this.getUser(id);
-    if (!currentUser) return undefined;
-    
-    const [user] = await db
-      .update(users)
-      .set({ 
-        transferCount: (currentUser.transferCount || 0) + 1,
-        updatedAt: new Date()
-      })
-      .where(eq(users.id, id))
-      .returning();
-    return user || undefined;
+  async updateUserTransferCount(id: string): Promise<IUser | undefined> {
+    console.log("[MONGODB] updateUserTransferCount called with ID:", id);
+    try {
+      const user = await User.findByIdAndUpdate(
+        id,
+        { $inc: { transferCount: 1 } },
+        { new: true }
+      );
+      console.log("[MONGODB] updateUserTransferCount result:", user ? "SUCCESS" : "NOT FOUND");
+      return user || undefined;
+    } catch (error) {
+      console.error("[MONGODB] updateUserTransferCount error:", error);
+      return undefined;
+    }
   }
 
-  async upgradeUserToPro(id: number): Promise<User | undefined> {
-    const [user] = await db
-      .update(users)
-      .set({ 
-        isPro: true,
-        subscriptionDate: new Date(),
-        updatedAt: new Date()
-      })
-      .where(eq(users.id, id))
-      .returning();
-    return user || undefined;
+  async upgradeUserToPro(id: string): Promise<IUser | undefined> {
+    console.log("[MONGODB] upgradeUserToPro called with ID:", id);
+    try {
+      const user = await User.findByIdAndUpdate(
+        id,
+        { 
+          isPro: true,
+          subscriptionDate: new Date()
+        },
+        { new: true }
+      );
+      console.log("[MONGODB] upgradeUserToPro result:", user ? "SUCCESS" : "NOT FOUND");
+      return user || undefined;
+    } catch (error) {
+      console.error("[MONGODB] upgradeUserToPro error:", error);
+      return undefined;
+    }
   }
 
-  async updateUserPassword(id: number, hashedPassword: string): Promise<User | undefined> {
-    const [user] = await db
-      .update(users)
-      .set({ 
-        password: hashedPassword,
-        updatedAt: new Date()
-      })
-      .where(eq(users.id, id))
-      .returning();
-    return user || undefined;
+  async updateUserPassword(id: string, hashedPassword: string): Promise<IUser | undefined> {
+    console.log("[MONGODB] updateUserPassword called with ID:", id);
+    try {
+      const user = await User.findByIdAndUpdate(
+        id,
+        { password: hashedPassword },
+        { new: true }
+      );
+      console.log("[MONGODB] updateUserPassword result:", user ? "SUCCESS" : "NOT FOUND");
+      return user || undefined;
+    } catch (error) {
+      console.error("[MONGODB] updateUserPassword error:", error);
+      return undefined;
+    }
   }
 }
 

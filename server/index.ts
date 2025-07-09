@@ -3,10 +3,9 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { setupAuthRoutes } from "./authRoutes";
 import { GeolocationService } from "./services/geolocationService";
-import { db } from "./db";
-import { visitors, users, type InsertVisitor } from "@shared/schema";
+import { connectMongoDB } from "./db";
+import { User, Visitor, type InsertVisitor, type IUser } from "@shared/schema";
 import { generatePassword, extractUsernameFromEmail } from "./utils/passwordGenerator";
-import { eq } from "drizzle-orm";
 
 const app = express();
 app.use(express.json());
@@ -78,7 +77,8 @@ app.use(async (req, res, next) => {
 
         // Save to database with additional error protection
         try {
-          await db.insert(visitors).values(visitorData);
+          const visitor = new Visitor(visitorData);
+          await visitor.save();
           // Reset failure count on success
           geoFailureCount = 0;
         } catch (dbError) {
@@ -133,6 +133,15 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Initialize MongoDB connection first
+  try {
+    await connectMongoDB();
+    console.log("[STARTUP] ✅ MongoDB connected successfully");
+  } catch (error) {
+    console.error("[STARTUP] ❌ MongoDB connection failed:", error);
+    process.exit(1);
+  }
+  
   // Setup authentication routes first
   setupAuthRoutes(app);
   
@@ -149,8 +158,8 @@ app.use((req, res, next) => {
       }
       
       // Check if user already exists
-      const existingUser = await db.select().from(users).where(eq(users.email, email));
-      if (existingUser.length > 0) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
         return res.status(400).json({ error: "User already exists" });
       }
       
@@ -163,13 +172,12 @@ app.use((req, res, next) => {
       const locationData = await GeolocationService.getLocationData(ip);
       
       // Create user
-      const [newUser] = await db.insert(users).values({
+      const newUser = new User({
         email: email,
         username: username,
         password: password,
         transferCount: 0,
         isPro: false,
-        sessionId: GeolocationService.generateSessionId(),
         ipAddress: ip,
         country: locationData?.country || null,
         countryCode: locationData?.country_code || null,
@@ -178,10 +186,10 @@ app.use((req, res, next) => {
         timezone: locationData?.timezone || null,
         latitude: locationData?.latitude || null,
         longitude: locationData?.longitude || null,
-        isp: locationData?.isp || null,
-        userAgent: req.headers['user-agent'] || null,
-        referrer: req.headers.referer || null
-      }).returning();
+        isp: locationData?.isp || null
+      });
+      
+      await newUser.save();
       
       console.log("[REGISTER] ✅ User created successfully:", email);
       console.log("[REGISTER] Generated password:", password);
@@ -202,16 +210,16 @@ app.use((req, res, next) => {
     console.log("[DBTEST] ===== FETCHING ALL USERS =====");
     
     try {
-      const allUsers = await db.select({
-        id: users.id,
-        email: users.email,
-        username: users.username,
-        transferCount: users.transferCount,
-        isPro: users.isPro,
-        createdAt: users.createdAt,
-        country: users.country,
-        city: users.city
-      }).from(users).orderBy(users.createdAt);
+      const allUsers = await User.find({}, {
+        _id: 1,
+        email: 1,
+        username: 1,
+        transferCount: 1,
+        isPro: 1,
+        createdAt: 1,
+        country: 1,
+        city: 1
+      }).sort({ createdAt: 1 });
       
       console.log(`[DBTEST] ✅ Found ${allUsers.length} users in database`);
       
