@@ -1,0 +1,35 @@
+Node.js v22.17.0
+file:///workspace/dist/prod-server.js:11
+  throw Error('Dynamic require of "' + x + '" is not supported');
+        ^
+
+Error: Dynamic require of "stream" is not supported
+    at file:///workspace/dist/prod-server.js:11:9
+    at node_modules/mongodb/lib/cursor/abstract_cursor.js (file:///workspace/dist/prod-server.js:30119:20)
+    at __require2 (file:///workspace/dist/prod-server.js:14:50)
+    at node_modules/mongodb/lib/explain.js (file:///workspace/dist/prod-server.js:30924:29)
+    at __require2 (file:///workspace/dist/prod-server.js:14:50)
+    at node_modules/mongodb/lib/operations/command.js (file:///workspace/dist/prod-server.js:30994:21)
+    at __require2 (file:///workspace/dist/prod-server.js:14:50)
+    at node_modules/mongodb/lib/operations/delete.js (file:///workspace/dist/prod-server.js:31070:21)
+    at __require2 (file:///workspace/dist/prod-server.js:14:50)
+    at node_modules/mongodb/lib/bulk/common.js (file:///workspace/dist/prod-server.js:31188:20)
+
+Node.js v22.17.0
+file:///workspace/dist/prod-server.js:11
+  throw Error('Dynamic require of "' + x + '" is not supported');
+        ^
+
+Error: Dynamic require of "stream" is not supported
+    at file:///workspace/dist/prod-server.js:11:9
+    at node_modules/mongodb/lib/cursor/abstract_cursor.js (file:///workspace/dist/prod-server.js:30119:20)
+    at __require2 (file:///workspace/dist/prod-server.js:14:50)
+    at node_modules/mongodb/lib/explain.js (file:///workspace/dist/prod-server.js:30924:29)
+    at __require2 (file:///workspace/dist/prod-server.js:14:50)
+    at node_modules/mongodb/lib/operations/command.js (file:///workspace/dist/prod-server.js:30994:21)
+    at __require2 (file:///workspace/dist/prod-server.js:14:50)
+    at node_modules/mongodb/lib/operations/delete.js (file:///workspace/dist/prod-server.js:31070:21)
+    at __require2 (file:///workspace/dist/prod-server.js:14:50)
+    at node_modules/mongodb/lib/bulk/common.js (file:///workspace/dist/prod-server.js:31188:20)
+
+Node.js v22.17.0
