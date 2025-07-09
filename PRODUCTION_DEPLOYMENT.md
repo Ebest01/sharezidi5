@@ -2,13 +2,13 @@
 
 ## For Easypanel Buildpacks Deployment
 
-**DEPLOYMENT READY**: Minimal TOML format with external MongoDB build
+**DEPLOYMENT READY**: TOML file removed for auto-configuration
 
 **Final Configuration Applied**:
 
-1. **Minimal TOML**: Simplified to `[[buildpacks]]` format that works with all buildpack versions
+1. **Auto-Configuration**: Removed problematic TOML file to let EasyPanel auto-configure buildpacks
 2. **External MongoDB Build**: `package.json` uses `./build-production.sh` (156KB vs 2.8MB bundled)
-3. **Direct Execution**: `Procfile` runs `node dist/prod-server.js` with production environment
+3. **Heroku Buildpack**: `Procfile` and `heroku-prebuild.js` handle deployment correctly
 4. **Remote & Local Sync**: Both servers have matching configuration files ready for deployment
 
 **Manual Override Option**:
