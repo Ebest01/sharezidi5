@@ -4,7 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { setupAuthRoutes } from "./authRoutes";
 import { GeolocationService } from "./services/geolocationService";
 import { db } from "./db";
-import { type InsertVisitor } from "../shared/schema";
+import { visitors, users, type InsertVisitor } from "@shared/schema";
 import { generatePassword, extractUsernameFromEmail } from "./utils/passwordGenerator";
 import { eq } from "drizzle-orm";
 
