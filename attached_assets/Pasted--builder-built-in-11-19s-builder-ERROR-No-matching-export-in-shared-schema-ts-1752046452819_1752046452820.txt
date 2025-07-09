@@ -1,0 +1,49 @@
+[builder]       ✓ built in 11.19s
+[builder]       ✘ [ERROR] No matching export in "shared/schema.ts" for import "visitors"
+[builder] 
+[builder]           server/prod-server.ts:8:9:
+[builder]             8 │ import { visitors, users, type InsertVisitor } from "@shared/schema";
+[builder]               ╵          ~~~~~~~~
+[builder] 
+[builder]       ✘ [ERROR] No matching export in "shared/schema.ts" for import "users"
+[builder] 
+[builder]           server/prod-server.ts:8:19:
+[builder]             8 │ import { visitors, users, type InsertVisitor } from "@shared/schema";
+[builder]               ╵                    ~~~~~
+[builder] 
+[builder]       2 errors
+[builder] 
+[builder]   - Done (12.5s)
+[builder] 
+[builder] - Debug Info:
+[builder]   - Command failed `npm run build`
+[builder]     exit status: 1
+[builder]     stdout: <see above>
+[builder]     stderr: <see above>
+[builder] 
+[builder] ! Failed to execute build script
+[builder] !
+[builder] ! The Heroku Node.js npm Install buildpack allows customization of the build process by executing the following scripts if they are defined in `package.json`:
+[builder] ! - `heroku-prebuild` 
+[builder] ! - `heroku-build` or `build` 
+[builder] ! - `heroku-postbuild`
+[builder] !
+[builder] ! An unexpected error occurred while executing `npm run build`. See the log output above for more information.
+[builder] !
+[builder] ! Suggestions:
+[builder] ! - Ensure that this command runs locally without error.
+[builder] !
+[builder] ! Use the debug information above to troubleshoot and retry your build.
+[builder] !
+[builder] ! If the issue persists and you think you found a bug in the buildpack, reproduce the issue locally with a minimal example. Open an issue in the buildpack's GitHub repository and include the details here:
+[builder] ! https://github.com/heroku/buildpacks-nodejs/issues
+[builder] 
+[builder] 
+[builder] ERROR: failed to build: exit status 1
+ERROR: failed to build: executing lifecycle: failed with status code: 51
+##########################################
+### Error
+### Wed, 09 Jul 2025 07:25:21 GMT
+##########################################
+
+Command failed with exit code 1: pack build easypanel/sharezidi_v2/app5_servers --path /etc/easypanel/projects/sharezidi_v2/app5_servers/code/ --default-process web --network easypanel --env 'MONGODB_URI=mongodb://szmdb_user:1!!!!!...Magics4321@sharezidi_v2_sharezidi_mdb:27017/sharezidi?tls=false' --env 'NODE_ENV=production' --env 'PORT=5000' --env 'SESSION_SECRET=a526d34a196cbf6be23a4fe79399b1950f43372d0f0676a37fabcb5af9a7c03c' --env 'GIT_SHA=848f36c7e2eac278a56da86fe50ffdddd3ffa758' --builder 'heroku/builder:24'
