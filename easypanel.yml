@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - MONGODB_URI=${MONGODB_URI}
+      - SESSION_SECRET=${SESSION_SECRET}
+    restart: unless-stopped
+    
+# Build Command Override for Easypanel Buildpacks
+build:
+  commands:
+    - chmod +x build-production.sh
+    - ./build-production.sh
+    
+start:
+  command: npm start

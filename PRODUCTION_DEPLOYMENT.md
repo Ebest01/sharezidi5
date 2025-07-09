@@ -1,12 +1,16 @@
 # ShareZidi Production Deployment Guide
 
-## Build Command for Easypanel
+## For Easypanel Buildpacks Deployment
 
-Use this custom build script instead of `npm run build`:
+**IMPORTANT**: Change the build command in Easypanel from `npm run build` to:
 
 ```bash
-./build-production.sh
+chmod +x build-production.sh && ./build-production.sh
 ```
+
+## For Docker Deployment
+
+Use the included `Dockerfile` which automatically uses the correct build script.
 
 ## Why Custom Build Script?
 
