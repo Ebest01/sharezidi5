@@ -1,0 +1,21 @@
+{
+  "name": "ShareZidi",
+  "description": "Real-time file transfer application with MongoDB integration",
+  "scripts": {
+    "postdeploy": "echo 'ShareZidi deployed successfully'"
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "env": {
+    "NODE_ENV": {
+      "value": "production"
+    },
+    "MONGODB_URI": {
+      "description": "MongoDB connection string",
+      "required": true
+    }
+  }
+}

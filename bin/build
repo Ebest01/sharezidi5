@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+echo "🔧 ShareZidi Custom Build Script Starting..."
+
+# Install dependencies first
+npm ci
+
+# Use our custom build script
+echo "📦 Running custom build with MongoDB externals..."
+chmod +x build-production.sh
+./build-production.sh
+
+echo "✅ Custom build completed successfully!"
+echo "📋 Build files:"
+ls -la dist/
+echo "📏 Server bundle size:"
+wc -c dist/prod-server.js
