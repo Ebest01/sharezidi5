@@ -1,14 +1,19 @@
 Manual Git Commands to Fix MongoDB Production Issue:
 
-CRITICAL: You need to update TWO files in the GitHub repository:
+CRITICAL: You need to update THREE files in the GitHub repository:
 
-1. First, update package.json and change line 9 from:
+1. Update package.json line 9 from:
    "start": "NODE_ENV=production node dist/prod-server.js",
    TO:
    "start": "NODE_ENV=production node prod-server-v2.js",
 
-2. Then run these commands in your terminal:
-   git add prod-server-v2.js package.json
+2. Update Procfile from:
+   web: NODE_ENV=production node dist/prod-server.js
+   TO:
+   web: NODE_ENV=production node prod-server-v2.js
+
+3. Then run these commands in your terminal:
+   git add prod-server-v2.js package.json Procfile
    git commit -m "Replace bundled server with CommonJS prod-server-v2.js - fix MongoDB ESM bundling error"
    git push origin main
 
