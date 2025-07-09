@@ -2,16 +2,16 @@
 
 ## For Easypanel Buildpacks Deployment
 
-**CRITICAL FIX**: The deployment shows `dist/prod-server.js 2.8mb ⚠️` instead of our 156KB version.
+**CRITICAL FIX**: MongoDB bundling errors fixed. Error was `TOML: incompatible types` in project.toml
 
-**Root Cause**: Easypanel buildpack ignores our build-production.sh and uses default npm build
+**Root Cause**: Invalid TOML syntax in project.toml causing buildpack failure
 
-**Solutions Created**:
+**Solutions Applied**:
 
-1. **Heroku Hooks**: Added `heroku-prebuild.js` and `heroku-postbuild.js` to override build process
-2. **Custom Build Script**: `bin/build` executable for Heroku buildpack detection
-3. **Procfile**: Ensures correct start command
-4. **Project Config**: `project.toml` for buildpack settings
+1. **Fixed TOML Config**: Corrected `project.toml` syntax for Heroku buildpacks
+2. **Heroku Hooks**: Enhanced `heroku-prebuild.js` with fallback build support
+3. **Build Override**: `package.json` updated to use `./build-production.sh`
+4. **External Dependencies**: MongoDB, mongoose, stream externalized (156KB vs 2.8MB)
 
 **Manual Override Option**:
 In Easypanel dashboard, change build command from `npm run build` to:

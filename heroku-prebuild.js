@@ -4,6 +4,9 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 
+// Ensure we have the tools we need
+process.env.PATH = process.env.PATH + ':/workspace/node_modules/.bin';
+
 console.log('🚀 ShareZidi Heroku Prebuild Hook');
 console.log('📝 Overriding default build process...');
 
