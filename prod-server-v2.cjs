@@ -237,6 +237,8 @@ app.post('/api/register', async (req, res) => {
         username: newUser.username
       },
       generatedPassword: generatedPassword,
+      password: generatedPassword, // Add both for compatibility
+      database: 'sharezidi',
       message: 'Registration successful! Save your password.'
     });
 
