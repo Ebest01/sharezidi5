@@ -1,0 +1,17 @@
+Manual Git Commands to Fix MongoDB Production Issue:
+
+1. First, run these commands in your terminal:
+   git add prod-server-v2.js
+   git commit -m "Replace bundled server with CommonJS prod-server-v2.js - fix MongoDB ESM bundling error"
+   git push origin main
+
+2. The prod-server-v2.js file is ready and contains:
+   - CommonJS require() instead of ESM bundling
+   - All file transfer functionality preserved
+   - Complete authentication system
+   - MongoDB integration without bundling conflicts
+   - Fixed "Dynamic require of stream" error
+
+3. This will update the GitHub repository and trigger EasyPanel deployment automatically.
+
+The CommonJS approach completely avoids the ESM bundling issue that was causing the MongoDB error.
