@@ -63,7 +63,7 @@ export default function DbTestPage() {
       const result = await response.json();
       
       if (response.ok) {
-        alert(`User added successfully!\nEmail: ${result.user.email}\nGenerated Password: ${result.generatedPassword || result.password}\nDatabase: ${result.database || 'sharezidi'}`);
+        alert(`User added successfully!\nEmail: ${result.user.email}\nGenerated Password: ${result.generatedPassword}`);
         setGeneratedUser(null); // Clear generated user after adding
       } else {
         alert(`Error: ${result.error}`);
