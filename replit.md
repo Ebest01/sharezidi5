@@ -122,8 +122,8 @@ Preferred communication style: Simple, everyday language.
   * Preserves ALL existing file transfer functionality (WebSocket, chunking, progress tracking)
   * Maintains complete authentication system with password generation and geolocation
   * Full visitor analytics and database operations
-- **File deployed**: prod-server-v2.js replaces bundled dist/prod-server.js
-- **Package.json updated**: start script now uses CommonJS server directly
+- **File deployed**: prod-server-v2.cjs (renamed to .cjs for CommonJS compatibility)
+- **Package.json and Procfile updated**: both point to CommonJS server with .cjs extension
 - Ready for deployment test - should resolve "Dynamic require of stream" error completely
 
 ### July 2, 2025 - Admin Login Bypass System Added ✅
