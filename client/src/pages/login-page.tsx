@@ -35,7 +35,7 @@ export default function LoginPage({ onLoginSuccess, onSignUpClick }: LoginPagePr
 
   const loginMutation = useMutation({
     mutationFn: async (data: z.infer<typeof loginSchema>) => {
-      const response = await apiRequest("POST", "/api/auth/login", data);
+      const response = await apiRequest("POST", "/api/login", data);
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || "Login failed");
