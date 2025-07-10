@@ -102,6 +102,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 10, 2025 - Authentication Endpoints Standardized ✅
+- **CRITICAL FIX**: Standardized all login endpoints to use `/api/auth/login` across both development and production
+- **Removed confusion**: Previously dev used `/api/login` while prod used `/api/auth/login` causing 404 errors
+- **Frontend updated**: All components (AuthPage, LoginPage, AuthModal) now consistently use `/api/auth/login`
+- **Backend updated**: Both development server and production server use same endpoint structure
+- **Password security**: Development server now properly uses bcrypt password hashing like production
+- **Testing verified**: Login flow works in development with proper authentication
+- **Production deployed**: Updated production server with consistent endpoint structure
+
 ### July 9, 2025 - MongoDB Connection Successfully Established ✅
 - Resolved MongoDB authentication issues with external server at 193.203.165.217:27017
 - Successfully connected to production MongoDB database using credentials: shzmdb2/11xxshzMDB

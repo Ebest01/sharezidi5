@@ -257,7 +257,7 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-app.post('/api/login', async (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -310,44 +310,6 @@ app.post('/api/login', async (req, res) => {
 
   } catch (error) {
     console.error('[LOGIN] Error:', error);
-    res.status(500).json({ error: 'Login failed' });
-  }
-});
-
-// Add /api/auth/login endpoint for frontend compatibility
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
-    }
-    
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
-    
-    const passwordMatch = await comparePasswords(password, user.password || '');
-    if (!passwordMatch) {
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
-    
-    res.json({
-      success: true,
-      user: {
-        id: user._id.toString(),
-        email: user.email,
-        username: user.username,
-        transferCount: user.transferCount,
-        isPro: user.isPro,
-        isGuest: false
-      },
-      sessionToken: user.username
-    });
-    
-  } catch (error) {
-    console.error('[AUTH-LOGIN] Error:', error);
     res.status(500).json({ error: 'Login failed' });
   }
 });
