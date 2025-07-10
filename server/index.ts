@@ -13,6 +13,23 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Add proper cache control and MIME type headers for static assets
+app.use((req, res, next) => {
+  // Set proper MIME types for JavaScript modules
+  if (req.path.endsWith('.js') || req.path.includes('.js?')) {
+    res.setHeader('Content-Type', 'application/javascript');
+  }
+  
+  // Prevent caching issues with module scripts
+  if (req.path.includes('.js') && req.path.includes('-')) {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  
+  next();
+});
+
 // IMMEDIATE GEOLOCATION TRACKING - First thing that happens when visitor hits server
 // This is equivalent to placing PHP code above <html> tag
 // Includes circuit breaker pattern to prevent system overload
@@ -25,7 +42,19 @@ const CIRCUIT_RESET_TIME = 30000; // 30 seconds
 app.use(async (req, res, next) => {
   // Skip tracking for API calls, static assets, and WebSocket upgrades
   if (req.path.startsWith('/api/') || 
-      req.path.includes('.') || 
+      req.path.startsWith('/@') ||  // Vite dev server assets
+      req.path.includes('.js') ||   // JavaScript files
+      req.path.includes('.css') ||  // CSS files
+      req.path.includes('.png') ||  // Images
+      req.path.includes('.jpg') ||
+      req.path.includes('.jpeg') ||
+      req.path.includes('.gif') ||
+      req.path.includes('.svg') ||
+      req.path.includes('.ico') ||  // Favicon
+      req.path.includes('.woff') || // Fonts
+      req.path.includes('.woff2') ||
+      req.path.includes('.ttf') ||
+      req.path.includes('.eot') ||
       req.path === '/ws' ||
       req.headers.upgrade === 'websocket') {
     return next();
