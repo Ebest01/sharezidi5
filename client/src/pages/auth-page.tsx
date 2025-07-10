@@ -336,35 +336,36 @@ export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950 dark:to-blue-950 p-4">
-      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-        {/* Hero Section */}
-        <div className="text-center lg:text-left space-y-6">
-          <div className="space-y-2">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-              Welcome to ShareZidi
-            </h1>
-            <p className="text-xl text-muted-foreground">
-              Fast, secure file sharing between your devices
-            </p>
+      <div className="w-full max-w-6xl">
+        <div className="flex flex-col lg:flex-row gap-8 items-center justify-center">
+          {/* Hero Section */}
+          <div className="text-center lg:text-left space-y-6 lg:flex-1">
+            <div className="space-y-2">
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                Welcome to ShareZidi
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground">
+                Fast, secure file sharing between your devices
+              </p>
+            </div>
+            <div className="space-y-3 text-muted-foreground">
+              <div className="flex items-center justify-center lg:justify-start gap-3">
+                <Zap className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <span className="text-sm md:text-base">Instant file transfers via WebSocket</span>
+              </div>
+              <div className="flex items-center justify-center lg:justify-start gap-3">
+                <Monitor className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                <span className="text-sm md:text-base">Works on mobile, tablet, and desktop</span>
+              </div>
+              <div className="flex items-center justify-center lg:justify-start gap-3">
+                <Shield className="w-5 h-5 text-purple-500 flex-shrink-0" />
+                <span className="text-sm md:text-base">No file size limits, no cloud storage</span>
+              </div>
+            </div>
           </div>
-          <div className="space-y-4 text-muted-foreground">
-            <div className="flex items-center gap-3">
-              <Zap className="w-5 h-5 text-green-500" />
-              <span>Instant file transfers via WebSocket</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Monitor className="w-5 h-5 text-blue-500" />
-              <span>Works on mobile, tablet, and desktop</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Shield className="w-5 h-5 text-purple-500" />
-              <span>No file size limits, no cloud storage</span>
-            </div>
-          </div>
-        </div>
 
-        {/* Auth Forms */}
-        <Card className="w-full max-w-md mx-auto">
+          {/* Auth Forms */}
+          <Card className="w-full max-w-md mx-auto lg:flex-shrink-0">
           <CardHeader>
             <CardTitle>Get Started</CardTitle>
             <CardDescription>
