@@ -263,7 +263,24 @@ export function setupAuthRoutes(app: Express) {
 
       // Check password (skip for OAuth users who don't have passwords)
       if (user.password && password) {
-        const validPassword = await bcrypt.compare(password, user.password);
+        console.log("[DEBUG] Password comparison:", {
+          providedPassword: password,
+          storedPasswordHash: user.password,
+          storedPasswordLength: user.password.length
+        });
+        
+        // If password doesn't start with $2b$, it's plain text (from old registration)
+        let validPassword = false;
+        if (user.password.startsWith('$2b$')) {
+          // Hashed password - use bcrypt
+          validPassword = await bcrypt.compare(password, user.password);
+        } else {
+          // Plain text password - direct comparison
+          validPassword = (password === user.password);
+        }
+        
+        console.log("[DEBUG] Password validation result:", validPassword);
+        
         if (!validPassword) {
           return res.status(401).json({ error: "Invalid credentials" });
         }
