@@ -66,15 +66,9 @@ function App() {
           <LandingPage onAuthSuccess={handleAuthSuccess} />
         </Route>
 
-        {/* Dedicated login page */}
+        {/* Redirect /login to /auth page */}
         <Route path="/login">
-          <LoginPage 
-            onLoginSuccess={() => {
-              handleAuthSuccess();
-              window.location.href = "/start";
-            }}
-            onSignUpClick={() => window.location.href = "/auth"}
-          />
+          {window.location.href = "/auth"}
         </Route>
 
         {/* Main ShareZidi app - requires authentication */}
