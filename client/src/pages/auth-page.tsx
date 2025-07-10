@@ -70,17 +70,23 @@ export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
   // Registration mutation
   const registerMutation = useMutation({
     mutationFn: async (data: z.infer<typeof registerSchema>) => {
-      const res = await apiRequest("POST", "/api/auth/register", data);
+      const res = await apiRequest("POST", "/api/register", data);
       return await res.json();
     },
     onSuccess: (data) => {
+      // Show the generated password in an alert
+      const password = data.generatedPassword;
+      if (password) {
+        alert(`User added successfully!\nEmail: ${data.user.email}\nGenerated Password: ${password}`);
+      }
+      
       toast({
         title: "Registration Successful!",
-        description: `Account created for ${data.email}. Check your email for login credentials.`,
+        description: `Account created for ${data.user.email}. Please save your password: ${password}`,
       });
       registerForm.reset();
       setActiveTab("login");
-      loginForm.setValue("email", data.email);
+      loginForm.setValue("email", data.user.email);
     },
     onError: (error: Error) => {
       toast({
@@ -94,7 +100,7 @@ export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: async (data: z.infer<typeof loginSchema>) => {
-      const res = await apiRequest("POST", "/api/auth/login", data);
+      const res = await apiRequest("POST", "/api/login", data);
       return await res.json();
     },
     onSuccess: (data) => {
