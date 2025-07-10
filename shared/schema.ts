@@ -11,6 +11,10 @@ export interface IUser extends Document {
   isPro: boolean;
   subscriptionDate: Date;
   lastResetDate: Date;
+  lastVisitTime: Date;
+  totalFilesTransferred: number;
+  totalBytesTransferred: number;
+  deviceCount: number;
   createdAt: Date;
   updatedAt: Date;
   
@@ -34,6 +38,10 @@ const userSchema = new Schema<IUser>({
   isPro: { type: Boolean, default: false },
   subscriptionDate: { type: Date },
   lastResetDate: { type: Date, default: Date.now },
+  lastVisitTime: { type: Date, default: Date.now },
+  totalFilesTransferred: { type: Number, default: 0 },
+  totalBytesTransferred: { type: Number, default: 0 },
+  deviceCount: { type: Number, default: 0 },
   
   // Geolocation fields
   ipAddress: { type: String, maxlength: 45 },
@@ -55,6 +63,10 @@ export interface IVisitor extends Document {
   sessionId: string;
   ipAddress: string;
   userAgent?: string;
+  lastVisitTime: Date;
+  visitCount: number;
+  pageViews: number;
+  sessionDuration: number;
   country?: string;
   countryCode?: string;
   region?: string;
@@ -71,6 +83,10 @@ const visitorSchema = new Schema<IVisitor>({
   sessionId: { type: String, required: true, maxlength: 100 },
   ipAddress: { type: String, required: true, maxlength: 45 },
   userAgent: { type: String, maxlength: 500 },
+  lastVisitTime: { type: Date, default: Date.now },
+  visitCount: { type: Number, default: 1 },
+  pageViews: { type: Number, default: 1 },
+  sessionDuration: { type: Number, default: 0 },
   country: { type: String, maxlength: 100 },
   countryCode: { type: String, maxlength: 2 },
   region: { type: String, maxlength: 100 },

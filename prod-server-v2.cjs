@@ -48,6 +48,10 @@ const userSchema = new mongoose.Schema({
   isPro: { type: Boolean, default: false },
   subscriptionDate: { type: Date, default: Date.now },
   lastResetDate: { type: Date, default: Date.now },
+  lastVisitTime: { type: Date, default: Date.now },
+  totalFilesTransferred: { type: Number, default: 0 },
+  totalBytesTransferred: { type: Number, default: 0 },
+  deviceCount: { type: Number, default: 0 },
   // Geolocation fields
   ipAddress: String,
   country: String,
@@ -65,6 +69,10 @@ const visitorSchema = new mongoose.Schema({
   sessionId: { type: String, required: true },
   ipAddress: { type: String, required: true },
   userAgent: String,
+  lastVisitTime: { type: Date, default: Date.now },
+  visitCount: { type: Number, default: 1 },
+  pageViews: { type: Number, default: 1 },
+  sessionDuration: { type: Number, default: 0 }, // in seconds
   country: String,
   countryCode: String,
   region: String,
@@ -267,6 +275,26 @@ app.post('/api/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // Update last visit time and geolocation on login
+    const ip = extractIPAddress(req);
+    const locationData = await getLocationData(ip);
+    
+    await User.updateOne(
+      { _id: user._id },
+      { 
+        lastVisitTime: new Date(),
+        ipAddress: ip,
+        country: locationData?.country || user.country,
+        countryCode: locationData?.country_code || user.countryCode,
+        region: locationData?.region || user.region,
+        city: locationData?.city || user.city,
+        timezone: locationData?.timezone || user.timezone,
+        latitude: locationData?.latitude || user.latitude,
+        longitude: locationData?.longitude || user.longitude,
+        isp: locationData?.isp || user.isp
+      }
+    );
+
     res.json({
       success: true,
       user: {
@@ -339,27 +367,58 @@ app.use('/', async (req, res, next) => {
     if (!req.path.startsWith('/api/') && !req.path.includes('.')) {
       const ip = extractIPAddress(req);
       const locationData = await getLocationData(ip);
+      const sessionId = req.headers.cookie?.match(/sessionId=([^;]+)/)?.[1] || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
-      const visitorData = {
-        sessionId: req.sessionID || 'unknown',
-        ipAddress: ip,
-        userAgent: req.get('User-Agent') || '',
-        referrer: req.get('Referrer') || '',
-        country: locationData?.country || 'Unknown',
-        countryCode: locationData?.country_code || '',
-        region: locationData?.region || '',
-        city: locationData?.city || '',
-        timezone: locationData?.timezone || '',
-        latitude: locationData?.latitude || '',
-        longitude: locationData?.longitude || '',
-        isp: locationData?.isp || '',
-        visitedAt: new Date()
-      };
+      // Check if visitor already exists for this session
+      const existingVisitor = await Visitor.findOne({ sessionId });
+      
+      if (existingVisitor) {
+        // Update existing visitor with new visit time and increment counters
+        await Visitor.updateOne(
+          { sessionId },
+          { 
+            lastVisitTime: new Date(),
+            $inc: { visitCount: 1, pageViews: 1 },
+            ipAddress: ip,
+            userAgent: req.headers['user-agent'] || '',
+            country: locationData?.country || existingVisitor.country,
+            countryCode: locationData?.country_code || existingVisitor.countryCode,
+            region: locationData?.region || existingVisitor.region,
+            city: locationData?.city || existingVisitor.city,
+            timezone: locationData?.timezone || existingVisitor.timezone,
+            latitude: locationData?.latitude || existingVisitor.latitude,
+            longitude: locationData?.longitude || existingVisitor.longitude,
+            isp: locationData?.isp || existingVisitor.isp,
+            referrer: req.headers.referer || ''
+          }
+        );
+      } else {
+        // Create new visitor record
+        const visitorData = {
+          sessionId,
+          ipAddress: ip,
+          userAgent: req.headers['user-agent'] || '',
+          lastVisitTime: new Date(),
+          visitCount: 1,
+          pageViews: 1,
+          sessionDuration: 0,
+          referrer: req.headers.referer || '',
+          country: locationData?.country || 'Unknown',
+          countryCode: locationData?.country_code || '',
+          region: locationData?.region || '',
+          city: locationData?.city || '',
+          timezone: locationData?.timezone || '',
+          latitude: locationData?.latitude || '',
+          longitude: locationData?.longitude || '',
+          isp: locationData?.isp || '',
+          visitedAt: new Date()
+        };
 
-      try {
-        await new Visitor(visitorData).save();
-      } catch (err) {
-        // Silent fail for visitor tracking
+        try {
+          await new Visitor(visitorData).save();
+        } catch (err) {
+          // Silent fail for visitor tracking
+        }
       }
     }
   } catch (error) {
