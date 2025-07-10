@@ -13,8 +13,8 @@ CRITICAL: You need to update THREE files in the GitHub repository:
    web: NODE_ENV=production node prod-server-v2.cjs
 
 3. Then run these commands in your terminal:
-   git add prod-server-v2.cjs package.json Procfile
-   git commit -m "Fix MongoDB database consistency - use sharezidi database for both local and production"
+   git add prod-server-v2.cjs client/src/pages/db-test-page.tsx .nvmrc Procfile
+   git commit -m "Fix deployment issues - add Node.js version specification and revert registration changes"
    git push origin main
 
 IMPORTANT: 
