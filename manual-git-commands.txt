@@ -14,7 +14,7 @@ CRITICAL: You need to update THREE files in the GitHub repository:
 
 3. Then run these commands in your terminal:
    git add prod-server-v2.cjs client/src/pages/db-test-page.tsx .nvmrc Procfile
-   git commit -m "Fix deployment issues - add Node.js version specification and revert registration changes"
+   git commit -m "Force production to use sharezidi database with explicit dbName parameter"
    git push origin main
 
 IMPORTANT: 
