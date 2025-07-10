@@ -205,6 +205,7 @@ app.use((req, res, next) => {
       res.json({
         success: true,
         user: newUser,
+        generatedPassword: password,
         message: "Registration successful"
       });
       
