@@ -100,7 +100,7 @@ export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: async (data: z.infer<typeof loginSchema>) => {
-      const res = await apiRequest("POST", "/api/auth/login", data);
+      const res = await apiRequest("POST", "/api/login", data);
       return await res.json();
     },
     onSuccess: (data) => {
