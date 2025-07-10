@@ -7,6 +7,7 @@ import { connectMongoDB } from "./db";
 import { User, Visitor, type InsertVisitor, type IUser } from "@shared/schema";
 import { generatePassword, extractUsernameFromEmail } from "./utils/passwordGenerator";
 import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 
 const app = express();
 app.use(express.json());
@@ -173,6 +174,7 @@ app.use((req, res, next) => {
       
       // Generate password and username
       const password = generatePassword();
+      const hashedPassword = await bcrypt.hash(password, 10);
       const username = extractUsernameFromEmail(email);
       
       // Get location data
@@ -183,7 +185,7 @@ app.use((req, res, next) => {
       const newUser = new User({
         email: email,
         username: username,
-        password: password,
+        password: hashedPassword,
         transferCount: 0,
         isPro: false,
         ipAddress: ip,
@@ -212,6 +214,59 @@ app.use((req, res, next) => {
     } catch (error) {
       console.error("[REGISTER] Registration error:", error);
       res.status(500).json({ error: "Registration failed" });
+    }
+  });
+  
+  // Login endpoint for testing
+  app.post("/api/login", async (req, res) => {
+    console.log("[LOGIN] ===== LOGIN ATTEMPT =====");
+    console.log("[LOGIN] Request body:", req.body);
+    
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email and password are required" });
+      }
+      
+      // Check if MongoDB is connected
+      if (mongoose.connection.readyState !== 1) {
+        console.log("[LOGIN] MongoDB not connected, login unavailable");
+        return res.status(503).json({ error: "Database unavailable - please try again later" });
+      }
+      
+      // Find user by email
+      const user = await User.findOne({ email });
+      if (!user) {
+        console.log("[LOGIN] User not found:", email);
+        return res.status(401).json({ error: "Invalid email or password" });
+      }
+      
+      // Verify password with bcrypt
+      const passwordMatch = await bcrypt.compare(password, user.password);
+      if (!passwordMatch) {
+        console.log("[LOGIN] Invalid password for:", email);
+        return res.status(401).json({ error: "Invalid email or password" });
+      }
+      
+      console.log("[LOGIN] ✅ Login successful:", email);
+      
+      res.json({
+        success: true,
+        user: {
+          id: user._id.toString(),
+          email: user.email,
+          username: user.username,
+          transferCount: user.transferCount,
+          isPro: user.isPro,
+          isGuest: false
+        },
+        message: "Login successful"
+      });
+      
+    } catch (error) {
+      console.error("[LOGIN] Login error:", error);
+      res.status(500).json({ error: "Login failed" });
     }
   });
   
