@@ -19,28 +19,13 @@ export default function DbTestPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Generate random email and password
+  // Generate random email (server will generate password)
   const generateRandomUser = () => {
     const domains = ['gmail.com', 'yahoo.com', 'outlook.com', 'test.com'];
     const randomString = Math.random().toString(36).substring(2, 8);
     const email = `user${randomString}@${domains[Math.floor(Math.random() * domains.length)]}`;
     
-    // Generate password in format [A-Z{3}][0-9{6}][a-z{2}]
-    const uppercase = Array.from({ length: 3 }, () => 
-      String.fromCharCode(65 + Math.floor(Math.random() * 26))
-    ).join('');
-    
-    const digits = Array.from({ length: 6 }, () => 
-      Math.floor(Math.random() * 10).toString()
-    ).join('');
-    
-    const lowercase = Array.from({ length: 2 }, () => 
-      String.fromCharCode(97 + Math.floor(Math.random() * 26))
-    ).join('');
-    
-    const password = uppercase + digits + lowercase;
-    
-    setGeneratedUser({ email, password });
+    setGeneratedUser({ email, password: '(Server will generate password)' });
   };
 
   // Add generated user to database
@@ -63,8 +48,12 @@ export default function DbTestPage() {
       const result = await response.json();
       
       if (response.ok) {
+        // Update the displayed user with the actual server-generated password
+        setGeneratedUser({ 
+          email: result.user.email, 
+          password: result.generatedPassword 
+        });
         alert(`User added successfully!\nEmail: ${result.user.email}\nGenerated Password: ${result.generatedPassword}`);
-        setGeneratedUser(null); // Clear generated user after adding
       } else {
         alert(`Error: ${result.error}`);
       }
