@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Router, Route, Switch } from "wouter";
+import { Router, Route, Switch, Redirect } from "wouter";
 import { ShareZidiApp } from "./components/ShareZidiApp";
 import LandingPage from "./pages/landing-page";
 import LoginPage from "./pages/login-page";
@@ -68,7 +68,7 @@ function App() {
 
         {/* Redirect /login to /auth page */}
         <Route path="/login">
-          {window.location.href = "/auth"}
+          <Redirect to="/auth" />
         </Route>
 
         {/* Main ShareZidi app - requires authentication */}
