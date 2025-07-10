@@ -22,7 +22,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuc
     setError('');
 
     try {
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+      const endpoint = isLogin ? '/api/login' : '/api/register';
       const userData = { email, password };
       
       const response = await apiRequest(endpoint, {
