@@ -127,6 +127,7 @@ Preferred communication style: Simple, everyday language.
 - **✅ DEPLOYMENT SUCCESSFUL**: MongoDB connects without errors, all file transfer functionality operational
 - **✅ DATABASE UNIFIED**: Both local and production now use "sharezidi" database consistently
 - **🔧 DEPLOYMENT FIX**: Added .nvmrc to specify Node.js version 20 for proper buildpack detection
+- **✅ DATABASE FORCED**: Added explicit `dbName: 'sharezidi'` parameter to ensure production uses sharezidi database instead of test
 
 ### July 2, 2025 - Admin Login Bypass System Added ✅
 - Added development admin credentials: username "AxDMIxN", password "AZQ00001xx"

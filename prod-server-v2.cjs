@@ -27,8 +27,11 @@ async function connectMongoDB() {
     await mongoose.connect(MONGODB_URI, {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 10000,
+      dbName: 'sharezidi',  // Explicitly force sharezidi database
     });
     console.log('[MONGODB] ✅ Connected successfully');
+    console.log('[MONGODB] Database name:', mongoose.connection.db.databaseName);
+    console.log('[MONGODB] Expected: sharezidi, Actual:', mongoose.connection.db.databaseName);
     return true;
   } catch (error) {
     console.error('[MONGODB] ❌ Connection failed:', error.message);
