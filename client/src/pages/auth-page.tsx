@@ -507,6 +507,7 @@ export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
             </Tabs>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );
