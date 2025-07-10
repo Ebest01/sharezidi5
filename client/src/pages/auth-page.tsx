@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Mail, Lock, RefreshCw } from "lucide-react";
+import { Loader2, Mail, Lock, RefreshCw, Zap, Monitor, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 // Form schemas
@@ -349,15 +349,15 @@ export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
           </div>
           <div className="space-y-4 text-muted-foreground">
             <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <Zap className="w-5 h-5 text-green-500" />
               <span>Instant file transfers via WebSocket</span>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <Monitor className="w-5 h-5 text-blue-500" />
               <span>Works on mobile, tablet, and desktop</span>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+              <Shield className="w-5 h-5 text-purple-500" />
               <span>No file size limits, no cloud storage</span>
             </div>
           </div>
