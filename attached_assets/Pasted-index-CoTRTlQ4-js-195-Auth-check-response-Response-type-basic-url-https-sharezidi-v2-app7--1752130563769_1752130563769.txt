@@ -1,0 +1,64 @@
+index-CoTRTlQ4.js:195 Auth check response: Response {type: 'basic', url: 'https://sharezidi-v2-app7-services.yoernx.easypanel.host/api/auth/user', redirected: false, status: 200, ok: true, …}
+index-CoTRTlQ4.js:61 Auth check response: 200 true
+index-CoTRTlQ4.js:61 Received user data: {id: 'guest', email: 'guest@sharezidi.com', transferCount: 0, isPro: false, isGuest: true}
+index-CoTRTlQ4.js:40  POST https://sharezidi-v2-app7-services.yoernx.easypanel.host/api/auth/login 404 (Not Found)
+as @ index-CoTRTlQ4.js:40
+mutationFn @ index-CoTRTlQ4.js:191
+fn @ index-CoTRTlQ4.js:40
+b @ index-CoTRTlQ4.js:40
+start @ index-CoTRTlQ4.js:40
+execute @ index-CoTRTlQ4.js:40
+await in execute
+mutate @ index-CoTRTlQ4.js:40
+(anonymous) @ index-CoTRTlQ4.js:40
+u @ index-CoTRTlQ4.js:191
+(anonymous) @ index-CoTRTlQ4.js:191
+await in (anonymous)
+lv @ index-CoTRTlQ4.js:37
+cv @ index-CoTRTlQ4.js:37
+dv @ index-CoTRTlQ4.js:37
+Hd @ index-CoTRTlQ4.js:37
+Pp @ index-CoTRTlQ4.js:37
+(anonymous) @ index-CoTRTlQ4.js:37
+Bc @ index-CoTRTlQ4.js:40
+ep @ index-CoTRTlQ4.js:37
+Rl @ index-CoTRTlQ4.js:37
+yc @ index-CoTRTlQ4.js:37
+Cv @ index-CoTRTlQ4.js:37
+login:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+login:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+login:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+login:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+login:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+login:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+login:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+login:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+login:1 Unchecked runtime.lastError: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+login:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+login:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+login:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+login:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+index-CoTRTlQ4.js:40  POST https://sharezidi-v2-app7-services.yoernx.easypanel.host/api/auth/login 404 (Not Found)
+as @ index-CoTRTlQ4.js:40
+mutationFn @ index-CoTRTlQ4.js:191
+fn @ index-CoTRTlQ4.js:40
+b @ index-CoTRTlQ4.js:40
+start @ index-CoTRTlQ4.js:40
+execute @ index-CoTRTlQ4.js:40
+await in execute
+mutate @ index-CoTRTlQ4.js:40
+(anonymous) @ index-CoTRTlQ4.js:40
+u @ index-CoTRTlQ4.js:191
+(anonymous) @ index-CoTRTlQ4.js:191
+await in (anonymous)
+lv @ index-CoTRTlQ4.js:37
+cv @ index-CoTRTlQ4.js:37
+dv @ index-CoTRTlQ4.js:37
+Hd @ index-CoTRTlQ4.js:37
+Pp @ index-CoTRTlQ4.js:37
+(anonymous) @ index-CoTRTlQ4.js:37
+Bc @ index-CoTRTlQ4.js:40
+ep @ index-CoTRTlQ4.js:37
+Rl @ index-CoTRTlQ4.js:37
+yc @ index-CoTRTlQ4.js:37
+Cv @ index-CoTRTlQ4.js:37
