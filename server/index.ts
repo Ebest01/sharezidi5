@@ -218,7 +218,7 @@ app.use((req, res, next) => {
   });
   
   // Login endpoint for testing
-  app.post("/api/login", async (req, res) => {
+  app.post("/api/auth/login", async (req, res) => {
     console.log("[LOGIN] ===== LOGIN ATTEMPT =====");
     console.log("[LOGIN] Request body:", req.body);
     
