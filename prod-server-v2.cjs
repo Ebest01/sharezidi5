@@ -314,6 +314,57 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// Add /api/auth/login endpoint for frontend compatibility
+app.post("/api/auth/login", async (req, res) => {
+  console.log("[AUTH-LOGIN] ===== LOGIN START =====");
+  
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      console.log("[AUTH-LOGIN] Missing email or password");
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+    
+    // Find user by email
+    const user = await User.findOne({ email });
+    
+    if (!user) {
+      console.log("[AUTH-LOGIN] User not found:", email);
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+    
+    // Verify password
+    const passwordMatch = await comparePasswords(password, user.password || '');
+    
+    if (!passwordMatch) {
+      console.log("[AUTH-LOGIN] Invalid password for:", email);
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+    
+    console.log("[AUTH-LOGIN] ✅ Login successful:", email);
+    console.log("[AUTH-LOGIN] ===== LOGIN END =====");
+    
+    res.json({
+      success: true,
+      user: {
+        id: user._id.toString(),
+        email: user.email,
+        username: user.username,
+        transferCount: user.transferCount,
+        isPro: user.isPro,
+        isGuest: false
+      },
+      sessionToken: user.username,
+      message: "Login successful"
+    });
+    
+  } catch (error) {
+    console.error("[AUTH-LOGIN] Login error:", error);
+    res.status(500).json({ error: "Login failed" });
+  }
+});
+
 app.get('/api/dbtest/users', async (req, res) => {
   try {
     const users = await User.find({})
