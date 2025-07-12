@@ -1,0 +1,105 @@
+Commit: Fix authentication endpoints and user ID display 
+##########################################
+### Download Github Archive Started...
+### Sat, 12 Jul 2025 09:27:46 GMT
+##########################################
+
+24: Pulling from heroku/builder
+Digest: sha256:de68cbe2221e78dcb18aa791dc0fb4882186f7a7db5e5b09895c91b33ee025cd
+Status: Image is up to date for heroku/builder:24
+24: Pulling from heroku/heroku
+Digest: sha256:5325f68c40385890717edac26dc3afd54d3e34921204671a461b4fb18600086a
+Status: Image is up to date for heroku/heroku:24
+0.20.11: Pulling from buildpacksio/lifecycle
+Digest: sha256:8ed1a37b3071951cc282ac0ae775c9b43e2957f6b30d7457b818c9be84ec0f08
+Status: Image is up to date for buildpacksio/lifecycle:0.20.11
+===> ANALYZING
+[analyzer] Restoring data for SBOM from previous image
+===> DETECTING
+[detector] 3 of 6 buildpacks participating
+[detector] heroku/nodejs-engine      4.0.0
+[detector] heroku/nodejs-npm-install 4.0.0
+[detector] heroku/procfile           4.2.1
+===> RESTORING
+[restorer] Restoring metadata for "heroku/nodejs-engine:dist" from app image
+[restorer] Restoring metadata for "heroku/nodejs-engine:web_env" from app image
+[restorer] Restoring metadata for "heroku/nodejs-npm-install:npm_runtime_config" from app image
+[restorer] Restoring metadata for "heroku/nodejs-npm-install:npm_cache" from cache
+[restorer] Restoring data for "heroku/nodejs-engine:dist" from cache
+[restorer] Restoring data for "heroku/nodejs-npm-install:npm_cache" from cache
+===> BUILDING
+[builder] 
+[builder] ## Heroku Node.js Engine
+[builder] 
+[builder] - Checking Node.js version
+[builder]   - Node.js version not specified, using `22.x`
+[builder]   - Resolved Node.js version: `22.17.0`
+[builder] - Installing Node.js distribution
+[builder]   - Reusing Node.js 22.17.0 (linux-amd64)
+[builder] - Done (finished in < 0.1s)
+[builder] 
+[builder] ## Heroku Node.js npm Install
+[builder] 
+[builder] - Installing node modules
+[builder]   - Using npm version `10.9.2`
+[builder]   - Restoring npm cache
+[builder]   - Configuring npm cache directory
+[builder]   - Running `npm ci`
+[builder] 
+[builder] 
+[builder]       added 508 packages, and audited 509 packages in 19s
+[builder] 
+[builder]       59 packages are looking for funding
+[builder]         run `npm fund` for details
+[builder] 
+[builder]       1 low severity vulnerability
+[builder] 
+[builder]       To address all issues, run:
+[builder]         npm audit fix
+[builder] 
+[builder]       Run `npm audit` for details.
+[builder] 
+[builder]   - Done (19.0s)
+[builder] - Running scripts
+[builder]   - Running `npm run build`
+[builder] 
+[builder] 
+[builder]       > rest-express@1.0.0 build
+[builder]       > vite build && esbuild server/prod-server.ts --platform=node --bundle --format=esm --outdir=dist --external:ws --external:express --external:path --external:fs --external:http --external:os
+[builder] 
+[builder]       sh: 1: vite: not found
+[builder] 
+[builder]   - Done (0.1s)
+[builder] 
+[builder] - Debug Info:
+[builder]   - Command failed `npm run build`
+[builder]     exit status: 127
+[builder]     stdout: <see above>
+[builder]     stderr: <see above>
+[builder] 
+[builder] ! Failed to execute build script
+[builder] !
+[builder] ! The Heroku Node.js npm Install buildpack allows customization of the build process by executing the following scripts if they are defined in `package.json`:
+[builder] ! - `heroku-prebuild` 
+[builder] ! - `heroku-build` or `build` 
+[builder] ! - `heroku-postbuild`
+[builder] !
+[builder] ! An unexpected error occurred while executing `npm run build`. See the log output above for more information.
+[builder] !
+[builder] ! Suggestions:
+[builder] ! - Ensure that this command runs locally without error.
+[builder] !
+[builder] ! Use the debug information above to troubleshoot and retry your build.
+[builder] !
+[builder] ! If the issue persists and you think you found a bug in the buildpack, reproduce the issue locally with a minimal example. Open an issue in the buildpack's GitHub repository and include the details here:
+[builder] ! https://github.com/heroku/buildpacks-nodejs/issues
+[builder] 
+[builder] 
+[builder] ERROR: failed to build: exit status 1
+ERROR: failed to build: executing lifecycle: failed with status code: 51
+##########################################
+### Error
+### Sat, 12 Jul 2025 09:28:22 GMT
+##########################################
+
+Command failed with exit code 1: pack build easypanel/sharezidi_v2/app7_services --path /etc/easypanel/projects/sharezidi_v2/app7_services/code/ --default-process web --network easypanel --env 'MONGODB_URI=mongodb://shzmdb2:11xxshzMDB@sharezidi_v2_shzidi_mdb2:27017/?ssl=false' --env 'NODE_ENV=production' --env 'PORT=5000' --env 'SESSION_SECRET=a526d34a196cbf6be23a4fe79399b1950f43372d0f0676a37fabcb5af9a7c03c' --env 'GIT_SHA=5efc47c708457a77b0ffd71d46a065a830edfe12' --builder 'heroku/builder:24'
