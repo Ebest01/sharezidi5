@@ -66,6 +66,19 @@ export const useAccessibility = () => {
     const currentIndex = modes.indexOf(settings.mode);
     const nextMode = modes[(currentIndex + 1) % modes.length];
     updateSettings({ mode: nextMode });
+    
+    // Announce the change to screen readers
+    const modeNames = {
+      'normal': 'Normal',
+      'high-contrast': 'High Contrast Light',
+      'dark-high-contrast': 'High Contrast Dark'
+    };
+    
+    // Create announcement
+    const announcement = document.getElementById('aria-announcements');
+    if (announcement) {
+      announcement.textContent = `Display mode changed to ${modeNames[nextMode]}`;
+    }
   }, [settings.mode, updateSettings]);
 
   const toggleReduceMotion = useCallback(() => {

@@ -4,6 +4,228 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Accessibility Themes */
+:root {
+  --motion-duration: 0.2s;
+  --text-scale: 1;
+}
+
+/* Normal Theme (Default) */
+.accessibility-normal {
+  /* Uses existing CSS variables */
+}
+
+/* High Contrast Light Theme */
+.accessibility-high-contrast {
+  --background: 255 255 255;
+  --foreground: 0 0 0;
+  --card: 255 255 255;
+  --card-foreground: 0 0 0;
+  --popover: 255 255 255;
+  --popover-foreground: 0 0 0;
+  --primary: 0 0 0;
+  --primary-foreground: 255 255 255;
+  --secondary: 240 240 240;
+  --secondary-foreground: 0 0 0;
+  --muted: 240 240 240;
+  --muted-foreground: 0 0 0;
+  --accent: 240 240 240;
+  --accent-foreground: 0 0 0;
+  --destructive: 255 0 0;
+  --destructive-foreground: 255 255 255;
+  --border: 0 0 0;
+  --input: 255 255 255;
+  --ring: 0 0 0;
+  --radius: 0.375rem;
+}
+
+/* High Contrast Dark Theme */
+.accessibility-dark-high-contrast {
+  --background: 0 0 0;
+  --foreground: 255 255 255;
+  --card: 0 0 0;
+  --card-foreground: 255 255 255;
+  --popover: 0 0 0;
+  --popover-foreground: 255 255 255;
+  --primary: 255 255 255;
+  --primary-foreground: 0 0 0;
+  --secondary: 40 40 40;
+  --secondary-foreground: 255 255 255;
+  --muted: 40 40 40;
+  --muted-foreground: 255 255 255;
+  --accent: 40 40 40;
+  --accent-foreground: 255 255 255;
+  --destructive: 255 100 100;
+  --destructive-foreground: 0 0 0;
+  --border: 255 255 255;
+  --input: 0 0 0;
+  --ring: 255 255 255;
+  --radius: 0.375rem;
+}
+
+/* High Contrast Enhancements */
+.accessibility-high-contrast,
+.accessibility-dark-high-contrast {
+  /* Stronger borders for better visibility */
+  button, input, textarea, select {
+    border-width: 2px !important;
+  }
+  
+  /* Enhanced focus indicators */
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  [role="button"]:focus-visible {
+    outline: 3px solid currentColor !important;
+    outline-offset: 2px !important;
+  }
+  
+  /* Better link visibility */
+  a {
+    text-decoration: underline !important;
+    text-decoration-thickness: 2px !important;
+  }
+  
+  a:hover {
+    text-decoration-thickness: 3px !important;
+  }
+}
+
+/* Reduced Motion */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Large Text */
+.large-text {
+  font-size: calc(1rem * var(--text-scale)) !important;
+}
+
+.large-text h1 { font-size: calc(2.25rem * var(--text-scale)) !important; }
+.large-text h2 { font-size: calc(1.875rem * var(--text-scale)) !important; }
+.large-text h3 { font-size: calc(1.5rem * var(--text-scale)) !important; }
+.large-text h4 { font-size: calc(1.25rem * var(--text-scale)) !important; }
+.large-text h5 { font-size: calc(1.125rem * var(--text-scale)) !important; }
+.large-text h6 { font-size: calc(1rem * var(--text-scale)) !important; }
+
+.large-text .text-xs { font-size: calc(0.75rem * var(--text-scale)) !important; }
+.large-text .text-sm { font-size: calc(0.875rem * var(--text-scale)) !important; }
+.large-text .text-base { font-size: calc(1rem * var(--text-scale)) !important; }
+.large-text .text-lg { font-size: calc(1.125rem * var(--text-scale)) !important; }
+.large-text .text-xl { font-size: calc(1.25rem * var(--text-scale)) !important; }
+.large-text .text-2xl { font-size: calc(1.5rem * var(--text-scale)) !important; }
+.large-text .text-3xl { font-size: calc(1.875rem * var(--text-scale)) !important; }
+.large-text .text-4xl { font-size: calc(2.25rem * var(--text-scale)) !important; }
+
+/* Screen Reader Mode Enhancements */
+.screen-reader-mode {
+  /* Add more spacing for better screen reader navigation */
+  * {
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Ensure all interactive elements have proper spacing */
+  button, a, input, textarea, select {
+    margin: 0.25rem;
+    padding: 0.75rem 1rem;
+    min-height: 44px; /* Minimum touch target size */
+    min-width: 44px;
+  }
+  
+  /* Better skip links */
+  .sr-only:focus {
+    position: absolute !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 1rem !important;
+    background: hsl(var(--background)) !important;
+    color: hsl(var(--foreground)) !important;
+    border: 2px solid hsl(var(--foreground)) !important;
+    z-index: 9999 !important;
+    top: 1rem !important;
+    left: 1rem !important;
+    clip: auto !important;
+    overflow: visible !important;
+  }
+}
+
+/* Screen Reader Only Content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus Management */
+.focus-trap {
+  /* Ensures focus stays within modal/dialog */
+}
+
+/* Skip Links */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  padding: 8px;
+  z-index: 1000;
+  text-decoration: none;
+  border: 2px solid hsl(var(--foreground));
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Improved Focus Indicators */
+*:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Better Contrast for Interactive Elements */
+.accessibility-high-contrast button,
+.accessibility-dark-high-contrast button {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border: 2px solid hsl(var(--foreground));
+}
+
+.accessibility-high-contrast button:hover,
+.accessibility-dark-high-contrast button:hover {
+  transform: none; /* Remove subtle transforms in high contrast */
+  background: hsl(var(--foreground));
+  color: hsl(var(--background));
+}
+
+/* Ensure proper color contrast for all text */
+.accessibility-high-contrast,
+.accessibility-dark-high-contrast {
+  /* Remove any low-contrast text colors */
+  .text-muted-foreground {
+    color: hsl(var(--foreground)) !important;
+  }
+  
+  .text-gray-500,
+  .text-gray-600,
+  .text-gray-400 {
+    color: hsl(var(--foreground)) !important;
+  }
+}
+
 :root {
   --background: hsl(0, 0%, 100%);
   --foreground: hsl(20, 14.3%, 4.1%);

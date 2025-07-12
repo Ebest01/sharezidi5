@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useFileTransfer } from '../hooks/useFileTransfer';
 import { useAuth } from '../hooks/useAuth';
+import { useAccessibility } from '../hooks/useAccessibility';
+import { useAriaAnnouncements } from '../hooks/useAriaAnnouncements';
 import { TransferSyncMonitor } from './TransferSyncMonitor';
 import { FileSelector } from './FileSelector';
 import { DeviceList } from './DeviceList';
@@ -11,15 +13,39 @@ import { MobileTransferGuard } from './MobileTransferGuard';
 import { ZipProgress } from './ZipProgress';
 import { AuthModal } from './AuthModal';
 import { UsageBanner } from './UsageBanner';
-import { QrCode, RotateCcw, LogOut } from 'lucide-react';
+import { AccessibilityPanel } from './AccessibilityPanel';
+import { QrCode, RotateCcw, LogOut, Settings } from 'lucide-react';
 import type { Device } from '@shared/types';
 
 export const ShareZidiApp: React.FC = () => {
   const websocket = useWebSocket();
   const fileTransfer = useFileTransfer(websocket);
   const auth = useAuth();
+  const accessibility = useAccessibility();
+  const announcements = useAriaAnnouncements();
   const [showConnectionHelper, setShowConnectionHelper] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showAccessibilityPanel, setShowAccessibilityPanel] = useState(false);
+
+  // Keyboard shortcuts for accessibility
+  useEffect(() => {
+    const handleKeydown = (event: KeyboardEvent) => {
+      // Alt + A to open accessibility panel
+      if (event.altKey && event.key.toLowerCase() === 'a') {
+        event.preventDefault();
+        setShowAccessibilityPanel(true);
+      }
+      
+      // Escape to close modals
+      if (event.key === 'Escape') {
+        setShowAccessibilityPanel(false);
+        setShowConnectionHelper(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeydown);
+    return () => document.removeEventListener('keydown', handleKeydown);
+  }, []);
 
   const connectionInfo = {
     effectiveType: (navigator as any).connection?.effectiveType,
@@ -37,8 +63,10 @@ export const ShareZidiApp: React.FC = () => {
     try {
       await fileTransfer.startTransfer(device, fileTransfer.selectedFiles);
       auth.incrementTransferCount();
+      announcements.announceTransferStart(device.name || device.id, fileTransfer.selectedFiles.length);
     } catch (error) {
       console.error('Failed to start transfer:', error);
+      announcements.announceTransferError('Failed to start transfer');
     }
   };
 
@@ -98,9 +126,11 @@ export const ShareZidiApp: React.FC = () => {
       // Start transfer with the ZIP file
       await fileTransfer.startTransfer(device, [selectedZipFile]);
       auth.incrementTransferCount();
+      announcements.announceTransferStart(device.name || device.id, 1);
       
     } catch (error) {
       console.error('[FileTransfer] ZIP creation failed:', error);
+      announcements.announceTransferError('ZIP creation failed');
     }
   };
 
@@ -169,13 +199,23 @@ export const ShareZidiApp: React.FC = () => {
                   onClick={() => setShowConnectionHelper(true)}
                   className="p-2 text-blue-600 hover:text-blue-700 rounded-lg hover:bg-blue-50 transition-colors"
                   title="Connect Mobile Device"
+                  aria-label="Show QR code to connect mobile device"
                 >
                   <QrCode className="h-4 w-4" />
                 </button>
                 <button 
+                  onClick={() => setShowAccessibilityPanel(true)}
+                  className="p-2 text-purple-600 hover:text-purple-700 rounded-lg hover:bg-purple-50 transition-colors"
+                  title="Accessibility Settings"
+                  aria-label="Open accessibility settings panel"
+                >
+                  <Settings className="h-4 w-4" />
+                </button>
+                <button 
                   onClick={() => window.location.reload()}
                   className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-                  title="Refresh"
+                  title="Refresh Page"
+                  aria-label="Refresh the page"
                 >
                   <RotateCcw className="h-4 w-4" />
                 </button>
@@ -196,6 +236,7 @@ export const ShareZidiApp: React.FC = () => {
                   }}
                   className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg border border-red-300 hover:border-red-600 transition-all duration-200"
                   title="Sign Out"
+                  aria-label="Sign out of your account"
                 >
                   <LogOut className="h-4 w-4" />
                 </button>
@@ -205,7 +246,7 @@ export const ShareZidiApp: React.FC = () => {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main id="main-content" className="max-w-4xl mx-auto px-6 py-8">
         {/* User Info */}
         {auth.user && (
           <div className="flex justify-end mb-4">
@@ -326,6 +367,23 @@ export const ShareZidiApp: React.FC = () => {
         isVisible={showConnectionHelper}
         onClose={() => setShowConnectionHelper(false)}
       />
+
+      {/* Accessibility Panel */}
+      <AccessibilityPanel 
+        isOpen={showAccessibilityPanel}
+        onClose={() => setShowAccessibilityPanel(false)}
+      />
+
+      {/* Skip Links for screen readers */}
+      <a 
+        href="#main-content" 
+        className="skip-link"
+        onFocus={(e) => {
+          e.currentTarget.scrollIntoView();
+        }}
+      >
+        Skip to main content
+      </a>
     </div>
   );
 };
