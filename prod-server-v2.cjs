@@ -633,9 +633,8 @@ wss.on('connection', (ws, request) => {
   
   // Send registration confirmation
   ws.send(JSON.stringify({
-    type: 'registration-confirmed',
-    userId: userId,
-    deviceName: deviceName
+    type: 'registered',
+    data: { userId: userId }
   }));
 
   // Broadcast updated device list to all users
@@ -779,7 +778,12 @@ function broadcastDeviceList() {
     lastSeen: user.lastSeen
   }));
 
-  const message = JSON.stringify({ type: 'devices', devices });
+  const message = JSON.stringify({ 
+    type: 'devices', 
+    data: devices 
+  });
+  
+  console.log(`[FileTransfer] Broadcasting device list: ${devices.map(d => `${d.name} (${d.id})`).join(', ')}`);
   
   Object.values(connectedUsers).forEach(user => {
     if (user.ws.readyState === WebSocket.OPEN) {
