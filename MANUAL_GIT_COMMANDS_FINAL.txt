@@ -1,0 +1,24 @@
+#!/bin/bash
+# Manual Git Commands to Push Package.json Fix
+
+# Clear any git locks
+rm -f .git/index.lock
+
+# Add the updated package.json
+git add package.json
+
+# Commit the changes
+git commit -m "DEPLOYMENT FIX: Move build dependencies to main dependencies for production"
+
+# Push to GitHub
+git push origin main
+
+echo "SUCCESS: Package.json with working deployment configuration pushed to GitHub!"
+echo ""
+echo "✅ vite moved to dependencies"
+echo "✅ esbuild moved to dependencies" 
+echo "✅ typescript moved to dependencies"
+echo "✅ tailwindcss moved to dependencies"
+echo "✅ All build tools now in main dependencies"
+echo ""
+echo "Your next deployment will succeed with this configuration!"
