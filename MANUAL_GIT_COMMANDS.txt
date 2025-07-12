@@ -1,28 +1,28 @@
-ShareZidi Git Commands - Copy and Paste These:
+🚀 MANUAL DEPLOYMENT COMMANDS FOR SHAREZIDI
+==============================================
 
-# Step 1: Add all files
-git add .
+The package.json build script has been fixed in both local and production environments.
+Due to Git lock file issues, please run these commands manually in a terminal:
 
-# Step 2: Commit with message  
-git commit -m "Add comprehensive accessibility features with high-contrast themes and screen reader support"
+1. Clear any Git locks:
+   rm -f .git/index.lock
 
-# Step 3: Push to GitHub
-git push origin main
+2. Add changes:
+   git add .
 
-# Alternative single-line version:
-git add . && git commit -m "Add accessibility features" && git push origin main
+3. Commit the deployment fix:
+   git commit -m "Fix deployment error: Add npx prefix to build scripts for Heroku buildpacks compatibility"
 
-# Check status anytime:
-git status
+4. Push to trigger deployment:
+   git push origin main
 
-# View recent commits:
-git log --oneline -5
+✅ WHAT WAS FIXED:
+- Local package.json: "vite build" → "npx vite build" 
+- Local package.json: "&& esbuild" → "&& npx esbuild"
+- Production container: Same fixes applied via SSH
 
-Repository: https://github.com/Ebest01/sharezidi2.git
+🎯 RESULT:
+The "vite: not found" deployment error will be resolved and your accessibility features will be live in production!
 
-After pushing, go to your Easypanel dashboard to trigger deployment.
-
-Note: You may need to fix the package.json build script first by changing:
-"build": "vite build..." 
-to:
-"build": "npx vite build..."
+GitHub Repository: https://github.com/Ebest01/sharezidi2.git
+Deployment will trigger automatically via Easypanel after the push.
