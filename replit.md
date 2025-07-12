@@ -107,7 +107,7 @@ Preferred communication style: Simple, everyday language.
 - **SCREEN READER SUPPORT**: Added ARIA announcements for file transfers, device connections, and accessibility mode changes with useAriaAnnouncements hook
 - **KEYBOARD NAVIGATION**: Alt + A shortcut opens accessibility panel, proper tab navigation, keyboard-accessible file selector
 - **ENHANCED FOCUS**: Skip links, proper ARIA labels, semantic HTML structure throughout application
-- **DEPLOYMENT ISSUE IDENTIFIED**: Build error with `vite: not found` during Heroku buildpack deployment - package.json build script needs npx prefix
+- **DEPLOYMENT ISSUE RESOLVED**: Successfully fixed production package.json build script via SSH - changed `vite build` to `npx vite build` and `esbuild` to `npx esbuild` in ShareZidi container
 
 **Technical Implementation:**
 - `useAccessibility.ts` hook manages settings with localStorage persistence
