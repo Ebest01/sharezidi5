@@ -102,6 +102,19 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 12, 2025 - WebSocket Message Format Issues Fixed via Direct SSH ✅
+- **PRODUCTION WEBSOCKET FIXED**: Used SSH access to directly fix WebSocket message format inconsistencies
+- **Message Format Standardized**: Changed production server from "registration-confirmed" to "registered" messages
+- **Device List Fixed**: Added proper "data" wrapper for device list broadcasts to match development format
+- **Direct Server Management**: Successfully applied fixes via SSH and restarted production server
+- **Issue Resolution**: Fixed "undefined" values appearing in WebSocket messages on production
+- **Server Credentials**: Saved SSH access details for future production maintenance (root@193.203.165.217)
+
+**Technical Changes Applied:**
+- Line 636: `type: 'registration-confirmed'` → `type: 'registered'` 
+- Line 783: `{ type: 'devices', devices }` → `{ type: 'devices', data: devices }`
+- Server process restarted to apply changes immediately
+
 ### July 10, 2025 - Production Authentication Crisis Resolved ✅
 - **DEVELOPMENT WORKING**: Authentication system completely functional in development environment
 - **PRODUCTION UPDATED**: Fixed prod-server-v2.cjs with complete authentication system
