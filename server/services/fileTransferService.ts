@@ -272,19 +272,21 @@ export class FileTransferService {
     this.activeTransfers.set(transferId, transfer);
     this.syncStatuses.set(transferId, syncStatus);
 
-    // Forward chunk to receiver with proper progress tracking
+    // Forward chunk to receiver immediately
     const toUser = this.connectedUsers.get(toUserId);
     if (toUser && toUser.socket.readyState === WebSocket.OPEN) {
+      console.log(`[FileTransfer] Forwarding chunk ${chunkIndex} from ${fromUserId} to ${toUserId}, size: ${chunk?.length || 'unknown'}`);
+      
       this.sendToUser(toUserId, 'file-chunk', {
         from: fromUserId,
         chunkIndex,
         chunk: chunk, // Pass through the Base64 encoded chunk data
         totalChunks,
         fileId,
-        progress: receiverProgress // Send receiver progress, not sender
+        progress: receiverProgress
       });
 
-      // Send acknowledgment back to sender with receiver status
+      // Send immediate acknowledgment back to sender
       this.sendToUser(fromUserId, 'chunk-ack', {
         chunkIndex,
         fileId,
@@ -292,8 +294,12 @@ export class FileTransferService {
         receiverProgress: receiverProgress
       });
 
-      // Update sync status
-      this.broadcastSyncStatus(transferId);
+      console.log(`[FileTransfer] Chunk ${chunkIndex} forwarded and acknowledged, receiver at ${receiverProgress.toFixed(1)}%`);
+      
+      // Update sync status every 10 chunks to reduce message overhead
+      if (chunkIndex % 10 === 0 || receiverProgress >= 100) {
+        this.broadcastSyncStatus(transferId);
+      }
     } else {
       console.error(`[FileTransfer] Target user ${toUserId} not available`);
       this.sendToUser(fromUserId, 'transfer-error', {
