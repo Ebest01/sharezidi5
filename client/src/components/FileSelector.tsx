@@ -41,6 +41,16 @@ export const FileSelector: React.FC<FileSelectorProps> = ({
         onDragLeave={onDragLeave}
         onDrop={onDrop}
         onClick={onOpenFileDialog}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onOpenFileDialog();
+          }
+        }}
+        aria-label="Drop files here or click to browse files"
+        aria-describedby="file-upload-description"
       >
         <div className="mb-4">
           <i className="fas fa-cloud-upload-alt text-4xl text-primary"></i>
@@ -49,7 +59,7 @@ export const FileSelector: React.FC<FileSelectorProps> = ({
           <span className="font-semibold">Drag & Drop</span> files here or{' '}
           <span className="text-primary underline font-medium">browse</span>
         </p>
-        <p className="text-sm text-gray-500">Supports multiple files up to 500MB each</p>
+        <p id="file-upload-description" className="text-sm text-gray-500">Supports multiple files up to 500MB each</p>
         
         <input
           ref={fileInputRef}
@@ -57,11 +67,14 @@ export const FileSelector: React.FC<FileSelectorProps> = ({
           multiple
           onChange={onFileSelect}
           className="hidden"
+          aria-label="Select files to upload"
+          accept="*/*"
         />
       </div>
 
       {selectedFiles && selectedFiles.length > 0 && (
-        <div className="mt-6 space-y-3">
+        <div className="mt-6 space-y-3" role="region" aria-labelledby="selected-files-heading" aria-live="polite">
+          <h3 id="selected-files-heading" className="sr-only">Selected Files ({selectedFiles.length})</h3>
           {(selectedFiles || []).map((file, index) => (
             <div key={file.id} className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-between">
               <div className="flex items-center space-x-4 flex-1 min-w-0">
