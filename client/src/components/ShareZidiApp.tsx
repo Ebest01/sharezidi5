@@ -162,7 +162,7 @@ export const ShareZidiApp: React.FC = () => {
                 </span>
               </div>
               <div className="text-blue-600 font-medium text-xs sm:text-sm">
-                ID: <span className="text-gray-600">{websocket.userId || auth.user?.username || 'connecting...'}</span>
+                ID: <span className="text-gray-600">{auth.user?.username || websocket.userId || 'connecting...'}</span>
               </div>
               <div className="flex items-center space-x-1">
                 <button 
