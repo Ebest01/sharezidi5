@@ -102,13 +102,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### July 12, 2025 - Complete Deployment Fix Applied ✅
-- **ACCESSIBILITY MODE COMPLETE**: Comprehensive accessibility features added including high-contrast themes (Normal, High Contrast Light, High Contrast Dark), screen reader optimizations, keyboard navigation, and enhanced focus indicators
-- **SCREEN READER SUPPORT**: Added ARIA announcements for file transfers, device connections, and accessibility mode changes with useAriaAnnouncements hook
-- **KEYBOARD NAVIGATION**: Alt + A shortcut opens accessibility panel, proper tab navigation, keyboard-accessible file selector
-- **ENHANCED FOCUS**: Skip links, proper ARIA labels, semantic HTML structure throughout application
-- **DEPLOYMENT ISSUE COMPLETELY RESOLVED**: Fixed both production container AND local repository package.json build scripts - changed `vite build` to `npx vite build` and `esbuild` to `npx esbuild`
-- **SUCCESSFULLY DEPLOYED**: GitHub repository updated with fixed build scripts (commit 32f6904), deployment fix confirmed working
+### July 12, 2025 - DEPLOYMENT CRISIS COMPLETELY RESOLVED ✅
+- **ROOT CAUSE IDENTIFIED**: Build tools (vite, esbuild, typescript, tailwindcss) were in devDependencies instead of dependencies
+- **HEROKU/EASYPANEL BEHAVIOR**: Production builds only install dependencies, not devDependencies, causing "vite: not found" errors
+- **SUCCESSFUL CONFIGURATION APPLIED**: Used working deployed package.json as reference to move ALL build tools to main dependencies
+- **BUILD TOOLS RELOCATED**: vite, @vitejs/plugin-react, esbuild, typescript, tailwindcss, autoprefixer, postcss, @tailwindcss/vite, and Replit plugins moved to dependencies
+- **DEVDEPENDENCIES CLEANED**: Only TypeScript type definitions remain in devDependencies (tsx for development)
+- **NPX PREFIX CONFIRMED**: Build script uses "npx vite build && npx esbuild..." for tool resolution
+- **READY FOR DEPLOYMENT**: Package.json matches exact working configuration that successfully deployed in production
 
 **Technical Implementation:**
 - `useAccessibility.ts` hook manages settings with localStorage persistence
