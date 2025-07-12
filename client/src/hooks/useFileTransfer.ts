@@ -165,18 +165,12 @@ export const useFileTransfer = (websocket: any) => {
           const etaSeconds = remainingBytes / speedBps;
           metrics.eta = etaSeconds > 0 ? `${Math.ceil(etaSeconds)}s` : 'Complete';
 
-          // Wait for acknowledgment with timeout
-          const startTime = Date.now();
-          while (!acknowledgedChunks.has(chunkIndex) && Date.now() - startTime < 5000) {
-            await new Promise(resolve => setTimeout(resolve, 10));
-          }
+          // Don't wait for acknowledgment - send chunks rapidly for better throughput
+          // Acknowledgments are tracked but don't block sending
+          console.log(`[FileTransfer] Sent chunk ${chunkIndex}/${chunks}, progress: ${senderProgress.toFixed(1)}%`);
 
-          if (!acknowledgedChunks.has(chunkIndex)) {
-            console.warn(`[FileTransfer] Chunk ${chunkIndex} not acknowledged, continuing anyway`);
-          }
-
-          // Small delay between chunks
-          await new Promise(resolve => setTimeout(resolve, 5));
+          // Small delay between chunks (reduced for faster transfer)
+          await new Promise(resolve => setTimeout(resolve, 1));
         } else {
           console.error('Failed to send chunk, connection lost');
           break;
@@ -269,7 +263,7 @@ export const useFileTransfer = (websocket: any) => {
       const transferId = `${data.from}-${websocket.userId}-${data.fileId}`;
       const receivedProgress = ((data.chunkIndex + 1) / data.totalChunks) * 100;
       
-      console.log(`[FileTransfer] Received chunk ${data.chunkIndex}, size:`, data.chunk?.length || 'unknown', 'type:', typeof data.chunk);
+      console.log(`[FileTransfer] Received chunk ${data.chunkIndex}/${data.totalChunks}, progress: ${receivedProgress.toFixed(1)}%`);
       
       // Store the chunk data for file reconstruction
       if (!receivedChunks.current.has(data.fileId)) {
@@ -277,28 +271,27 @@ export const useFileTransfer = (websocket: any) => {
       }
       
       // Convert Base64 back to ArrayBuffer
-      const chunkData = typeof data.chunk === 'string' ? base64ToArrayBuffer(data.chunk) : data.chunk;
-      receivedChunks.current.get(data.fileId)!.set(data.chunkIndex, chunkData);
-      
-      setIncomingTransfers(prev => {
-        const newMap = new Map(prev);
-        const transfer = newMap.get(transferId);
-        if (transfer) {
-          transfer.receivedProgress = receivedProgress;
-          transfer.status = receivedProgress >= 100 ? 'completed' : 'active';
-          newMap.set(transferId, transfer);
-        }
-        return newMap;
-      });
+      try {
+        const chunkData = typeof data.chunk === 'string' ? base64ToArrayBuffer(data.chunk) : data.chunk;
+        receivedChunks.current.get(data.fileId)!.set(data.chunkIndex, chunkData);
+        
+        // Update transfer progress immediately
+        setIncomingTransfers(prev => {
+          const newMap = new Map(prev);
+          const transfer = newMap.get(transferId);
+          if (transfer) {
+            transfer.receivedProgress = receivedProgress;
+            transfer.status = receivedProgress >= 100 ? 'completed' : 'active';
+            newMap.set(transferId, transfer);
+          }
+          return newMap;
+        });
 
-      // Send chunk acknowledgment
-      websocket.send('chunk-ack', {
-        toUserId: data.from,
-        chunkIndex: data.chunkIndex,
-        fileId: data.fileId,
-        status: 'received',
-        receiverProgress: receivedProgress
-      });
+        // Don't send acknowledgment - server handles this automatically
+        console.log(`[FileTransfer] Chunk ${data.chunkIndex} processed successfully`);
+      } catch (error) {
+        console.error(`[FileTransfer] Failed to process chunk ${data.chunkIndex}:`, error);
+      }
     };
 
     const handleSyncStatus = (data: any) => {
