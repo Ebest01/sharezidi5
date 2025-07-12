@@ -1,0 +1,31 @@
+# Manual Git Commands for Deployment Fix
+# Copy and paste these commands one by one in your terminal
+
+# 1. Clear any git locks
+rm -f .git/index.lock
+rm -f .git/refs/heads/main.lock
+
+# 2. Check current status
+git status
+
+# 3. Add the package.json changes
+git add package.json
+
+# 4. Commit with detailed message
+git commit -m "CRITICAL: Move build dependencies to main dependencies for production
+
+- Moved vite from devDependencies to dependencies
+- Moved esbuild, typescript, tailwindcss to dependencies  
+- Moved @vitejs/plugin-react to dependencies
+- Moved autoprefixer, postcss to dependencies
+- Moved @tailwindcss/vite to dependencies
+- Moved Replit plugins to dependencies
+
+Fixes 'vite: not found' deployment errors on Heroku/Easypanel.
+Configuration matches successfully deployed version."
+
+# 5. Push to GitHub
+git push origin main
+
+# 6. Verify push success
+git status
