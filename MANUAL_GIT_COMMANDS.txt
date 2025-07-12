@@ -1,0 +1,28 @@
+ShareZidi Git Commands - Copy and Paste These:
+
+# Step 1: Add all files
+git add .
+
+# Step 2: Commit with message  
+git commit -m "Add comprehensive accessibility features with high-contrast themes and screen reader support"
+
+# Step 3: Push to GitHub
+git push origin main
+
+# Alternative single-line version:
+git add . && git commit -m "Add accessibility features" && git push origin main
+
+# Check status anytime:
+git status
+
+# View recent commits:
+git log --oneline -5
+
+Repository: https://github.com/Ebest01/sharezidi2.git
+
+After pushing, go to your Easypanel dashboard to trigger deployment.
+
+Note: You may need to fix the package.json build script first by changing:
+"build": "vite build..." 
+to:
+"build": "npx vite build..."
