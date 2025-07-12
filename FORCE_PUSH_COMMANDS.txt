@@ -1,0 +1,39 @@
+🚀 FORCE PUSH COMMANDS - RUN IN TERMINAL
+===========================================
+
+Copy and paste these commands in your terminal to force push the package.json fix:
+
+# 1. Clear any Git locks
+rm -f .git/index.lock .git/refs/heads/main.lock
+
+# 2. Check current status
+git status
+
+# 3. Stage all changes including package.json
+git add -A
+
+# 4. Commit with force message
+git commit -m "Force fix: Add npx prefix to build scripts for deployment compatibility"
+
+# 5. Force push to override GitHub repository
+git push --force origin main
+
+Alternative if above fails:
+# Nuclear option - completely force overwrite
+git push --force-with-lease origin main
+
+# Or if you want to be absolutely certain:
+git push origin main --force
+
+✅ WHAT THIS WILL DO:
+- Force overwrite GitHub's package.json with your local version that has "npx vite build"
+- Update GitHub repository to match your fixed local files
+- Trigger deployment with the correct build script
+
+📋 CURRENT LOCAL PACKAGE.JSON (line 8):
+"build": "npx vite build && npx esbuild server/prod-server.ts..."
+
+🎯 AFTER PUSH, GITHUB WILL SHOW:
+"build": "npx vite build && npx esbuild server/prod-server.ts..."
+
+This will resolve the "vite: not found" deployment error permanently!
