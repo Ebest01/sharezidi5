@@ -6,6 +6,7 @@ import { GeolocationService } from "./services/geolocationService";
 import { connectMongoDB } from "./db";
 // Use production-compatible MongoDB schemas directly
 import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 
 // User Schema compatible with production system
 const userSchema = new mongoose.Schema({
@@ -386,11 +387,22 @@ app.use((req, res, next) => {
       
       // Try bcrypt verification first (for newly registered users)
       try {
+        console.log("[SIMPLE LOGIN] Attempting BCrypt comparison...");
+        console.log("[SIMPLE LOGIN] Password length:", password.length);
+        console.log("[SIMPLE LOGIN] Hash length:", user.password.length);
+        console.log("[SIMPLE LOGIN] Hash starts with:", user.password.substring(0, 7));
+        
         loginSuccess = await bcrypt.compare(password, user.password);
         console.log("[SIMPLE LOGIN] BCrypt check result:", loginSuccess);
         
         if (loginSuccess) {
           console.log("[SIMPLE LOGIN] ✅ BCrypt verification successful");
+        } else {
+          console.log("[SIMPLE LOGIN] ❌ BCrypt verification failed");
+          
+          // Double-check: try to hash the input password with same rounds and compare manually
+          const testHash = await bcrypt.hash(password, 10);
+          console.log("[SIMPLE LOGIN] Test hash of input password:", testHash.substring(0, 20) + "...");
         }
       } catch (bcryptError) {
         console.log("[SIMPLE LOGIN] BCrypt failed, trying scrypt format");
