@@ -117,9 +117,20 @@ export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
       }
     },
     onError: (error: Error) => {
+      // Show specific error message to user
+      let errorMessage = "Login failed. Please try again.";
+      
+      if (error.message.includes("incorrect") || error.message.includes("Password mismatch")) {
+        errorMessage = "The password you entered is incorrect. Please check your email for the auto-generated password, or use 'Forgot Password' to get a new one.";
+      } else if (error.message.includes("not found")) {
+        errorMessage = "No account found with this email address. Please register first.";
+      } else if (error.message.includes("required")) {
+        errorMessage = "Please enter both email and password.";
+      }
+      
       toast({
         title: "Login Failed",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     },
