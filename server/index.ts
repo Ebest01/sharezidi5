@@ -410,20 +410,16 @@ app.use((req, res, next) => {
           }
         } catch (error) {
           console.log("[SIMPLE LOGIN] Scrypt failed, trying direct comparison");
-          
-          // Special case for known test users
-          if (email === "user7h2z1r@yahoo.com" && password === "VFJ583631qj") {
-            console.log("[SIMPLE LOGIN] ✅ Test user hardcoded success");
-            loginSuccess = true;
-          } else {
-            loginSuccess = (password === user.password);
-          }
+          loginSuccess = (password === user.password);
         }
       }
       
       if (!loginSuccess) {
         console.log("[SIMPLE LOGIN] ❌ Login failed for:", email);
-        return res.status(401).json({ error: "Invalid email or password" });
+        return res.status(401).json({ 
+          error: "The password you entered is incorrect. Please check your email for the auto-generated password, or use 'Forgot Password' to get a new one.",
+          details: "Password mismatch"
+        });
       }
       
       console.log("[SIMPLE LOGIN] ✅ LOGIN SUCCESS for:", email);
