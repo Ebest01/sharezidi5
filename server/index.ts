@@ -402,32 +402,43 @@ app.use((req, res, next) => {
         // This user has a legacy hash - let's update their password to BCrypt format
         console.log("[SIMPLE LOGIN] Updating user to BCrypt format...");
         
-        // For this specific test user, let's force the login to work and update the password
-        if (email === "userdffwnk@yahoo.com" && password === "BCB319384xh") {
-          console.log("[SIMPLE LOGIN] ✅ Test user bypass - updating password to BCrypt format");
-          
-          // Update to BCrypt hash
+        // Try different legacy hash formats for backward compatibility
+        console.log("[SIMPLE LOGIN] Trying legacy hash formats...");
+        
+        // Method 1: Direct comparison (for very old plain text passwords)
+        if (password === user.password) {
+          console.log("[SIMPLE LOGIN] ✅ Direct comparison successful, updating to BCrypt");
+          loginSuccess = true;
+        }
+        // Method 2: Try scrypt format (hex.salt format)
+        else if (user.password.includes('.') && user.password.length > 50) {
+          try {
+            const [hashed, salt] = user.password.split('.');
+            const crypto = require('crypto');
+            const { promisify } = require('util');
+            const scryptAsync = promisify(crypto.scrypt);
+            
+            const hashedBuf = Buffer.from(hashed, 'hex');
+            const suppliedBuf = await scryptAsync(password, salt, 64);
+            loginSuccess = crypto.timingSafeEqual(hashedBuf, suppliedBuf);
+            console.log("[SIMPLE LOGIN] Scrypt verification result:", loginSuccess);
+            
+            if (loginSuccess) {
+              console.log("[SIMPLE LOGIN] ✅ Scrypt verification successful");
+            }
+          } catch (error) {
+            console.log("[SIMPLE LOGIN] Scrypt verification failed:", error.message);
+          }
+        }
+        
+        // If login successful, upgrade password to BCrypt format
+        if (loginSuccess) {
+          console.log("[SIMPLE LOGIN] Upgrading password to BCrypt format...");
           const newHashedPassword = await bcrypt.hash(password, 10);
           await User.findByIdAndUpdate(user._id, { password: newHashedPassword });
-          console.log("[SIMPLE LOGIN] ✅ Password updated to BCrypt format");
-          
-          loginSuccess = true;
+          console.log("[SIMPLE LOGIN] ✅ Password upgraded to BCrypt format");
         } else {
-          console.log("[SIMPLE LOGIN] Trying direct comparison for legacy user");
-          
-          // First verify with direct comparison (legacy)
-          if (password === user.password) {
-            console.log("[SIMPLE LOGIN] ✅ Legacy direct comparison successful, updating to BCrypt");
-            
-            // Update to BCrypt hash
-            const newHashedPassword = await bcrypt.hash(password, 10);
-            await User.findByIdAndUpdate(user._id, { password: newHashedPassword });
-            console.log("[SIMPLE LOGIN] ✅ Password updated to BCrypt format");
-            
-            loginSuccess = true;
-          } else {
-            console.log("[SIMPLE LOGIN] ❌ Legacy comparison failed");
-          }
+          console.log("[SIMPLE LOGIN] ❌ All legacy verification methods failed");
         }
       }
       
