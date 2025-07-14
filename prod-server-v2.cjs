@@ -7,6 +7,7 @@ const http = require('http');
 const crypto = require('crypto');
 const { promisify } = require('util');
 const session = require('express-session');
+const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -289,64 +290,81 @@ app.post('/api/login', async (req, res) => {
     }
 
     console.log("[SIMPLE LOGIN] ✅ User found:", email);
-    console.log("[SIMPLE LOGIN] Expected password:", "VFJ583631qj");
+    console.log("[SIMPLE LOGIN] Stored password hash:", user.password.substring(0, 20) + "...");
     console.log("[SIMPLE LOGIN] Provided password:", password);
     
-    // Hardcoded success for our test user
-    if (email === "user7h2z1r@yahoo.com" && password === "VFJ583631qj") {
-      console.log("[SIMPLE LOGIN] ✅ HARDCODED SUCCESS for test user");
-      
-      // Store user in session
-      req.session.userId = user._id.toString();
-      console.log("[SIMPLE LOGIN] Stored user in session:", user._id.toString());
-      
-      // Update last visit time and geolocation on login
-      const ip = extractIPAddress(req);
-      const locationData = await getLocationData(ip);
-      
-      await User.updateOne(
-        { _id: user._id },
-        { 
-          lastVisitTime: new Date(),
-          ipAddress: ip,
-          country: locationData?.country || user.country,
-          countryCode: locationData?.country_code || user.countryCode,
-          region: locationData?.region || user.region,
-          city: locationData?.city || user.city,
-          timezone: locationData?.timezone || user.timezone,
-          latitude: locationData?.latitude || user.latitude,
-          longitude: locationData?.longitude || user.longitude,
-          isp: locationData?.isp || user.isp
+    let loginSuccess = false;
+    
+    // First try BCrypt for newer passwords
+    try {
+      if (user.password.startsWith('$2b$') || user.password.startsWith('$2a$')) {
+        console.log("[SIMPLE LOGIN] BCrypt hash detected, verifying...");
+        loginSuccess = await bcrypt.compare(password, user.password);
+        console.log("[SIMPLE LOGIN] BCrypt verification result:", loginSuccess);
+        
+        if (loginSuccess) {
+          console.log("[SIMPLE LOGIN] ✅ BCrypt verification successful");
         }
-      );
-
-      const userData = {
-        id: user._id.toString(),
-        email: user.email,
-        username: user.username,
-        transferCount: user.transferCount,
-        isPro: user.isPro,
-        isGuest: false
-      };
-      
-      console.log("[SIMPLE LOGIN] ✅ LOGIN SUCCESS for:", email);
-      
-      res.json({
-        success: true,
-        user: userData,
-        message: "Login successful"
+      } else {
+        console.log("[SIMPLE LOGIN] Non-BCrypt hash detected, likely legacy format");
+        console.log("[SIMPLE LOGIN] Hash format:", user.password.substring(0, 10) + "...");
+        
+        // This user has a legacy hash - let's update their password to BCrypt format
+        console.log("[SIMPLE LOGIN] Updating user to BCrypt format...");
+        
+        // Try different legacy hash formats for backward compatibility
+        console.log("[SIMPLE LOGIN] Trying legacy hash formats...");
+        
+        // Method 1: Direct comparison (for very old plain text passwords)
+        if (password === user.password) {
+          console.log("[SIMPLE LOGIN] ✅ Direct comparison successful, updating to BCrypt");
+          loginSuccess = true;
+        }
+        // Method 2: Try scrypt format (hex.salt format)
+        else if (user.password.includes('.') && user.password.length > 50) {
+          try {
+            const [hashed, salt] = user.password.split('.');
+            const crypto = require('crypto');
+            const { promisify } = require('util');
+            const scryptAsync = promisify(crypto.scrypt);
+            
+            const hashedBuf = Buffer.from(hashed, 'hex');
+            const suppliedBuf = await scryptAsync(password, salt, 64);
+            loginSuccess = crypto.timingSafeEqual(hashedBuf, suppliedBuf);
+            console.log("[SIMPLE LOGIN] Scrypt verification result:", loginSuccess);
+            
+            if (loginSuccess) {
+              console.log("[SIMPLE LOGIN] ✅ Scrypt verification successful");
+            }
+          } catch (error) {
+            console.log("[SIMPLE LOGIN] Scrypt verification failed:", error.message);
+          }
+        }
+        
+        // If login successful, upgrade password to BCrypt format
+        if (loginSuccess) {
+          console.log("[SIMPLE LOGIN] Upgrading password to BCrypt format...");
+          const newHashedPassword = await bcrypt.hash(password, 10);
+          await User.findByIdAndUpdate(user._id, { password: newHashedPassword });
+          console.log("[SIMPLE LOGIN] ✅ Password upgraded to BCrypt format");
+        } else {
+          console.log("[SIMPLE LOGIN] ❌ All legacy verification methods failed");
+        }
+      }
+    } catch (error) {
+      console.log("[SIMPLE LOGIN] Password verification error:", error.message);
+      loginSuccess = false;
+    }
+    
+    if (!loginSuccess) {
+      console.log("[SIMPLE LOGIN] ❌ Login failed for:", email);
+      return res.status(401).json({ 
+        error: "The password you entered is incorrect. Please check your email for the auto-generated password, or use 'Forgot Password' to get a new one.",
+        details: "Password mismatch"
       });
-      return;
     }
 
-    // Try normal password comparison for other users
-    const passwordMatch = await comparePasswords(password, user.password);
-    if (!passwordMatch) {
-      console.log("[SIMPLE LOGIN] ❌ Password mismatch for:", email);
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    // Store user in session for regular users too
+    // Store user in session
     req.session.userId = user._id.toString();
     console.log("[SIMPLE LOGIN] Stored user in session:", user._id.toString());
 
