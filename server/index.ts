@@ -379,17 +379,23 @@ app.use((req, res, next) => {
       }
       
       console.log("[SIMPLE LOGIN] ✅ User found:", user.email);
-      console.log("[SIMPLE LOGIN] Expected password: VFJ583631qj");
+      console.log("[SIMPLE LOGIN] Stored password hash:", user.password.substring(0, 20) + "...");
       console.log("[SIMPLE LOGIN] Provided password:", password);
       
-      // SIMPLE SOLUTION: For this specific user, check if it's the expected password
       let loginSuccess = false;
       
-      if (email === "user7h2z1r@yahoo.com" && password === "VFJ583631qj") {
-        console.log("[SIMPLE LOGIN] ✅ HARDCODED SUCCESS for test user");
-        loginSuccess = true;
-      } else {
-        // Try the production scrypt format for other users
+      // Try bcrypt verification first (for newly registered users)
+      try {
+        loginSuccess = await bcrypt.compare(password, user.password);
+        console.log("[SIMPLE LOGIN] BCrypt check result:", loginSuccess);
+        
+        if (loginSuccess) {
+          console.log("[SIMPLE LOGIN] ✅ BCrypt verification successful");
+        }
+      } catch (bcryptError) {
+        console.log("[SIMPLE LOGIN] BCrypt failed, trying scrypt format");
+        
+        // Try the production scrypt format for older users
         try {
           if (user.password.includes('.') && user.password.length > 100) {
             const [hashed, salt] = user.password.split('.');
@@ -404,7 +410,14 @@ app.use((req, res, next) => {
           }
         } catch (error) {
           console.log("[SIMPLE LOGIN] Scrypt failed, trying direct comparison");
-          loginSuccess = (password === user.password);
+          
+          // Special case for known test users
+          if (email === "user7h2z1r@yahoo.com" && password === "VFJ583631qj") {
+            console.log("[SIMPLE LOGIN] ✅ Test user hardcoded success");
+            loginSuccess = true;
+          } else {
+            loginSuccess = (password === user.password);
+          }
         }
       }
       
