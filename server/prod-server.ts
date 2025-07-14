@@ -1,6 +1,5 @@
-// This file is a placeholder for the build script
-// The actual production server is prod-server-v2.cjs
-// This prevents build failures when package.json tries to bundle this file
+// Production server entry point that uses the same code as development
+// This ensures dev/prod parity by importing the working server/index.ts
 
-console.log('This is a placeholder file. Use prod-server-v2.cjs for production.');
-process.exit(1);
+// Re-export everything from the main server file
+export * from "./index.js";
