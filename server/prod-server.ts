@@ -52,8 +52,8 @@ app.use(session({
   }
 }));
 
-// Serve static files
-app.use(express.static(path.join(__dirname, '../dist/public')));
+// Serve static files (built frontend)
+app.use(express.static(path.join(__dirname, 'public')));
 
 // MongoDB connection
 const mongoUrl = process.env.MONGODB_URI || 'mongodb://shzmdb2:11xxshzMDB@193.203.165.217:27017/sharezidi?authSource=admin&ssl=false';
@@ -220,7 +220,7 @@ wss.on('connection', (ws, req) => {
 
 // Serve frontend for all other routes
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist/public/index.html'));
+  res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
 const PORT = process.env.PORT || 5000;
