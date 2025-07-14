@@ -1,29 +1,11 @@
 #!/bin/bash
-
-echo "Building ShareZidi production version..."
-
-# Build frontend with Vite
 echo "Building frontend..."
-vite build
+npx vite build
 
-# Build backend with proper externals for MongoDB
-echo "Building backend..."
-esbuild server/prod-server.ts \
-  --platform=node \
-  --bundle \
-  --format=esm \
-  --outdir=dist \
-  --external:ws \
-  --external:express \
-  --external:path \
-  --external:fs \
-  --external:http \
-  --external:os \
-  --external:mongodb \
-  --external:mongoose \
-  --external:crypto \
-  --external:util \
-  --external:stream \
-  --external:bcrypt
+echo "Copying CommonJS production server..."
+mkdir -p dist
+cp server/prod-server.cjs dist/prod-server.cjs
 
-echo "Production build complete!"
+echo "✅ Production build complete!"
+echo "Frontend: dist/public/"
+echo "Server: dist/prod-server.cjs"
