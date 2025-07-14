@@ -1,1 +1,1 @@
-web: node prod-server-v2.cjs
+web: tsx server/index.ts
