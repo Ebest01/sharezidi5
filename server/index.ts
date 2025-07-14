@@ -4,9 +4,9 @@ import { setupVite, serveStatic, log } from "./vite";
 // DISABLED: import { setupAuthRoutes } from "./authRoutes"; // Has conflicting login endpoint
 import { GeolocationService } from "./services/geolocationService";
 import { connectMongoDB } from "./db";
-// Use production-compatible MongoDB schemas directly
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+import session from "express-session";
 
 // User Schema compatible with production system
 const userSchema = new mongoose.Schema({
@@ -58,8 +58,6 @@ const visitorSchema = new mongoose.Schema({
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 const Visitor = mongoose.models.Visitor || mongoose.model('Visitor', visitorSchema);
 import { generatePassword, extractUsernameFromEmail } from "./utils/passwordGenerator";
-import bcrypt from "bcrypt";
-import session from "express-session";
 
 const app = express();
 app.use(express.json());
