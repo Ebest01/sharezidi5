@@ -1,1 +1,1 @@
-web: NODE_ENV=production node dist/prod-server.cjs
+web: NODE_ENV=production tsx server/index.ts
