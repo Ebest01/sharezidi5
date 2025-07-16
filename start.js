@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 
-// Simple Node.js starter that doesn't require tsx
-const { spawn } = require('child_process');
-const path = require('path');
+// ES module starter for production
+import { spawn } from 'child_process';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 console.log('🚀 Starting ShareZidi production server...');
 
