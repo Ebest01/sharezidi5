@@ -31,3 +31,19 @@ export function validateEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
+
+/**
+ * Generate Device ID using only uppercase letters and numbers [A-Z0-9]
+ * This avoids visual confusion between "I", "1", and "l" in browser fonts
+ * Example: "A3K8X2", "B7N4M9", "P2R6Q1"
+ */
+export function generateDeviceId(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  
+  return result;
+}

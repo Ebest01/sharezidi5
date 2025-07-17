@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { FileTransferService } from "./services/fileTransferService";
 import { GeolocationService } from "./services/geolocationService";
+import { generateDeviceId } from "./utils/passwordGenerator";
 import { visitors, type InsertVisitor } from "@shared/schema";
 import { db } from "./db";
 import QRCode from 'qrcode';
@@ -179,8 +180,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     let userId: string | null = null;
     let isRegistered = false;
 
-    // Auto-register user immediately on connection
-    userId = Math.random().toString(36).substring(2, 8);
+    // Auto-register user immediately on connection - use uppercase device ID for font clarity
+    userId = generateDeviceId();
     
     // Get device info from user agent
     const userAgent = request.headers['user-agent'] || '';
