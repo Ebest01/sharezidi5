@@ -7,6 +7,18 @@ import session from "express-session";
 import path from "path";
 import { fileURLToPath } from 'url';
 
+// Generate Device ID using only uppercase letters and numbers [A-Z0-9]
+function generateDeviceId() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  
+  return result;
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -172,27 +184,48 @@ const connectedUsers = new Map();
 wss.on('connection', (ws, req) => {
   console.log('[WebSocket] New connection from:', req.socket.remoteAddress);
   
+  let userId = null;
+  let isRegistered = false;
+
+  // Auto-register user immediately on connection - use uppercase device ID for font clarity
+  userId = generateDeviceId();
+  
+  // Get device info from user agent
+  const userAgent = req.headers['user-agent'] || '';
+  let deviceName = 'Unknown Device';
+  
+  if (userAgent.includes('Windows')) deviceName = 'Windows PC';
+  else if (userAgent.includes('Macintosh')) deviceName = 'Mac';
+  else if (userAgent.includes('iPhone')) deviceName = 'iPhone';
+  else if (userAgent.includes('iPad')) deviceName = 'iPad';
+  else if (userAgent.includes('Android')) deviceName = 'Android Device';
+  else if (userAgent.includes('Linux')) deviceName = 'Linux PC';
+  
+  isRegistered = true;
+  
+  // Register user and store connection
+  connectedUsers.set(userId, { ws, deviceName, deviceType: deviceName });
+  
+  // Send registration confirmation  
+  ws.send(JSON.stringify({ type: 'registered', userId }));
+  console.log(`[FileTransfer] User ${userId} (${deviceName}) connected`);
+  
+  // Broadcast updated device list to all users
+  const deviceList = Array.from(connectedUsers.entries()).map(([id, data]) => ({
+    id: id,
+    name: `${data.deviceType || 'PC'}-${id}`
+  }));
+  
+  connectedUsers.forEach((userData) => {
+    if (userData.ws.readyState === WebSocket.OPEN) {
+      userData.ws.send(JSON.stringify({ type: 'devices', data: deviceList }));
+    }
+  });
+  console.log(`[FileTransfer] Broadcasting device list: ${deviceList.map(d => d.name).join(', ')}`);
+
   ws.on('message', (data) => {
     try {
       const message = JSON.parse(data.toString());
-      
-      if (message.type === 'register') {
-        const { userId, deviceName, deviceType } = message;
-        connectedUsers.set(userId, { ws, deviceName, deviceType });
-        
-        ws.send(JSON.stringify({ type: 'registered', userId }));
-        
-        // Broadcast updated device list
-        const deviceList = Array.from(connectedUsers.entries()).map(([id, data]) => 
-          `${data.deviceType || 'PC'}-${id} (${id})`
-        );
-        
-        connectedUsers.forEach((userData) => {
-          if (userData.ws.readyState === WebSocket.OPEN) {
-            userData.ws.send(JSON.stringify({ type: 'devices', data: deviceList }));
-          }
-        });
-      }
       
       // Handle file transfer messages
       if (message.type === 'transfer-request' && message.targetUserId) {
@@ -208,14 +241,24 @@ wss.on('connection', (ws, req) => {
   });
   
   ws.on('close', () => {
-    // Remove disconnected user
-    for (const [userId, userData] of connectedUsers.entries()) {
-      if (userData.ws === ws) {
-        connectedUsers.delete(userId);
-        break;
-      }
+    if (userId && isRegistered) {
+      connectedUsers.delete(userId);
+      console.log('[WebSocket] Connection closed');
     }
   });
+
+  ws.on('error', (error) => {
+    console.error('[WebSocket] Connection error:', error);
+  });
+
+  // Send ping to keep connection alive
+  const pingInterval = setInterval(() => {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.ping();
+    } else {
+      clearInterval(pingInterval);
+    }
+  }, 30000);
 });
 
 // Serve frontend for all other routes
