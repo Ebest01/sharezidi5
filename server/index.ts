@@ -68,10 +68,12 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'sharezidi-dev-secret-key-2025',
   resave: false,
   saveUninitialized: false,
+  name: 'sharezidi.session',
   cookie: { 
-    secure: process.env.NODE_ENV === 'production', // Use HTTPS in production
+    secure: false, // Disable for now to test - will re-enable with proper HTTPS setup
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: 'lax' // Required for cross-origin cookies
   }
 }));
 
@@ -495,6 +497,40 @@ app.use((req, res, next) => {
       console.log("[LOGOUT] ✅ Session destroyed successfully");
       res.json({ success: true, message: "Logged out successfully" });
     });
+  });
+
+  // Authentication status endpoint
+  app.get('/api/auth/user', async (req, res) => {
+    console.log("[AUTH] Frontend requesting user authentication status");
+    
+    try {
+      const userId = (req.session as any)?.userId;
+      console.log("[AUTH] Session userId:", userId);
+      
+      if (!userId) {
+        console.log("[AUTH] No user session found");
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const user = await User.findById(userId);
+      if (!user) {
+        console.log("[AUTH] User not found in database:", userId);
+        return res.status(401).json({ error: "User not found" });
+      }
+
+      console.log("[AUTH] ✅ User authenticated:", user.email);
+      res.json({
+        id: user._id.toString(),
+        email: user.email,
+        username: user.username,
+        transferCount: user.transferCount,
+        isPro: user.isPro,
+        isGuest: false
+      });
+    } catch (error) {
+      console.error('[AUTH] User fetch error:', error);
+      res.status(500).json({ error: 'Failed to fetch user' });
+    }
   });
   
 
