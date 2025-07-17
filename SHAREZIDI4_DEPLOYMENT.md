@@ -47,8 +47,15 @@ SESSION_SECRET=sharezidi-production-secret-2025
 ## Build Process
 The deployment will automatically:
 1. Run `heroku-postbuild.js` to build the frontend
-2. Copy built files to `server/public` directory
-3. Start the server with `NODE_ENV=production npx tsx server/index.ts`
+2. Copy built files to `server/public` directory  
+3. Start with `start-production.js` which handles build verification and graceful startup
+4. Use tsx to run the TypeScript server directly
+
+## Troubleshooting
+If the site shows "Service is not reachable":
+1. Check Easypanel logs for build/startup errors
+2. Verify environment variables are set correctly
+3. Ensure fresh deployment completed successfully
 
 ## What You'll Get
 - **Working File Transfer**: Real-time WebSocket transfers

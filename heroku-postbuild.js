@@ -23,7 +23,12 @@ try {
   }
   
   // Copy files
-  execSync(`cp -r "${sourceDir}" "${path.dirname(targetDir)}"`, { stdio: 'inherit' });
+  if (fs.existsSync(sourceDir)) {
+    execSync(`cp -r "${sourceDir}" "${path.dirname(targetDir)}"`, { stdio: 'inherit' });
+  } else {
+    console.error(`❌ Source directory not found: ${sourceDir}`);
+    process.exit(1);
+  }
   
   console.log('✅ Build process completed successfully!');
 } catch (error) {
