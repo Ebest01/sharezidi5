@@ -34,8 +34,8 @@ git push -u origin main
 In Easypanel service settings, add:
 ```
 NODE_ENV=production
-MONGODB_URI=mongodb://shzmdb2:11xxshzMDB@193.203.165.217:27017/sharezidi?authSource=admin&ssl=false
-SESSION_SECRET=your-session-secret-here
+MONGODB_URI=mongodb://szmdb_adm:11xxxxMagics112244@193.203.165.217:27017/sharezidi?authSource=admin&ssl=false
+SESSION_SECRET=sharezidi-production-secret-2025
 ```
 
 ## Step 5: Deploy
