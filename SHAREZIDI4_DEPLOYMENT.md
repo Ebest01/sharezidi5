@@ -41,7 +41,14 @@ SESSION_SECRET=sharezidi-production-secret-2025
 ## Step 5: Deploy
 - Click "Deploy" in Easypanel
 - Fresh service should avoid Docker daemon issues
+- Build will automatically run `heroku-postbuild.js` to build frontend
 - Monitor deployment logs
+
+## Build Process
+The deployment will automatically:
+1. Run `heroku-postbuild.js` to build the frontend
+2. Copy built files to `server/public` directory
+3. Start the server with `NODE_ENV=production npx tsx server/index.ts`
 
 ## What You'll Get
 - **Working File Transfer**: Real-time WebSocket transfers
