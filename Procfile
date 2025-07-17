@@ -1,1 +1,1 @@
-web: node start-production.js
+web: NODE_ENV=production npx tsx server/index.ts

@@ -65,11 +65,11 @@ app.use(express.urlencoded({ extended: false }));
 
 // Session configuration for authentication
 app.use(session({
-  secret: 'sharezidi-dev-secret-key-2025',
+  secret: process.env.SESSION_SECRET || 'sharezidi-dev-secret-key-2025',
   resave: false,
   saveUninitialized: false,
   cookie: { 
-    secure: false, // Set to true in production with HTTPS
+    secure: process.env.NODE_ENV === 'production', // Use HTTPS in production
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
@@ -566,15 +566,32 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
+  // Use PORT from environment in production, fallback to 5000 for development
+  const port = process.env.PORT || 5000;
+  const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
+  
+  const httpServer = server.listen({
+    port: parseInt(port.toString()),
+    host,
     reusePort: true,
   }, () => {
-    log(`serving on port ${port}`);
+    log(`serving on ${host}:${port}`);
+  });
+
+  // Handle graceful shutdown for production
+  process.on('SIGTERM', () => {
+    console.log('[SHUTDOWN] Received SIGTERM, shutting down gracefully...');
+    httpServer.close(() => {
+      console.log('[SHUTDOWN] HTTP server closed');
+      process.exit(0);
+    });
+  });
+
+  process.on('SIGINT', () => {
+    console.log('[SHUTDOWN] Received SIGINT, shutting down gracefully...');
+    httpServer.close(() => {
+      console.log('[SHUTDOWN] HTTP server closed');
+      process.exit(0);
+    });
   });
 })();
