@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { useWebSocket } from '../hooks/useWebSocket';
-import { useFileTransfer } from '../hooks/useFileTransfer';
-import { useAuth } from '../hooks/useAuth';
-import { useAccessibility } from '../hooks/useAccessibility';
-import { useAriaAnnouncements } from '../hooks/useAriaAnnouncements';
-import { TransferSyncMonitor } from './TransferSyncMonitor';
-import { FileSelector } from './FileSelector';
-import { DeviceList } from './DeviceList';
-import { ErrorRecoveryPanel } from './ErrorRecoveryPanel';
-import { ConnectionHelper } from './ConnectionHelper';
-import { MobileTransferGuard } from './MobileTransferGuard';
-import { ZipProgress } from './ZipProgress';
-import { AuthModal } from './AuthModal';
-import { UsageBanner } from './UsageBanner';
-import { AccessibilityPanel } from './AccessibilityPanel';
-import { QrCode, RotateCcw, LogOut, Settings } from 'lucide-react';
-import type { Device } from '@shared/types';
+import React, { useState, useEffect } from "react";
+import { useWebSocket } from "../hooks/useWebSocket";
+import { useFileTransfer } from "../hooks/useFileTransfer";
+import { useAuth } from "../hooks/useAuth";
+import { useAccessibility } from "../hooks/useAccessibility";
+import { useAriaAnnouncements } from "../hooks/useAriaAnnouncements";
+import { TransferSyncMonitor } from "./TransferSyncMonitor";
+import { FileSelector } from "./FileSelector";
+import { DeviceList } from "./DeviceList";
+import { ErrorRecoveryPanel } from "./ErrorRecoveryPanel";
+import { ConnectionHelper } from "./ConnectionHelper";
+import { MobileTransferGuard } from "./MobileTransferGuard";
+import { ZipProgress } from "./ZipProgress";
+import { AuthModal } from "./AuthModal";
+import { UsageBanner } from "./UsageBanner";
+import { AccessibilityPanel } from "./AccessibilityPanel";
+import { QrCode, RotateCcw, LogOut, Settings } from "lucide-react";
+import type { Device } from "@shared/types";
 
 export const ShareZidiApp: React.FC = () => {
   const websocket = useWebSocket();
@@ -31,126 +31,150 @@ export const ShareZidiApp: React.FC = () => {
   useEffect(() => {
     const handleKeydown = (event: KeyboardEvent) => {
       // Alt + A to open accessibility panel
-      if (event.altKey && event.key.toLowerCase() === 'a') {
+      if (event.altKey && event.key.toLowerCase() === "a") {
         event.preventDefault();
         setShowAccessibilityPanel(true);
       }
-      
+
       // Escape to close modals
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         setShowAccessibilityPanel(false);
         setShowConnectionHelper(false);
       }
     };
 
-    document.addEventListener('keydown', handleKeydown);
-    return () => document.removeEventListener('keydown', handleKeydown);
+    document.addEventListener("keydown", handleKeydown);
+    return () => document.removeEventListener("keydown", handleKeydown);
   }, []);
 
   const connectionInfo = {
     effectiveType: (navigator as any).connection?.effectiveType,
     downlink: (navigator as any).connection?.downlink,
-    status: websocket.isConnected ? 'connected' : websocket.reconnectAttempts > 0 ? 'reconnecting' : 'disconnected'
+    status: websocket.isConnected
+      ? "connected"
+      : websocket.reconnectAttempts > 0
+        ? "reconnecting"
+        : "disconnected",
   };
 
   const handleSendFiles = async (device: Device) => {
     // Check if user can transfer
     if (!auth.canTransfer()) {
-      alert('Transfer limit reached. Please upgrade to Pro for unlimited transfers.');
+      alert(
+        "Transfer limit reached. Please upgrade to Pro for unlimited transfers.",
+      );
       return;
     }
 
     try {
       await fileTransfer.startTransfer(device, fileTransfer.selectedFiles);
       auth.incrementTransferCount();
-      announcements.announceTransferStart(device.name || device.id, fileTransfer.selectedFiles.length);
+      announcements.announceTransferStart(
+        device.name || device.id,
+        fileTransfer.selectedFiles.length,
+      );
     } catch (error) {
-      console.error('Failed to start transfer:', error);
-      announcements.announceTransferError('Failed to start transfer');
+      console.error("Failed to start transfer:", error);
+      announcements.announceTransferError("Failed to start transfer");
     }
   };
 
   const handleZipAndSend = async (device: Device) => {
     // Check if user can transfer
     if (!auth.canTransfer()) {
-      alert('Transfer limit reached. Please upgrade to Pro for unlimited transfers.');
+      alert(
+        "Transfer limit reached. Please upgrade to Pro for unlimited transfers.",
+      );
       return;
     }
 
     if (fileTransfer.selectedFiles.length === 0) {
-      console.warn('[FileTransfer] No files selected for zipping');
+      console.warn("[FileTransfer] No files selected for zipping");
       return;
     }
 
-    console.log('[FileTransfer] Creating ZIP archive for', fileTransfer.selectedFiles.length, 'files');
-    
+    console.log(
+      "[FileTransfer] Creating ZIP archive for",
+      fileTransfer.selectedFiles.length,
+      "files",
+    );
+
     try {
       // Dynamic import of JSZip
-      const JSZip = (await import('jszip')).default;
+      const JSZip = (await import("jszip")).default;
       const zip = new JSZip();
-      
+
       // Add all selected files to the ZIP
       for (const file of fileTransfer.selectedFiles) {
-        console.log('[FileTransfer] Adding to ZIP:', file.name);
+        console.log("[FileTransfer] Adding to ZIP:", file.name);
         zip.file(file.name, file);
       }
-      
+
       // Generate the ZIP file
-      console.log('[FileTransfer] Generating ZIP archive...');
-      const zipBlob = await zip.generateAsync({ 
-        type: 'blob',
-        compression: 'DEFLATE',
-        compressionOptions: { level: 6 }
+      console.log("[FileTransfer] Generating ZIP archive...");
+      const zipBlob = await zip.generateAsync({
+        type: "blob",
+        compression: "DEFLATE",
+        compressionOptions: { level: 6 },
       });
-      
+
       // Calculate total original size
-      const originalSize = fileTransfer.selectedFiles.reduce((sum, file) => sum + file.size, 0);
-      const compressionRatio = ((originalSize - zipBlob.size) / originalSize * 100).toFixed(1);
-      
-      console.log(`[FileTransfer] ZIP created: ${zipBlob.size} bytes (${compressionRatio}% compression)`);
-      
+      const originalSize = fileTransfer.selectedFiles.reduce(
+        (sum, file) => sum + file.size,
+        0,
+      );
+      const compressionRatio = (
+        ((originalSize - zipBlob.size) / originalSize) *
+        100
+      ).toFixed(1);
+
+      console.log(
+        `[FileTransfer] ZIP created: ${zipBlob.size} bytes (${compressionRatio}% compression)`,
+      );
+
       // Create a new file object for the ZIP
-      const zipFileName = `ShareZidi_${fileTransfer.selectedFiles.length}files_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.zip`;
-      const zipFile = new File([zipBlob], zipFileName, { type: 'application/zip' });
-      
+      const zipFileName = `ShareZidi_${fileTransfer.selectedFiles.length}files_${new Date().toISOString().slice(0, 19).replace(/:/g, "-")}.zip`;
+      const zipFile = new File([zipBlob], zipFileName, {
+        type: "application/zip",
+      });
+
       // Create selected file with optimization
-      const { TransferUtils } = await import('../lib/transferUtils');
+      const { TransferUtils } = await import("../lib/transferUtils");
       const selectedZipFile = Object.assign(zipFile, {
         id: TransferUtils.generateFileId(),
         optimizedChunkSize: TransferUtils.getOptimalChunkSize(zipFile.size),
-        parallelStreams: TransferUtils.getParallelChunkCount()
+        parallelStreams: TransferUtils.getParallelChunkCount(),
       });
-      
-      console.log('[FileTransfer] Starting ZIP transfer to device:', device.id);
-      
+
+      console.log("[FileTransfer] Starting ZIP transfer to device:", device.id);
+
       // Start transfer with the ZIP file
       await fileTransfer.startTransfer(device, [selectedZipFile]);
       auth.incrementTransferCount();
       announcements.announceTransferStart(device.name || device.id, 1);
-      
     } catch (error) {
-      console.error('[FileTransfer] ZIP creation failed:', error);
-      announcements.announceTransferError('ZIP creation failed');
+      console.error("[FileTransfer] ZIP creation failed:", error);
+      announcements.announceTransferError("ZIP creation failed");
     }
   };
 
   const handleRetryTransfer = (transferId: string) => {
-    console.log('Retry transfer:', transferId);
+    console.log("Retry transfer:", transferId);
     // TODO: Implement retry logic
   };
 
   const handleReduceChunkSize = (transferId: string) => {
-    console.log('Reduce chunk size:', transferId);
+    console.log("Reduce chunk size:", transferId);
     // TODO: Implement chunk size reduction
   };
 
   const handleResumeMissingChunks = (transferId: string) => {
-    console.log('Resume missing chunks:', transferId);
+    console.log("Resume missing chunks:", transferId);
     // TODO: Implement missing chunk resume
   };
 
   const handleCancelTransfer = (transferId: string) => {
-    console.log('Cancel transfer:', transferId);
+    console.log("Cancel transfer:", transferId);
     // TODO: Implement transfer cancellation
   };
 
@@ -158,13 +182,15 @@ export const ShareZidiApp: React.FC = () => {
     // Simple pro upgrade - in production this would integrate with Stripe
     if (auth.user) {
       auth.updateUser({ isPro: true });
-      alert('Upgraded to Pro! You now have unlimited transfers.');
+      alert("Upgraded to Pro! You now have unlimited transfers.");
     }
   };
 
   // Show auth modal if user is not authenticated
   if (!auth.isAuthenticated && !auth.isLoading) {
-    return <AuthModal isOpen={true} onClose={() => {}} onAuthSuccess={auth.login} />;
+    return (
+      <AuthModal isOpen={true} onClose={() => {}} onAuthSuccess={auth.login} />
+    );
   }
 
   return (
@@ -174,28 +200,34 @@ export const ShareZidiApp: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <img 
-                src="/sharezidi-logo.gif" 
-                alt="ShareZidi Logo" 
+              <img
+                src="/sharezidi-logo.gif"
+                alt="ShareZidi Logo"
                 className="h-12 w-auto"
               />
             </div>
-            
+
             {/* Connection Status and Actions */}
             <div className="flex items-center space-x-2 text-sm">
               <div className="hidden sm:flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${
-                  websocket.isConnected ? 'bg-green-500' : 'bg-red-500'
-                }`}></div>
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    websocket.isConnected ? "bg-green-500" : "bg-red-500"
+                  }`}
+                ></div>
                 <span className="text-gray-600">
-                  {websocket.isConnected ? 'Connected' : 'Disconnected'}
+                  {websocket.isConnected ? "Connected" : "Disconnected"}
                 </span>
               </div>
               <div className="text-blue-600 font-medium text-xs sm:text-sm">
-                ID: <span className="text-gray-600">{websocket.userId || 'connecting...'}</span>
+                ID:{" "}
+                <span className="text-gray-600">
+                  {websocket.userId || "connecting..."}
+                </span>
               </div>
+              <div>xxxxxxxxxxxxxxxxxxxxxxxxx</div>
               <div className="flex items-center space-x-1">
-                <button 
+                <button
                   onClick={() => setShowConnectionHelper(true)}
                   className="p-2 text-blue-600 hover:text-blue-700 rounded-lg hover:bg-blue-50 transition-colors"
                   title="Connect Mobile Device"
@@ -203,7 +235,7 @@ export const ShareZidiApp: React.FC = () => {
                 >
                   <QrCode className="h-4 w-4" />
                 </button>
-                <button 
+                <button
                   onClick={() => setShowAccessibilityPanel(true)}
                   className="p-2 text-purple-600 hover:text-purple-700 rounded-lg hover:bg-purple-50 transition-colors"
                   title="Accessibility Settings"
@@ -211,7 +243,7 @@ export const ShareZidiApp: React.FC = () => {
                 >
                   <Settings className="h-4 w-4" />
                 </button>
-                <button 
+                <button
                   onClick={() => window.location.reload()}
                   className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
                   title="Refresh Page"
@@ -219,20 +251,22 @@ export const ShareZidiApp: React.FC = () => {
                 >
                   <RotateCcw className="h-4 w-4" />
                 </button>
-                <button 
+                <button
                   onClick={async () => {
                     try {
                       // Clear server-side session
-                      await fetch('/api/auth/logout', { method: 'POST' });
+                      await fetch("/api/auth/logout", { method: "POST" });
                     } catch (error) {
-                      console.log('Logout request failed, clearing client data anyway');
+                      console.log(
+                        "Logout request failed, clearing client data anyway",
+                      );
                     }
                     // Clear any stored user data
-                    localStorage.removeItem('user');
-                    localStorage.removeItem('transferCount');
-                    localStorage.removeItem('lastReset');
+                    localStorage.removeItem("user");
+                    localStorage.removeItem("transferCount");
+                    localStorage.removeItem("lastReset");
                     // Redirect to landing page
-                    window.location.href = '/';
+                    window.location.href = "/";
                   }}
                   className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg border border-red-300 hover:border-red-600 transition-all duration-200"
                   title="Sign Out"
@@ -251,10 +285,15 @@ export const ShareZidiApp: React.FC = () => {
         {auth.user && (
           <div className="flex justify-end mb-4">
             <div className="text-sm text-gray-600 bg-gray-50 px-3 py-1 rounded-full border">
-              Logged in as <span className="font-medium text-gray-800">
+              Logged in as{" "}
+              <span className="font-medium text-gray-800">
                 {(() => {
-                  console.log('ShareZidiApp - Current user data:', auth.user);
-                  return auth.user.username || auth.user.email?.split('@')[0] || 'guest';
+                  console.log("ShareZidiApp - Current user data:", auth.user);
+                  return (
+                    auth.user.username ||
+                    auth.user.email?.split("@")[0] ||
+                    "guest"
+                  );
                 })()}
               </span>
             </div>
@@ -265,19 +304,25 @@ export const ShareZidiApp: React.FC = () => {
         <UsageBanner user={auth.user} onUpgrade={handleUpgrade} />
 
         {/* Mobile Transfer Guard */}
-        <MobileTransferGuard 
-          isTransferring={Array.from(fileTransfer.transfers.values()).some(t => t.isTransferring) || 
-                          Array.from(fileTransfer.incomingTransfers?.values() || []).some(t => t.isTransferring)} 
+        <MobileTransferGuard
+          isTransferring={
+            Array.from(fileTransfer.transfers.values()).some(
+              (t) => t.isTransferring,
+            ) ||
+            Array.from(fileTransfer.incomingTransfers?.values() || []).some(
+              (t) => t.isTransferring,
+            )
+          }
         />
-        
+
         {/* ZIP Progress */}
-        <ZipProgress 
+        <ZipProgress
           isZipping={fileTransfer.isZipping}
           progress={fileTransfer.zipProgress}
         />
-        
+
         {/* Transfer Sync Monitor */}
-        <TransferSyncMonitor 
+        <TransferSyncMonitor
           transfers={fileTransfer.transfers}
           incomingTransfers={fileTransfer.incomingTransfers || new Map()}
           connectionInfo={connectionInfo}
@@ -312,9 +357,12 @@ export const ShareZidiApp: React.FC = () => {
             <div className="text-blue-600 mb-2">
               <i className="fas fa-mobile-alt text-3xl"></i>
             </div>
-            <h3 className="text-lg font-semibold text-blue-800 mb-2">Connect Your Mobile Device</h3>
+            <h3 className="text-lg font-semibold text-blue-800 mb-2">
+              Connect Your Mobile Device
+            </h3>
             <p className="text-blue-700 mb-4">
-              Scan the QR code or enter the URL manually to connect your iPhone, Android, or other devices
+              Scan the QR code or enter the URL manually to connect your iPhone,
+              Android, or other devices
             </p>
             <button
               onClick={() => setShowConnectionHelper(true)}
@@ -343,10 +391,16 @@ export const ShareZidiApp: React.FC = () => {
             <div className="flex items-center space-x-4">
               <span>ShareZidi v2.1</span>
               <span>•</span>
-              <span>Socket ID: {websocket.userId || '...'}</span>
+              <span>Socket ID: {websocket.userId || "..."}</span>
               <span>•</span>
-              <span className={websocket.isConnected ? 'text-success' : 'text-error'}>
-                {websocket.isConnected ? 'Connection Stable' : 'Connection Lost'}
+              <span
+                className={
+                  websocket.isConnected ? "text-success" : "text-error"
+                }
+              >
+                {websocket.isConnected
+                  ? "Connection Stable"
+                  : "Connection Lost"}
               </span>
             </div>
             <button className="text-primary hover:text-blue-600 transition-colors">
@@ -354,7 +408,7 @@ export const ShareZidiApp: React.FC = () => {
               Advanced Settings
             </button>
           </div>
-          
+
           {/* Copyright Notice */}
           <div className="text-center text-xs text-gray-500 mt-3 pt-3 border-t border-gray-100">
             © {new Date().getFullYear()} ShareZidi. All rights reserved.
@@ -363,20 +417,20 @@ export const ShareZidiApp: React.FC = () => {
       </footer>
 
       {/* Connection Helper Modal */}
-      <ConnectionHelper 
+      <ConnectionHelper
         isVisible={showConnectionHelper}
         onClose={() => setShowConnectionHelper(false)}
       />
 
       {/* Accessibility Panel */}
-      <AccessibilityPanel 
+      <AccessibilityPanel
         isOpen={showAccessibilityPanel}
         onClose={() => setShowAccessibilityPanel(false)}
       />
 
       {/* Skip Links for screen readers */}
-      <a 
-        href="#main-content" 
+      <a
+        href="#main-content"
         className="skip-link"
         onFocus={(e) => {
           e.currentTarget.scrollIntoView();

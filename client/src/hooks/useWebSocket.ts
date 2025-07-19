@@ -52,14 +52,14 @@ class WebSocketManager {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${host}/ws`;
 
-    console.log("[WebSocket] Connecting to:", wsUrl);
+    console.log("[TEST-WebSocket] Connecting to:", wsUrl);
     this.connectionState = "connecting";
 
     try {
       this.ws = new WebSocket(wsUrl);
 
       this.ws.onopen = () => {
-        console.log("[WebSocket] Connected successfully");
+        console.log("[TEST-WebSocket] Connected successfully");
         this.connectionState = "connected";
         this.reconnectAttempts = 0;
         this.notifySubscribers(true);
@@ -71,13 +71,13 @@ class WebSocketManager {
       };
 
       this.ws.onmessage = (event) => {
-        console.log("[WebSocket] Raw message data:", event.data);
+        console.log("[TEST-WebSocket] Raw message data:", event.data);
         try {
           const message = JSON.parse(event.data);
           console.log("[xxxxxxx-WebSocket] Parsed message:", message);
 
           if (message.type === "pong") {
-            console.log("[WebSocket] Received pong");
+            console.log("[TEST-WebSocket] Received pong");
             return;
           }
 
