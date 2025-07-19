@@ -31,8 +31,10 @@ export class FileTransferService {
 
     this.setupSocketHandlers(userId, socket);
     
-    // Send registration confirmation first
-    this.sendToUser(userId, 'registered', { userId });
+    // Send registration confirmation first - match production format
+    if (socket.readyState === 1) { // WebSocket.OPEN
+      socket.send(JSON.stringify({ type: 'registered', userId }));
+    }
     
     // Wait for client to process registration, then send device lists
     setTimeout(() => {
