@@ -67,6 +67,7 @@ class WebSocketManager {
       };
 
       this.ws.onmessage = (event) => {
+        console.log('[WebSocket] Raw message data:', event.data);
         try {
           const message = JSON.parse(event.data);
           
