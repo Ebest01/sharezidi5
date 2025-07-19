@@ -84,11 +84,12 @@ app.use((req, res, next) => {
     res.setHeader('Content-Type', 'application/javascript');
   }
   
-  // Prevent caching issues with module scripts
-  if (req.path.includes('.js') && req.path.includes('-')) {
+  // Force no-cache for ALL static assets to get updated frontend code
+  if (req.path.includes('.js') || req.path.includes('.css') || req.path === '/') {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
   }
   
   next();

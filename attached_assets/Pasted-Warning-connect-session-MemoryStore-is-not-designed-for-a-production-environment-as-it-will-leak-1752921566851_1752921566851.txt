@@ -1,0 +1,44 @@
+Warning: connect.session() MemoryStore is not
+designed for a production environment, as it will leak
+memory, and will not scale past a single process.
+[MONGODB] Connecting to: mongodb://***@193.203.165.217:27017/sharezidi?authSource=admin&ssl=false
+[MONGODB] ✅ Connected successfully
+[STARTUP] ✅ MongoDB connected successfully
+10:32:58 AM [express] serving on 0.0.0.0:80
+[WebSocket] New connection from: 10.11.0.4
+[FileTransfer] User 9LZUOU (Windows PC) connected
+[FileTransfer] Broadcasting device list: [ 'PC-9LZUOU (9LZUOU)' ]
+[WebSocket] New connection from: 10.11.0.4
+[FileTransfer] User 9VOE2W (Windows PC) connected
+[FileTransfer] Broadcasting device list: [ 'PC-9LZUOU (9LZUOU)', 'PC-9VOE2W (9VOE2W)' ]
+[Visitor] 113.37.16.219 requesting /
+[Geolocation] Fetching location for IP 113.37.16.219 from http://ip-api.com/json/113.37.16.219
+[AUTH] Frontend requesting user authentication status
+[AUTH] No user session found
+10:33:05 AM [express] GET /api/auth/user 401 in 4ms :: {"error":"Not authenticated"}
+[Visitor] 113.37.16.219 requesting /
+[Geolocation] Fetching location for IP 113.37.16.219 from http://ip-api.com/json/113.37.16.219
+[AUTH] Frontend requesting user authentication status
+[AUTH] No user session found
+10:33:08 AM [express] GET /api/auth/user 401 in 3ms :: {"error":"Not authenticated"}
+[SIMPLE LOGIN] ===== STARTING SIMPLE LOGIN =====
+[SIMPLE LOGIN] Email: userudt497@yahoo.com Password: JTD243449vt
+[SIMPLE LOGIN] ✅ User found: userudt497@yahoo.com
+[SIMPLE LOGIN] Stored password hash: $2b$10$2On4pJcVkSuUQ...
+[SIMPLE LOGIN] Provided password: JTD243449vt
+[SIMPLE LOGIN] Detected BCrypt hash, using BCrypt verification
+[SIMPLE LOGIN] BCrypt check result: true
+[SIMPLE LOGIN] ✅ LOGIN SUCCESS for: userudt497@yahoo.com
+[SIMPLE LOGIN] Stored user in session: 6878dba118e81cc3ae25b64d
+10:33:11 AM [express] POST /api/login 200 in 90ms :: {"success":true,"user":{"id":"6878dba118e81cc3ae…
+[Visitor] 113.37.16.219 requesting /
+[Geolocation] Fetching location for IP 113.37.16.219 from http://ip-api.com/json/113.37.16.219
+[AUTH] Frontend requesting user authentication status
+[AUTH] ✅ User authenticated: userudt497@yahoo.com
+10:33:13 AM [express] GET /api/auth/user 304 in 8ms :: {"id":"6878dba118e81cc3ae25b64d","email":"user…
+[AUTH] Frontend requesting user authentication status
+[AUTH] ✅ User authenticated: userudt497@yahoo.com
+10:33:13 AM [express] GET /api/auth/user 304 in 7ms :: {"id":"6878dba118e81cc3ae25b64d","email":"user…
+[WebSocket] New connection from: 10.11.0.4
+[FileTransfer] User E6LOYF (Windows PC) connected
+[FileTransfer] Broadcasting device list: [ 'PC-9LZUOU (9LZUOU)', 'PC-9VOE2W (9VOE2W)', 'PC-E6LOYF (E6LOYF)' ]
