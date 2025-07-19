@@ -102,13 +102,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### July 19, 2025 - FINAL FIX: Device ID Display Synchronized Across Dev/Prod ✅
-- **DEVELOPMENT WORKING**: Shows device IDs like "CGMWBF", "AY6IIO" in Connection ID field
-- **ROOT CAUSE IDENTIFIED**: Production frontend was using old compiled JavaScript with incorrect message parsing
+### July 19, 2025 - WebSocket Device ID Display Fix Applied ✅
+- **DEVELOPMENT WORKING**: Shows device IDs like "CGMWBF", "AY6IIO" in Connection ID field perfectly
+- **ROOT CAUSE IDENTIFIED**: fileTransferService.ts was wrapping userId in data object vs production direct format
 - **WEBSOCKET MESSAGE FORMAT UNIFIED**: Fixed fileTransferService.ts to send direct format `{ type: 'registered', userId }`
-- **PROCFILE UPDATED**: Changed from tsx to proper npm build process for production deployment
-- **FRONTEND/BACKEND SYNCHRONIZED**: Both environments now use identical WebSocket message handling
-- **READY FOR DEPLOYMENT**: Git push will deploy fixed frontend code to production environment
+- **PROCFILE REVERTED**: Kept working `npx tsx server/index.ts` to avoid MongoDB bundling issues
+- **BACKEND SYNCHRONIZED**: Both environments now use identical WebSocket message handling
+- **READY FOR DEPLOYMENT**: Production needs Git push to get updated frontend and backend code
 
 ### July 16, 2025 - Production Port and SIGTERM Fixed: Deployment Ready ✅
 - **PORT CONFIGURATION**: Fixed hardcoded port 5000 to use process.env.PORT for Easypanel

@@ -1,1 +1,1 @@
-web: npm run build && npm start
+web: NODE_ENV=production npx tsx server/index.ts

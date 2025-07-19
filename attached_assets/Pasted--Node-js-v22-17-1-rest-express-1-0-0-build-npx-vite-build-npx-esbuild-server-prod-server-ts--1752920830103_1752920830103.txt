@@ -1,0 +1,52 @@
+
+Node.js v22.17.1
+
+> rest-express@1.0.0 build
+> npx vite build && npx esbuild server/prod-server.ts --platform=node --bundle --format=esm --outdir=dist --external:ws --external:express --external:path --external:fs --external:http --external:os
+
+vite v5.4.19 building for production...
+transforming...
+Browserslist: browsers data (caniuse-lite) is 9 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 1690 modules transformed.
+rendering chunks...
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /workspace/client/src/lib/transferUtils.ts is dynamically imported by /workspace/client/src/components/ShareZidiApp.tsx but also statically imported by /workspace/client/src/components/FileSelector.tsx, /workspace/client/src/hooks/useFileTransfer.ts, dynamic import will not move module into another chunk.
+
+computing gzip size...
+../dist/public/index.html                      0.75 kB │ gzip:   0.44 kB
+../dist/public/assets/index-DwJKb6vZ.css      82.71 kB │ gzip:  14.01 kB
+../dist/public/assets/jszip.min-CYsOftIJ.js   97.13 kB │ gzip:  30.15 kB
+../dist/public/assets/index-C7FPyKsV.js      413.41 kB │ gzip: 123.81 kB
+✓ built in 9.36s
+npm notice
+npm notice New major version of npm available! 10.9.2 -> 11.4.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.4.2
+npm notice To update run: npm install -g npm@11.4.2
+npm notice
+
+  dist/prod-server.js  2.8mb ⚠️
+
+⚡ Done in 488ms
+
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/prod-server.js
+
+file:///workspace/dist/prod-server.js:11
+  throw Error('Dynamic require of "' + x + '" is not supported');
+        ^
+
+Error: Dynamic require of "stream" is not supported
+    at file:///workspace/dist/prod-server.js:11:9
+    at node_modules/mongodb/lib/cursor/abstract_cursor.js (file:///workspace/dist/prod-server.js:30119:20)
+    at __require2 (file:///workspace/dist/prod-server.js:14:50)
+    at node_modules/mongodb/lib/explain.js (file:///workspace/dist/prod-server.js:30924:29)
+    at __require2 (file:///workspace/dist/prod-server.js:14:50)
+    at node_modules/mongodb/lib/operations/command.js (file:///workspace/dist/prod-server.js:30994:21)
+    at __require2 (file:///workspace/dist/prod-server.js:14:50)
+    at node_modules/mongodb/lib/operations/delete.js (file:///workspace/dist/prod-server.js:31070:21)
+    at __require2 (file:///workspace/dist/prod-server.js:14:50)
+    at node_modules/mongodb/lib/bulk/common.js (file:///workspace/dist/prod-server.js:31188:20)
+
+Node.js v22.17.1
