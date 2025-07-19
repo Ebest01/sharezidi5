@@ -79,7 +79,7 @@ class WebSocketManager {
           
           // Handle registered message to set our user ID
           if (message.type === 'registered') {
-            this.currentUserId = message.data.userId;
+            this.currentUserId = message.userId;
             console.log('[WebSocket] Registered with ID:', this.currentUserId);
             // Notify subscribers about the new user ID
             this.notifySubscribers(true);
