@@ -52,14 +52,14 @@ class WebSocketManager {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${host}/ws`;
 
-    console.log("[TEST-WebSocket] Connecting to:", wsUrl);
+    console.log("[WebSocket] Connecting to:", wsUrl);
     this.connectionState = "connecting";
 
     try {
       this.ws = new WebSocket(wsUrl);
 
       this.ws.onopen = () => {
-        console.log("[TEST-WebSocket] Connected successfully");
+        console.log("[WebSocket] Connected successfully");
         this.connectionState = "connected";
         this.reconnectAttempts = 0;
         this.notifySubscribers(true);
@@ -71,13 +71,13 @@ class WebSocketManager {
       };
 
       this.ws.onmessage = (event) => {
-        console.log("[TEST-WebSocket] Raw message data:", event.data);
+        console.log("[WebSocket] Raw message data:", event.data);
         try {
           const message = JSON.parse(event.data);
-          console.log("[xxxxxxx-WebSocket] Parsed message:", message);
+          console.log("[WebSocket] Parsed message:", message);
 
           if (message.type === "pong") {
-            console.log("[TEST-WebSocket] Received pong");
+            console.log("[WebSocket] Received pong");
             return;
           }
 
@@ -86,7 +86,6 @@ class WebSocketManager {
           // Handle registered message to set our user ID
           if (message.type === "registered") {
             this.currentUserId = message.userId;
-            alert(this.currentUserId);
             console.log("[WebSocket] Registered with ID:", this.currentUserId);
             console.log("[WebSocket] Full message received:", message);
             // Notify subscribers about the new user ID

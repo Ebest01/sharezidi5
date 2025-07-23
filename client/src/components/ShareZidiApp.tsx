@@ -225,7 +225,6 @@ export const ShareZidiApp: React.FC = () => {
                   {websocket.userId || "connecting..."}
                 </span>
               </div>
-              <div>xxxxxxxxxxxxxxxxxxxxxxxxx</div>
               <div className="flex items-center space-x-1">
                 <button
                   onClick={() => setShowConnectionHelper(true)}
