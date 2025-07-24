@@ -42,8 +42,12 @@ export const TransferSyncMonitor: React.FC<TransferSyncMonitorProps> = ({
       <div className="space-y-4">
         {/* Outgoing Transfers (Sender View) */}
         {activeOutgoingTransfers.map((transfer) => {
-          const syncLag = transfer.sentProgress - transfer.receivedProgress;
-          const hasIssues = syncLag > 10 || transfer.duplicateChunks > 100;
+          const sentProgress = transfer.sentProgress || 0;
+          const receivedProgress = transfer.receivedProgress || 0;
+          const syncLag = sentProgress - receivedProgress;
+          const duplicateChunks = transfer.duplicateChunks || 0;
+          const hasIssues = syncLag > 10 || duplicateChunks > 100;
+          const fileSize = transfer.fileInfo?.size || 0;
           
           return (
             <div key={`outgoing-${transfer.deviceId}-${transfer.fileInfo.name}`}>
@@ -59,13 +63,13 @@ export const TransferSyncMonitor: React.FC<TransferSyncMonitorProps> = ({
                         Sending to Device {transfer.deviceId}
                       </div>
                       <div className="text-sm text-gray-600">
-                        {transfer.fileInfo.name} ({(transfer.fileInfo.size / 1024 / 1024).toFixed(1)} MB)
+                        {transfer.fileInfo?.name || 'Unknown File'} ({fileSize > 0 ? (fileSize / 1024 / 1024).toFixed(1) : '0.0'} MB)
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-semibold text-primary">
-                      {transfer.sentProgress.toFixed(1)}%
+                      {sentProgress.toFixed(1)}%
                     </div>
                     <div className="text-xs text-gray-500">Sender Status</div>
                   </div>
@@ -74,11 +78,11 @@ export const TransferSyncMonitor: React.FC<TransferSyncMonitorProps> = ({
                 <div className="w-full bg-blue-200 rounded-full h-2 mb-2">
                   <div 
                     className="bg-primary h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${transfer.sentProgress}%` }}
+                    style={{ width: `${sentProgress}%` }}
                   ></div>
                 </div>
                 <div className="text-xs text-gray-600">
-                  {transfer.sentProgress === 100 ? '✅ All chunks sent successfully' : 'Sending...'}
+                  {sentProgress === 100 ? '✅ All chunks sent successfully' : 'Sending...'}
                 </div>
               </div>
 
@@ -110,7 +114,7 @@ export const TransferSyncMonitor: React.FC<TransferSyncMonitorProps> = ({
                     <div className={`text-lg font-semibold ${
                       hasIssues ? 'text-warning' : 'text-success'
                     }`}>
-                      {transfer.receivedProgress.toFixed(1)}%
+                      {receivedProgress.toFixed(1)}%
                     </div>
                     <div className="text-xs text-gray-500">Receiver Status</div>
                   </div>
@@ -123,7 +127,7 @@ export const TransferSyncMonitor: React.FC<TransferSyncMonitorProps> = ({
                     className={`h-2 rounded-full transition-all duration-300 ${
                       hasIssues ? 'bg-warning' : 'bg-success'
                     }`}
-                    style={{ width: `${transfer.receivedProgress}%` }}
+                    style={{ width: `${receivedProgress}%` }}
                   ></div>
                 </div>
                 
@@ -135,9 +139,9 @@ export const TransferSyncMonitor: React.FC<TransferSyncMonitorProps> = ({
                         ⚠️ Sync lag detected: {syncLag.toFixed(1)}% behind
                       </span>
                     </div>
-                    {transfer.duplicateChunks > 0 && (
+                    {duplicateChunks > 0 && (
                       <div className="text-orange-600">
-                        {transfer.duplicateChunks} duplicates rejected
+                        {duplicateChunks} duplicates rejected
                       </div>
                     )}
                   </div>

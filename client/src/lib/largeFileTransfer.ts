@@ -56,22 +56,23 @@ export class LargeFileTransfer {
         this.stalled = false;
         
         return {
-          percentage: (this.chunksTransferred / this.totalChunks) * 100,
-          speed: this.calculateSpeed(),
-          eta: this.calculateETA()
+          percentage: this.totalChunks > 0 ? (this.chunksTransferred / this.totalChunks) * 100 : 0,
+          speed: this.calculateSpeed() || 0,
+          eta: this.calculateETA() || 0
         };
       },
       
       calculateSpeed() {
         const elapsed = Date.now() - this.startTime;
-        if (elapsed === 0) return 0;
+        if (elapsed === 0 || !this.bytesTransferred) return 0;
         return (this.bytesTransferred / elapsed) * 1000; // bytes per second
       },
       
       calculateETA() {
         const speed = this.calculateSpeed();
-        if (speed === 0) return 0;
+        if (speed === 0 || !this.fileSize || !this.bytesTransferred) return 0;
         const remainingBytes = this.fileSize - this.bytesTransferred;
+        if (remainingBytes <= 0) return 0;
         return remainingBytes / speed; // seconds
       },
       

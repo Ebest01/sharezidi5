@@ -382,9 +382,9 @@ export const useFileTransfer = (websocket: any) => {
           } else if (typeof chunk === 'string') {
             // Convert Base64 string to ArrayBuffer
             return base64ToArrayBuffer(chunk);
-          } else if (chunk && typeof chunk === 'object' && chunk.data) {
+          } else if (chunk && typeof chunk === 'object' && 'data' in chunk) {
             // Handle case where chunk is wrapped in an object
-            return chunk.data;
+            return (chunk as any).data;
           } else {
             console.error('[FileTransfer] Invalid chunk data:', chunk);
             return new ArrayBuffer(0);
