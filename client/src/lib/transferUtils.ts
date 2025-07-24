@@ -1,22 +1,32 @@
 export class TransferUtils {
   static getOptimalChunkSize(fileSize: number): number {
-    // Reduced chunk sizes for better synchronization
-    if (fileSize < 1024 * 1024) return 8 * 1024; // 8KB for small files
-    if (fileSize < 10 * 1024 * 1024) return 16 * 1024; // 16KB for medium files
-    if (fileSize < 100 * 1024 * 1024) return 32 * 1024; // 32KB for large files
-    return 64 * 1024; // 64KB for very large files (reduced from 128KB)
+    // Optimized chunk sizes for large file transfers
+    if (fileSize < 1024 * 1024) return 16 * 1024; // 16KB for small files
+    if (fileSize < 10 * 1024 * 1024) return 64 * 1024; // 64KB for medium files
+    if (fileSize < 100 * 1024 * 1024) return 256 * 1024; // 256KB for large files
+    if (fileSize < 500 * 1024 * 1024) return 512 * 1024; // 512KB for very large files
+    return 1024 * 1024; // 1MB for huge files (700MB+)
   }
 
-  static getParallelChunkCount(): number {
+  static getParallelChunkCount(fileSize: number = 0): number {
     const connection = (navigator as any).connection;
+    
+    // For large files, reduce parallel chunks to avoid overwhelming WebSocket
+    if (fileSize > 500 * 1024 * 1024) { // 500MB+
+      return 2; // Conservative for very large files
+    }
+    if (fileSize > 100 * 1024 * 1024) { // 100MB+
+      return 3; // Moderate for large files
+    }
+    
     if (!connection) return 4;
     
     switch (connection.effectiveType) {
       case 'slow-2g':
-      case '2g': return 2;
-      case '3g': return 4;
-      case '4g': return 8;
-      default: return 4;
+      case '2g': return 1; // Single stream for slow connections
+      case '3g': return 2;
+      case '4g': return 4;
+      default: return 3;
     }
   }
 
@@ -75,11 +85,29 @@ export class TransferUtils {
     return 'text-gray-600';
   }
 
-  static calculateSyncLag(senderProgress: number, receiverProgress: number): number {
-    return Math.max(0, senderProgress - receiverProgress);
+  static generateFileId(): string {
+    return Math.random().toString(36).substring(2, 15) + 
+           Math.random().toString(36).substring(2, 15);
   }
 
-  static generateFileId(): string {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  static calculateTransferTimeout(fileSize: number): number {
+    // Calculate timeout based on file size (minimum 5 minutes, 1 minute per 100MB)
+    const baseSizeTimeout = Math.max(300000, (fileSize / (100 * 1024 * 1024)) * 60000); // 5 min base, +1 min per 100MB
+    return Math.min(baseSizeTimeout, 3600000); // Cap at 60 minutes
+  }
+
+  static estimateTransferTime(fileSize: number, bytesPerSecond: number): number {
+    if (bytesPerSecond === 0) return 0;
+    return fileSize / bytesPerSecond;
+  }
+
+  static getRetryDelay(attempt: number): number {
+    // Exponential backoff with jitter for failed chunks
+    const baseDelay = Math.min(1000 * Math.pow(2, attempt), 30000); // Cap at 30 seconds
+    return baseDelay + Math.random() * 1000; // Add jitter
+  }
+
+  static calculateSyncLag(senderProgress: number, receiverProgress: number): number {
+    return Math.max(0, senderProgress - receiverProgress);
   }
 }

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { TransferUtils } from '../lib/transferUtils';
+import { LargeFileTransfer } from '../lib/largeFileTransfer';
 import { useWakeLock } from './useWakeLock';
 import type { SelectedFile, TransferMetrics } from '../types/transfer';
 import type { Device, TransferProgress, FileInfo } from '@shared/types';
@@ -51,7 +52,7 @@ export const useFileTransfer = (websocket: any) => {
       const selectedFile = Object.assign(file, {
         id: TransferUtils.generateFileId(),
         optimizedChunkSize: TransferUtils.getOptimalChunkSize(fileSize),
-        parallelStreams: TransferUtils.getParallelChunkCount()
+        parallelStreams: TransferUtils.getParallelChunkCount(fileSize)
       }) as SelectedFile;
       
       return selectedFile;
@@ -89,9 +90,23 @@ export const useFileTransfer = (websocket: any) => {
   }, []);
 
   const sendFileChunks = async (file: SelectedFile, deviceId: string, fileInfo: FileInfo) => {
-    const chunks = Math.ceil(file.size / file.optimizedChunkSize);
-    const acknowledgedChunks = new Set<number>();
-    let sentChunks = 0;
+    console.log(`[FileTransfer] Starting optimized transfer for ${file.name} (${TransferUtils.formatFileSize(file.size)})`);
+    
+    // Get optimized settings for large files
+    const settings = LargeFileTransfer.getOptimizedSettings(file.size);
+    const totalChunks = Math.ceil(file.size / settings.chunkSize);
+    
+    // Create progress tracker
+    const tracker = LargeFileTransfer.createProgressTracker(file.size, totalChunks);
+    
+    // Set up connection monitoring
+    const { startHeartbeat, stopHeartbeat } = LargeFileTransfer.createConnectionMonitor(
+      websocket,
+      () => {
+        console.error('[FileTransfer] Connection lost during transfer');
+        // Could implement resume logic here
+      }
+    );
 
     const metrics: TransferMetrics = {
       startTime: Date.now(),
@@ -101,24 +116,17 @@ export const useFileTransfer = (websocket: any) => {
     };
 
     transferMetricsRef.current.set(file.id, metrics);
-
-    // Set up chunk acknowledgment handler for this transfer
-    const handleChunkAck = (data: any) => {
-      if (data.fileId === file.id && data.status === 'received') {
-        acknowledgedChunks.add(data.chunkIndex);
-        console.log(`[FileTransfer] Chunk ${data.chunkIndex} acknowledged, total: ${acknowledgedChunks.size}/${chunks}`);
-      }
-    };
-
-    websocket.on('chunk-ack', handleChunkAck);
+    startHeartbeat();
 
     try {
-      // Send all chunks sequentially with acknowledgment waiting
-      for (let chunkIndex = 0; chunkIndex < chunks; chunkIndex++) {
-        const start = chunkIndex * file.optimizedChunkSize;
-        const end = Math.min(start + file.optimizedChunkSize, file.size);
+      console.log(`[FileTransfer] Sending ${totalChunks} chunks (${TransferUtils.formatFileSize(settings.chunkSize)} each)`);
+      
+      // Send chunks sequentially for large files to avoid overwhelming WebSocket
+      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+        const start = chunkIndex * settings.chunkSize;
+        const end = Math.min(start + settings.chunkSize, file.size);
         
-        // Ensure file has slice method (it should since it extends File)
+        // Ensure file has slice method
         if (typeof file.slice !== 'function') {
           console.error('File object missing slice method:', file);
           throw new Error('Invalid file object - missing slice method');
@@ -126,54 +134,52 @@ export const useFileTransfer = (websocket: any) => {
         
         const chunk = file.slice(start, end);
         const arrayBuffer = await chunk.arrayBuffer();
-        
-        // Convert ArrayBuffer to Base64 for JSON transmission
-        const base64Chunk = arrayBufferToBase64(arrayBuffer);
-        
-        // Send chunk
-        const success = websocket.send('file-chunk', {
-          toUserId: deviceId,
-          fileId: file.id,
+
+        // Send chunk with retry logic
+        const success = await LargeFileTransfer.sendChunkWithRetry(
+          websocket,
+          arrayBuffer,
           chunkIndex,
-          chunk: base64Chunk,
-          totalChunks: chunks
+          file.id,
+          deviceId
+        );
+
+        if (!success) {
+          console.error(`[FileTransfer] Failed to send chunk ${chunkIndex} after retries`);
+          break;
+        }
+
+        // Update progress
+        const progress = tracker.updateProgress(chunkIndex, arrayBuffer.byteLength);
+        const stats = LargeFileTransfer.formatTransferStats(tracker);
+        
+        console.log(`[FileTransfer] Progress: ${stats.percentage}% (${stats.speed}, ETA: ${stats.eta})`);
+        
+        // Update UI
+        const transferId = `${websocket.userId}-${deviceId}-${file.id}`;
+        setTransfers(prev => {
+          const newMap = new Map(prev);
+          const transfer = newMap.get(transferId);
+          if (transfer) {
+            transfer.sentProgress = parseFloat(stats.percentage);
+            newMap.set(transferId, transfer);
+          }
+          return newMap;
         });
 
-        if (success) {
-          sentChunks++;
-          
-          // Update transfer progress
-          const senderProgress = (sentChunks / chunks) * 100;
-          const key = `${websocket.userId}-${deviceId}-${file.id}`;
-          
-          setTransfers(prev => {
-            const transfer = prev.get(key);
-            if (transfer) {
-              const updated = { ...transfer, sentProgress: senderProgress };
-              return new Map(prev.set(key, updated));
-            }
-            return prev;
-          });
+        // Update metrics
+        metrics.bytesTransferred += arrayBuffer.byteLength;
+        metrics.speed = stats.speed;
+        metrics.eta = stats.eta;
 
-          // Update metrics
-          metrics.bytesTransferred += arrayBuffer.byteLength;
-          const elapsed = (Date.now() - metrics.startTime) / 1000;
-          const speedBps = metrics.bytesTransferred / elapsed;
-          metrics.speed = TransferUtils.formatFileSize(speedBps) + '/s';
-          
-          const remainingBytes = file.size - metrics.bytesTransferred;
-          const etaSeconds = remainingBytes / speedBps;
-          metrics.eta = etaSeconds > 0 ? `${Math.ceil(etaSeconds)}s` : 'Complete';
+        // Check for stalled transfer
+        if (tracker.checkStalled()) {
+          console.warn('[FileTransfer] Transfer appears stalled, but continuing...');
+        }
 
-          // Don't wait for acknowledgment - send chunks rapidly for better throughput
-          // Acknowledgments are tracked but don't block sending
-          console.log(`[FileTransfer] Sent chunk ${chunkIndex}/${chunks}, progress: ${senderProgress.toFixed(1)}%`);
-
-          // Small delay between chunks (reduced for faster transfer)
-          await new Promise(resolve => setTimeout(resolve, 1));
-        } else {
-          console.error('Failed to send chunk, connection lost');
-          break;
+        // Brief pause between chunks for very large files to prevent overwhelming
+        if (file.size > 500 * 1024 * 1024) {
+          await new Promise(resolve => setTimeout(resolve, 50)); // 50ms pause
         }
       }
 
@@ -182,9 +188,10 @@ export const useFileTransfer = (websocket: any) => {
         toUserId: deviceId,
         fileId: file.id
       });
+      
+      console.log(`[FileTransfer] Completed transfer of ${file.name}`);
     } finally {
-      // Clean up the handler
-      websocket.off('chunk-ack');
+      stopHeartbeat();
     }
   };
 
@@ -193,12 +200,15 @@ export const useFileTransfer = (websocket: any) => {
     await requestWakeLock();
     
     for (const file of files) {
+      // Use optimized settings for large files
+      const settings = LargeFileTransfer.getOptimizedSettings(file.size);
+      
       const fileInfo: FileInfo = {
         name: file.name,
         size: file.size,
         type: file.type,
-        totalChunks: Math.ceil(file.size / file.optimizedChunkSize),
-        chunkSize: file.optimizedChunkSize
+        totalChunks: Math.ceil(file.size / settings.chunkSize),
+        chunkSize: settings.chunkSize
       };
 
       const transferProgress: TransferProgress = {

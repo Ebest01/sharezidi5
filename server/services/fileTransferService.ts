@@ -17,6 +17,9 @@ export class FileTransferService {
   constructor() {
     // Clean up stale connections every 2 minutes (increased from 30 seconds)
     setInterval(() => this.cleanupStaleConnections(), 120000);
+    
+    // Monitor transfer progress and handle stalled transfers
+    setInterval(() => this.monitorTransferProgress(), 30000); // Every 30 seconds
   }
 
   registerUser(userId: string, socket: WebSocket, deviceName?: string) {
@@ -467,6 +470,30 @@ export class FileTransferService {
       if (now - user.lastPing > staleThreshold) {
         console.log(`[FileTransfer] Removing stale connection: ${userId}`);
         this.unregisterUser(userId);
+      }
+    }
+  }
+
+  private monitorTransferProgress() {
+    const now = Date.now();
+    const stalledThreshold = 60000; // 1 minute without progress
+    
+    for (const [transferId, syncStatus] of this.syncStatuses) {
+      const timeSinceLastChunk = now - syncStatus.lastChunkTime;
+      
+      if (timeSinceLastChunk > stalledThreshold && syncStatus.senderProgress < 100) {
+        console.warn(`[FileTransfer] Transfer ${transferId} appears stalled - ${timeSinceLastChunk}ms since last chunk`);
+        
+        // Optionally notify clients about stalled transfer
+        const [senderId, receiverId] = transferId.split('-');
+        this.sendToUser(senderId, 'transfer-stalled', {
+          transferId,
+          timeSinceProgress: timeSinceLastChunk
+        });
+        this.sendToUser(receiverId, 'transfer-stalled', {
+          transferId,
+          timeSinceProgress: timeSinceLastChunk
+        });
       }
     }
   }
