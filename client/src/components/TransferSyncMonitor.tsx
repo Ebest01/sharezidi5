@@ -136,7 +136,7 @@ export const TransferSyncMonitor: React.FC<TransferSyncMonitorProps> = ({
                     <div className="text-orange-700 flex items-center space-x-1">
                       <i className="fas fa-exclamation-triangle"></i>
                       <span>
-                        ⚠️ Sync lag detected: {syncLag.toFixed(1)}% behind
+                        ⚠️ Sync lag detected: {(syncLag || 0).toFixed(1)}% behind
                       </span>
                     </div>
                     {duplicateChunks > 0 && (
@@ -165,7 +165,7 @@ export const TransferSyncMonitor: React.FC<TransferSyncMonitorProps> = ({
                   <div className="text-sm text-gray-600">
                     <span className="font-medium">Status:</span> 
                     <span className="text-warning font-semibold ml-1">
-                      {transfer.status}
+                      {transfer.status || 'Unknown'}
                     </span>
                   </div>
                 </div>
@@ -176,11 +176,15 @@ export const TransferSyncMonitor: React.FC<TransferSyncMonitorProps> = ({
         
         {/* Incoming Transfers (Receiver View) */}
         {activeIncomingTransfers.map((transfer) => {
-          const syncLag = transfer.sentProgress - transfer.receivedProgress;
-          const hasIssues = syncLag > 10 || transfer.duplicateChunks > 100;
+          const sentProgress = transfer.sentProgress || 0;
+          const receivedProgress = transfer.receivedProgress || 0;
+          const syncLag = sentProgress - receivedProgress;
+          const duplicateChunks = transfer.duplicateChunks || 0;
+          const hasIssues = syncLag > 10 || duplicateChunks > 100;
+          const fileSize = transfer.fileInfo?.size || 0;
           
           return (
-            <div key={`incoming-${transfer.deviceId}-${transfer.fileInfo.name}`}>
+            <div key={`incoming-${transfer.deviceId}-${transfer.fileInfo?.name || 'unknown'}`}>
               {/* Receiver View */}
               <div className="bg-green-50 rounded-lg p-4 border border-green-200 mb-2">
                 <div className="flex items-center justify-between mb-3">
@@ -190,15 +194,15 @@ export const TransferSyncMonitor: React.FC<TransferSyncMonitorProps> = ({
                     </div>
                     <div>
                       <h4 className="font-medium text-gray-800">Receiving from {transfer.deviceId}</h4>
-                      <p className="text-sm text-gray-600">{transfer.fileInfo.name}</p>
+                      <p className="text-sm text-gray-600">{transfer.fileInfo?.name || 'Unknown File'} ({fileSize > 0 ? (fileSize / 1024 / 1024).toFixed(1) : '0.0'} MB)</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-bold text-green-600">
-                      {transfer.receivedProgress.toFixed(1)}%
+                      {receivedProgress.toFixed(1)}%
                     </div>
                     <div className="text-xs text-gray-500">
-                      {(transfer.fileInfo.size / (1024 * 1024)).toFixed(1)} MB
+                      {fileSize > 0 ? (fileSize / (1024 * 1024)).toFixed(1) : '0.0'} MB
                     </div>
                   </div>
                 </div>
@@ -207,12 +211,12 @@ export const TransferSyncMonitor: React.FC<TransferSyncMonitorProps> = ({
                 <div className="mb-3">
                   <div className="flex justify-between text-xs text-gray-600 mb-1">
                     <span>Receiving Progress</span>
-                    <span>{transfer.receivedProgress.toFixed(1)}%</span>
+                    <span>{receivedProgress.toFixed(1)}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
                       className="bg-green-600 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${Math.min(transfer.receivedProgress, 100)}%` }}
+                      style={{ width: `${Math.min(receivedProgress, 100)}%` }}
                     ></div>
                   </div>
                 </div>
@@ -221,12 +225,12 @@ export const TransferSyncMonitor: React.FC<TransferSyncMonitorProps> = ({
                 <div className="mb-3">
                   <div className="flex justify-between text-xs text-gray-600 mb-1">
                     <span>Sender Progress</span>
-                    <span>{transfer.sentProgress.toFixed(1)}%</span>
+                    <span>{sentProgress.toFixed(1)}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
                       className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${Math.min(transfer.sentProgress, 100)}%` }}
+                      style={{ width: `${Math.min(sentProgress, 100)}%` }}
                     ></div>
                   </div>
                 </div>

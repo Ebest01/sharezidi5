@@ -262,10 +262,10 @@ export class FileTransferService {
     
     // Calculate actual progress based on received chunks
     const receivedChunks = chunkBuffer.size;
-    const receiverProgress = (receivedChunks / totalChunks) * 100;
+    const receiverProgress = totalChunks > 0 ? (receivedChunks / totalChunks) * 100 : 0;
     
     // Update sender progress based on chunk index
-    const senderProgress = Math.min(((chunkIndex + 1) / totalChunks) * 100, 100);
+    const senderProgress = totalChunks > 0 ? Math.min(((chunkIndex + 1) / totalChunks) * 100, 100) : 0;
     
     syncStatus.senderProgress = senderProgress;
     syncStatus.receiverProgress = receiverProgress;
