@@ -141,7 +141,8 @@ export const useFileTransfer = (websocket: any) => {
           arrayBuffer,
           chunkIndex,
           file.id,
-          deviceId
+          deviceId,
+          totalChunks
         );
 
         if (!success) {

@@ -90,11 +90,12 @@ export class LargeFileTransfer {
     chunkIndex: number,
     fileId: string,
     toUserId: string,
+    totalChunks: number,
     maxRetries: number = this.MAX_RETRIES
   ): Promise<boolean> {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        const success = await this.sendChunkOnce(websocket, chunkData, chunkIndex, fileId, toUserId);
+        const success = await this.sendChunkOnce(websocket, chunkData, chunkIndex, fileId, toUserId, totalChunks);
         if (success) return true;
         
         console.warn(`[LargeFileTransfer] Chunk ${chunkIndex} attempt ${attempt} failed, retrying...`);
@@ -118,7 +119,8 @@ export class LargeFileTransfer {
     chunkData: ArrayBuffer,
     chunkIndex: number,
     fileId: string,
-    toUserId: string
+    toUserId: string,
+    totalChunks: number
   ): Promise<boolean> {
     return new Promise((resolve) => {
       const timeout = setTimeout(() => {
@@ -140,7 +142,8 @@ export class LargeFileTransfer {
           fileId,
           chunkIndex,
           chunk: base64Chunk,
-          chunkSize: chunkData.byteLength
+          chunkSize: chunkData.byteLength,
+          totalChunks
         });
 
         clearTimeout(timeout);
