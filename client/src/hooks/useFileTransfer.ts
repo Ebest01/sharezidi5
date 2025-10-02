@@ -158,12 +158,16 @@ export const useFileTransfer = (websocket: any) => {
         
         // Update UI
         const transferId = `${websocket.userId}-${deviceId}-${file.id}`;
+        console.log(`[FileTransfer] Updating sender progress for ${transferId}: ${stats.percentage}%`);
         setTransfers(prev => {
           const newMap = new Map(prev);
           const transfer = newMap.get(transferId);
           if (transfer) {
+            console.log(`[FileTransfer] Found transfer, updating sentProgress from ${transfer.sentProgress} to ${stats.percentage}`);
             transfer.sentProgress = parseFloat(stats.percentage);
             newMap.set(transferId, transfer);
+          } else {
+            console.warn(`[FileTransfer] Transfer not found for ID: ${transferId}`);
           }
           return newMap;
         });
