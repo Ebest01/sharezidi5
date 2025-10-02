@@ -271,9 +271,10 @@ export const useFileTransfer = (websocket: any) => {
 
     const handleFileChunk = (data: any) => {
       const transferId = `${data.from}-${websocket.userId}-${data.fileId}`;
-      const receivedProgress = ((data.chunkIndex + 1) / data.totalChunks) * 100;
+      const totalChunks = data.totalChunks || 0;
+      const receivedProgress = totalChunks > 0 ? ((data.chunkIndex + 1) / totalChunks) * 100 : 0;
       
-      console.log(`[FileTransfer] Received chunk ${data.chunkIndex}/${data.totalChunks}, progress: ${receivedProgress.toFixed(1)}%`);
+      console.log(`[FileTransfer] Received chunk ${data.chunkIndex}/${totalChunks}, progress: ${receivedProgress.toFixed(1)}%`);
       
       // Store the chunk data for file reconstruction
       if (!receivedChunks.current.has(data.fileId)) {
