@@ -164,8 +164,13 @@ export const useFileTransfer = (websocket: any) => {
           const transfer = newMap.get(transferId);
           if (transfer) {
             console.log(`[FileTransfer] Found transfer, updating sentProgress from ${transfer.sentProgress} to ${stats.percentage}`);
-            transfer.sentProgress = parseFloat(stats.percentage);
-            newMap.set(transferId, transfer);
+            // Create a new object to trigger React re-render
+            const updatedTransfer = {
+              ...transfer,
+              sentProgress: parseFloat(stats.percentage),
+              status: parseFloat(stats.percentage) >= 100 ? 'completed' as const : 'active' as const
+            };
+            newMap.set(transferId, updatedTransfer);
           } else {
             console.warn(`[FileTransfer] Transfer not found for ID: ${transferId}`);
           }
