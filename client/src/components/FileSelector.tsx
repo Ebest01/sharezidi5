@@ -29,7 +29,7 @@ export const FileSelector: React.FC<FileSelectorProps> = ({
 }) => {
   return (
     <section className="mb-8">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">Select Files to Transfer</h2>
+      <h2 className="text-xl font-semibold text-gray-800 mb-4">Choose Files to Transfer</h2>
       
       <div 
         className={`bg-white rounded-xl border-2 border-dashed p-8 text-center transition-colors cursor-pointer ${
