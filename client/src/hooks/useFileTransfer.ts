@@ -196,13 +196,29 @@ export const useFileTransfer = (websocket: any) => {
         }
       }
 
-      // Mark transfer as complete
+      // Mark transfer as complete on sender side - keep it visible
+      const transferId = `${websocket.userId}-${deviceId}-${file.id}`;
+      setTransfers(prev => {
+        const newMap = new Map(prev);
+        const transfer = newMap.get(transferId);
+        if (transfer) {
+          const updatedTransfer = {
+            ...transfer,
+            sentProgress: 100,
+            status: 'completed' as const,
+            isTransferring: true // Keep it visible until receiver confirms
+          };
+          newMap.set(transferId, updatedTransfer);
+        }
+        return newMap;
+      });
+      
       websocket.send('transfer-complete', {
         toUserId: deviceId,
         fileId: file.id
       });
       
-      console.log(`[FileTransfer] Completed transfer of ${file.name}`);
+      console.log(`[FileTransfer] Completed sending ${file.name}, waiting for receiver confirmation`);
     } finally {
       stopHeartbeat();
     }

@@ -68,7 +68,7 @@ export const TransferSyncMonitor: React.FC<TransferSyncMonitorProps> = ({
                     </div>
                     <div>
                       <div className="font-medium text-gray-800">
-                        Sending to Device {transfer.deviceId}
+                        Shipping to Device {transfer.deviceId}
                       </div>
                       <div className="text-sm text-gray-600">
                         {transfer.fileInfo?.name || 'Unknown File'} ({fileSize > 0 ? (fileSize / 1024 / 1024).toFixed(1) : '0.0'} MB)
