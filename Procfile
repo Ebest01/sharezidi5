@@ -1,1 +1,1 @@
-web: NODE_ENV=production npx tsx server/index.ts
+web: NODE_ENV=production node dist/prod-server.js
