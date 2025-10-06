@@ -16,8 +16,16 @@ export const TransferSyncMonitor: React.FC<TransferSyncMonitorProps> = ({
   incomingTransfers,
   connectionInfo
 }) => {
-  const activeOutgoingTransfers = Array.from(transfers.values()).filter(t => t.isTransferring);
+  // DEBUG: Log all transfers
+  console.log('[TransferSyncMonitor] All outgoing transfers:', Array.from(transfers.entries()));
+  console.log('[TransferSyncMonitor] All incoming transfers:', Array.from(incomingTransfers?.entries() || []));
+  
+  // Temporarily show ALL transfers for debugging
+  const activeOutgoingTransfers = Array.from(transfers.values());
   const activeIncomingTransfers = Array.from(incomingTransfers?.values() || []).filter(t => t.isTransferring || t.status === 'completed');
+  
+  console.log('[TransferSyncMonitor] activeOutgoingTransfers count:', activeOutgoingTransfers.length);
+  console.log('[TransferSyncMonitor] activeIncomingTransfers count:', activeIncomingTransfers.length);
   
   if (activeOutgoingTransfers.length === 0 && activeIncomingTransfers.length === 0) {
     return null;
