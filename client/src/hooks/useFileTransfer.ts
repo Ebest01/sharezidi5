@@ -154,28 +154,31 @@ export const useFileTransfer = (websocket: any) => {
         const progress = tracker.updateProgress(chunkIndex, arrayBuffer.byteLength);
         const stats = LargeFileTransfer.formatTransferStats(tracker);
         
-        console.log(`[FileTransfer] Progress: ${stats.percentage}% (${stats.speed}, ETA: ${stats.eta})`);
-        
-        // Update UI
-        const transferId = `${websocket.userId}-${deviceId}-${file.id}`;
-        console.log(`[FileTransfer] Updating sender progress for ${transferId}: ${stats.percentage}%`);
-        setTransfers(prev => {
-          const newMap = new Map(prev);
-          const transfer = newMap.get(transferId);
-          if (transfer) {
-            console.log(`[FileTransfer] Found transfer, updating sentProgress from ${transfer.sentProgress} to ${stats.percentage}`);
-            // Create a new object to trigger React re-render
-            const updatedTransfer = {
-              ...transfer,
-              sentProgress: parseFloat(stats.percentage),
-              status: parseFloat(stats.percentage) >= 100 ? 'completed' as const : 'active' as const
-            };
-            newMap.set(transferId, updatedTransfer);
-          } else {
-            console.warn(`[FileTransfer] Transfer not found for ID: ${transferId}`);
-          }
-          return newMap;
-        });
+        // Update UI - throttle updates (every 10 chunks or on last chunk)
+        const shouldUpdate = chunkIndex % 10 === 0 || chunkIndex === totalChunks - 1;
+        if (shouldUpdate) {
+          console.log(`[FileTransfer] Progress: ${stats.percentage}% (${stats.speed}, ETA: ${stats.eta})`);
+          
+          const transferId = `${websocket.userId}-${deviceId}-${file.id}`;
+          console.log(`[FileTransfer] Updating sender progress for ${transferId}: ${stats.percentage}%`);
+          setTransfers(prev => {
+            const newMap = new Map(prev);
+            const transfer = newMap.get(transferId);
+            if (transfer) {
+              console.log(`[FileTransfer] Found transfer, updating sentProgress from ${transfer.sentProgress} to ${stats.percentage}`);
+              // Create a new object to trigger React re-render
+              const updatedTransfer = {
+                ...transfer,
+                sentProgress: parseFloat(stats.percentage),
+                status: parseFloat(stats.percentage) >= 100 ? 'completed' as const : 'active' as const
+              };
+              newMap.set(transferId, updatedTransfer);
+            } else {
+              console.warn(`[FileTransfer] Transfer not found for ID: ${transferId}`);
+            }
+            return newMap;
+          });
+        }
 
         // Update metrics
         metrics.bytesTransferred += arrayBuffer.byteLength;
@@ -317,6 +320,7 @@ export const useFileTransfer = (websocket: any) => {
 
     const handleSyncStatus = (data: any) => {
       const transferId = `${data.senderId}-${data.receiverId}-${data.fileId}`;
+      console.log(`[FileTransfer] Sync status received for ${transferId}: sender=${data.senderProgress}%, receiver=${data.receiverProgress}%`);
       
       // Update incoming transfer if we're the receiver
       if (data.receiverId === websocket.userId) {
@@ -324,9 +328,12 @@ export const useFileTransfer = (websocket: any) => {
           const newMap = new Map(prev);
           const transfer = newMap.get(transferId);
           if (transfer) {
-            transfer.sentProgress = data.senderProgress;
-            transfer.receivedProgress = data.receiverProgress;
-            newMap.set(transferId, transfer);
+            const updatedTransfer = {
+              ...transfer,
+              sentProgress: data.senderProgress,
+              receivedProgress: data.receiverProgress
+            };
+            newMap.set(transferId, updatedTransfer);
           }
           return newMap;
         });
@@ -334,13 +341,18 @@ export const useFileTransfer = (websocket: any) => {
       
       // Update outgoing transfer if we're the sender
       if (data.senderId === websocket.userId) {
+        console.log(`[FileTransfer] Updating sender's view with sync status`);
         setTransfers(prev => {
           const newMap = new Map(prev);
           const transfer = newMap.get(transferId);
           if (transfer) {
-            transfer.sentProgress = data.senderProgress;
-            transfer.receivedProgress = data.receiverProgress;
-            newMap.set(transferId, transfer);
+            const updatedTransfer = {
+              ...transfer,
+              sentProgress: data.senderProgress,
+              receivedProgress: data.receiverProgress
+            };
+            newMap.set(transferId, updatedTransfer);
+            console.log(`[FileTransfer] Sender progress updated to ${data.senderProgress}%`);
           }
           return newMap;
         });
