@@ -84,6 +84,17 @@ export const TransferSyncMonitor: React.FC<TransferSyncMonitorProps> = ({
                 <div className="text-xs text-gray-600">
                   {sentProgress === 100 ? '✅ All chunks sent successfully' : 'Sending...'}
                 </div>
+                
+                {/* DEBUG INFO */}
+                <div className="mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded text-xs font-mono">
+                  <div className="font-bold text-yellow-800 mb-1">🐛 DEBUG INFO:</div>
+                  <div>sentProgress: {sentProgress.toFixed(2)}%</div>
+                  <div>receivedProgress: {receivedProgress.toFixed(2)}%</div>
+                  <div>status: {transfer.status}</div>
+                  <div>isTransferring: {transfer.isTransferring ? 'true' : 'false'}</div>
+                  <div>duplicateChunks: {duplicateChunks}</div>
+                  <div>totalChunks: {transfer.fileInfo?.totalChunks || 'N/A'}</div>
+                </div>
               </div>
 
               {/* Receiver View */}
