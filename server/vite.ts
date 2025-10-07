@@ -68,13 +68,11 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  // In production, the built server is in dist/prod-server.js
-  // and static files are in dist/public/
+  // When running server/index.ts, vite build outputs to dist/public/
   const distPath = path.resolve(process.cwd(), "dist", "public");
   
   console.log("[serveStatic] Looking for static files in:", distPath);
-  console.log("[serveStatic] Current working directory:", process.cwd());
-  console.log("[serveStatic] __dirname equivalent:", import.meta.dirname);
+  console.log("[serveStatic] Files exist?", fs.existsSync(distPath));
 
   if (!fs.existsSync(distPath)) {
     throw new Error(
