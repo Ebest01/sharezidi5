@@ -327,10 +327,26 @@ export const useFileTransfer = (websocket: any) => {
           return newMap;
         });
 
-        // Don't send acknowledgment - server handles this automatically
-        console.log(`[FileTransfer] Chunk ${data.chunkIndex} processed successfully`);
+        // Send acknowledgment to sender so they can track receiver progress
+        websocket.send('chunk-ack', {
+          toUserId: data.from,
+          fileId: data.fileId,
+          chunkIndex: data.chunkIndex,
+          receivedProgress: receivedProgress,
+          status: 'received'
+        });
+        
+        console.log(`[FileTransfer] Chunk ${data.chunkIndex} processed and ACKed`);
       } catch (error) {
         console.error(`[FileTransfer] Failed to process chunk ${data.chunkIndex}:`, error);
+        // Send error ACK
+        websocket.send('chunk-ack', {
+          toUserId: data.from,
+          fileId: data.fileId,
+          chunkIndex: data.chunkIndex,
+          status: 'error',
+          error: error.message
+        });
       }
     };
 
@@ -453,16 +469,37 @@ export const useFileTransfer = (websocket: any) => {
       console.log(`[FileTransfer] File downloaded: ${fileInfo.name}`);
     };
 
+    const handleChunkAck = (data: any) => {
+      const transferId = `${websocket.userId}-${data.from}-${data.fileId}`;
+      console.log(`[FileTransfer] Received ACK for chunk ${data.chunkIndex}, receiver at ${data.receivedProgress}%`);
+      
+      // Update sender's view of receiver progress in real-time
+      setTransfers(prev => {
+        const newMap = new Map(prev);
+        const transfer = newMap.get(transferId);
+        if (transfer) {
+          const updatedTransfer = {
+            ...transfer,
+            receivedProgress: data.receivedProgress || 0
+          };
+          newMap.set(transferId, updatedTransfer);
+        }
+        return newMap;
+      });
+    };
+
     websocket.on('transfer-request', handleTransferRequest);
     websocket.on('file-chunk', handleFileChunk);
     websocket.on('sync-status', handleSyncStatus);
     websocket.on('transfer-complete', handleTransferComplete);
+    websocket.on('chunk-ack', handleChunkAck);
 
     return () => {
       websocket.off('transfer-request');
       websocket.off('file-chunk');
       websocket.off('sync-status');
       websocket.off('transfer-complete');
+      websocket.off('chunk-ack');
     };
   }, [websocket]);
 
