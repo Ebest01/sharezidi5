@@ -80,10 +80,18 @@ export function serveStatic(app: Express) {
     );
   }
 
-  app.use(express.static(distPath));
+  // Serve static files (assets, js, css, etc.)
+  app.use(express.static(distPath, { 
+    maxAge: '1d',
+    etag: true
+  }));
 
-  // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
+  // SPA fallback - return index.html for all other routes (NOT starting with /api)
+  app.get("*", (req, res, next) => {
+    // Don't catch API routes
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
