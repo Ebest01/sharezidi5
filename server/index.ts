@@ -605,13 +605,9 @@ app.use((req, res, next) => {
 
   // Use PORT from environment in production, fallback to 5000 for development
   const port = process.env.PORT || 5000;
-  const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
+  const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1';
   
-  const httpServer = server.listen({
-    port: parseInt(port.toString()),
-    host,
-    reusePort: true,
-  }, () => {
+  const httpServer = server.listen(parseInt(port.toString()), host, () => {
     log(`serving on ${host}:${port}`);
   });
 
