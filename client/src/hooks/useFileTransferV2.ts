@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+// Browser-compatible imports
 import { WebRTCTransfer, WebRTCTransferConfig } from '../lib/webrtcTransfer';
 import { QRDiscovery, DeviceInfo, QRCodeData } from '../lib/qrDiscovery';
 import { ResumeTransfer, TransferState } from '../lib/resumeTransfer';
