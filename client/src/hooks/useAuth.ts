@@ -36,7 +36,8 @@ export const useAuth = () => {
 
   const fetchCurrentUser = async () => {
     try {
-      const response = await fetch('/api/auth/user', {
+      const apiBase = window.location.hostname === 'localhost' ? 'https://sharezidi-app10.utztjw.easypanel.host' : '';
+      const response = await fetch(`${apiBase}/api/auth/user`, {
         credentials: 'include'
       });
       
@@ -88,7 +89,8 @@ export const useAuth = () => {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', {
+      const apiBase = window.location.hostname === 'localhost' ? 'https://sharezidi-app10.utztjw.easypanel.host' : '';
+      await fetch(`${apiBase}/api/auth/logout`, {
         method: 'POST',
         credentials: 'include'
       });

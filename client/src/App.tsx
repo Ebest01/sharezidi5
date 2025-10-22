@@ -15,7 +15,8 @@ function App() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch("/api/auth/user", {
+        const apiBase = window.location.hostname === 'localhost' ? 'https://sharezidi-app10.utztjw.easypanel.host' : '';
+        const response = await fetch(`${apiBase}/api/auth/user`, {
           credentials: "include",
         });
 
