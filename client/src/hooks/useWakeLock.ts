@@ -5,6 +5,11 @@ class FileTransferManager {
   private transferActive = false;
   private heartbeatInterval: NodeJS.Timeout | null = null;
   private visibilityHandler: (() => void) | null = null;
+  private websocket: any;
+
+  constructor(websocket?: any) {
+    this.websocket = websocket;
+  }
 
   async startTransfer() {
     console.log('[FileTransferManager] Starting transfer protection');
@@ -74,12 +79,10 @@ class FileTransferManager {
       if (this.transferActive) {
         // Multiple strategies to prevent idle
         
-        // 1. Dummy network request
-        fetch(window.location.origin + '/ping', { 
-          method: 'POST', 
-          keepalive: true,
-          body: JSON.stringify({ timestamp: Date.now() })
-        }).catch(() => {}); // Ignore errors
+        // 1. Use WebSocket ping instead of HTTP (more reliable)
+        if (this.websocket && this.websocket.send) {
+          this.websocket.send('ping', { timestamp: Date.now() });
+        }
         
         // 2. Keep service worker active
         if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
@@ -94,9 +97,9 @@ class FileTransferManager {
         const dummy = document.createElement('div');
         dummy.remove();
         
-        console.log('[FileTransferManager] Heartbeat ping sent');
+        console.log('[FileTransferManager] Heartbeat ping sent via WebSocket');
       }
-    }, 20000); // Every 20 seconds
+    }, 30000); // Every 30 seconds (less aggressive)
   }
 
   private setupVisibilityHandlers() {
@@ -174,16 +177,16 @@ class FileTransferManager {
   }
 }
 
-export const useWakeLock = () => {
+export const useWakeLock = (websocket?: any) => {
   const managerRef = useRef<FileTransferManager | null>(null);
 
   const requestWakeLock = useCallback(async () => {
     if (!managerRef.current) {
-      managerRef.current = new FileTransferManager();
+      managerRef.current = new FileTransferManager(websocket);
     }
     await managerRef.current.startTransfer();
     return true;
-  }, []);
+  }, [websocket]);
 
   const releaseWakeLock = useCallback(async () => {
     if (managerRef.current) {

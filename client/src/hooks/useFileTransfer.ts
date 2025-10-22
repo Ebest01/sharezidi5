@@ -16,7 +16,7 @@ export const useFileTransfer = (websocket: any) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const transferMetricsRef = useRef<Map<string, TransferMetrics>>(new Map());
   const receivedChunks = useRef<Map<string, Map<number, ArrayBuffer>>>(new Map());
-  const { requestWakeLock, releaseWakeLock, isWakeLockActive } = useWakeLock();
+  const { requestWakeLock, releaseWakeLock, isWakeLockActive } = useWakeLock(websocket);
 
   const totalSizeMB = selectedFiles.reduce((total, file) => total + file.size, 0) / (1024 * 1024);
 
@@ -205,7 +205,7 @@ export const useFileTransfer = (websocket: any) => {
           const updatedTransfer = {
             ...transfer,
             sentProgress: 100,
-            status: 'completed' as const,
+            status: 'active' as const, // Keep as active until receiver confirms
             isTransferring: true // Keep it visible until receiver confirms
           };
           newMap.set(transferId, updatedTransfer);
@@ -320,9 +320,15 @@ export const useFileTransfer = (websocket: any) => {
           const newMap = new Map(prev);
           const transfer = newMap.get(transferId);
           if (transfer) {
-            transfer.receivedProgress = receivedProgress;
-            transfer.status = receivedProgress >= 100 ? 'completed' : 'active';
-            newMap.set(transferId, transfer);
+            const updatedTransfer = {
+              ...transfer,
+              receivedProgress: receivedProgress,
+              status: receivedProgress >= 100 ? 'completed' as const : 'active' as const
+            };
+            newMap.set(transferId, updatedTransfer);
+            console.log(`[FileTransfer] Updated incoming transfer ${transferId}: ${receivedProgress.toFixed(1)}%`);
+          } else {
+            console.warn(`[FileTransfer] Incoming transfer not found for ID: ${transferId}`);
           }
           return newMap;
         });
@@ -401,13 +407,64 @@ export const useFileTransfer = (websocket: any) => {
         const newMap = new Map(prev);
         const transfer = newMap.get(transferId);
         if (transfer) {
-          transfer.status = 'completed';
-          transfer.isTransferring = false;
-          transfer.receivedProgress = 100;
-          newMap.set(transferId, transfer);
+          const updatedTransfer = {
+            ...transfer,
+            status: 'completed' as const,
+            isTransferring: false,
+            receivedProgress: 100
+          };
+          newMap.set(transferId, updatedTransfer);
           
           // Reconstruct and download the file
           reconstructAndDownloadFile(data.fileId, transfer.fileInfo);
+          
+          // Send confirmation back to sender
+          websocket.send('transfer-confirmed', {
+            toUserId: data.from,
+            fileId: data.fileId
+          });
+          console.log(`[FileTransfer] Sent transfer confirmation to sender`);
+        }
+        return newMap;
+      });
+    };
+
+    const handleTransferConfirmed = (data: any) => {
+      const transferId = `${websocket.userId}-${data.from}-${data.fileId}`;
+      console.log(`[FileTransfer] Receiver confirmed completion for ${transferId}`);
+      
+      // Release comprehensive transfer protection
+      releaseWakeLock();
+      
+      setTransfers(prev => {
+        const newMap = new Map(prev);
+        const transfer = newMap.get(transferId);
+        if (transfer) {
+          const updatedTransfer = {
+            ...transfer,
+            status: 'completed' as const,
+            isTransferring: false,
+            receivedProgress: 100
+          };
+          newMap.set(transferId, updatedTransfer);
+          console.log(`[FileTransfer] Transfer ${transferId} marked as completed`);
+        }
+        return newMap;
+      });
+    };
+
+    const handleChunkAck = (data: any) => {
+      const transferId = `${websocket.userId}-${data.from}-${data.fileId}`;
+      console.log(`[FileTransfer] Received ACK for chunk ${data.chunkIndex}, receiver at ${data.receivedProgress}%`);
+      setTransfers(prev => {
+        const newMap = new Map(prev);
+        const transfer = newMap.get(transferId);
+        if (transfer) {
+          const updatedTransfer = {
+            ...transfer,
+            receivedProgress: data.receivedProgress || 0
+          };
+          newMap.set(transferId, updatedTransfer);
         }
         return newMap;
       });
@@ -469,29 +526,11 @@ export const useFileTransfer = (websocket: any) => {
       console.log(`[FileTransfer] File downloaded: ${fileInfo.name}`);
     };
 
-    const handleChunkAck = (data: any) => {
-      const transferId = `${websocket.userId}-${data.from}-${data.fileId}`;
-      console.log(`[FileTransfer] Received ACK for chunk ${data.chunkIndex}, receiver at ${data.receivedProgress}%`);
-      
-      // Update sender's view of receiver progress in real-time
-      setTransfers(prev => {
-        const newMap = new Map(prev);
-        const transfer = newMap.get(transferId);
-        if (transfer) {
-          const updatedTransfer = {
-            ...transfer,
-            receivedProgress: data.receivedProgress || 0
-          };
-          newMap.set(transferId, updatedTransfer);
-        }
-        return newMap;
-      });
-    };
-
     websocket.on('transfer-request', handleTransferRequest);
     websocket.on('file-chunk', handleFileChunk);
     websocket.on('sync-status', handleSyncStatus);
     websocket.on('transfer-complete', handleTransferComplete);
+    websocket.on('transfer-confirmed', handleTransferConfirmed);
     websocket.on('chunk-ack', handleChunkAck);
 
     return () => {
@@ -499,6 +538,7 @@ export const useFileTransfer = (websocket: any) => {
       websocket.off('file-chunk');
       websocket.off('sync-status');
       websocket.off('transfer-complete');
+      websocket.off('transfer-confirmed');
       websocket.off('chunk-ack');
     };
   }, [websocket]);
