@@ -52,7 +52,8 @@ class WebSocketManager {
       return;
     }
 
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    // Use HTTPS/WSS for production server
+    const protocol = isDevelopment ? "wss:" : (window.location.protocol === "https:" ? "wss:" : "ws:");
     const wsUrl = `${protocol}//${host}/ws`;
 
     console.log("[WebSocket] Connecting to:", wsUrl);
