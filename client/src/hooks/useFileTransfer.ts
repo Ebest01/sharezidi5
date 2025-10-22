@@ -301,9 +301,8 @@ export const useFileTransfer = (websocket: any) => {
     const handleFileChunk = (data: any) => {
       const transferId = `${data.from}-${websocket.userId}-${data.fileId}`;
       const totalChunks = data.totalChunks || 0;
-      const receivedProgress = totalChunks > 0 ? ((data.chunkIndex + 1) / totalChunks) * 100 : 0;
       
-      console.log(`[FileTransfer] Received chunk ${data.chunkIndex}/${totalChunks}, progress: ${receivedProgress.toFixed(1)}%`);
+      console.log(`[FileTransfer] Received chunk ${data.chunkIndex}/${totalChunks}`);
       
       // Store the chunk data for file reconstruction
       if (!receivedChunks.current.has(data.fileId)) {
@@ -315,6 +314,12 @@ export const useFileTransfer = (websocket: any) => {
         const chunkData = typeof data.chunk === 'string' ? base64ToArrayBuffer(data.chunk) : data.chunk;
         receivedChunks.current.get(data.fileId)!.set(data.chunkIndex, chunkData);
         
+        // Calculate ACTUAL progress based on received chunks count
+        const receivedChunksCount = receivedChunks.current.get(data.fileId)!.size;
+        const actualProgress = totalChunks > 0 ? (receivedChunksCount / totalChunks) * 100 : 0;
+        
+        console.log(`[FileTransfer] Received ${receivedChunksCount}/${totalChunks} chunks, actual progress: ${actualProgress.toFixed(1)}%`);
+        
         // Update transfer progress immediately
         setIncomingTransfers(prev => {
           const newMap = new Map(prev);
@@ -322,11 +327,11 @@ export const useFileTransfer = (websocket: any) => {
           if (transfer) {
             const updatedTransfer = {
               ...transfer,
-              receivedProgress: receivedProgress,
-              status: receivedProgress >= 100 ? 'completed' as const : 'active' as const
+              receivedProgress: actualProgress,
+              status: actualProgress >= 100 ? 'completed' as const : 'active' as const
             };
             newMap.set(transferId, updatedTransfer);
-            console.log(`[FileTransfer] Updated incoming transfer ${transferId}: ${receivedProgress.toFixed(1)}%`);
+            console.log(`[FileTransfer] Updated incoming transfer ${transferId}: ${actualProgress.toFixed(1)}%`);
           } else {
             console.warn(`[FileTransfer] Incoming transfer not found for ID: ${transferId}`);
           }
@@ -338,7 +343,7 @@ export const useFileTransfer = (websocket: any) => {
           toUserId: data.from,
           fileId: data.fileId,
           chunkIndex: data.chunkIndex,
-          receivedProgress: receivedProgress,
+          receivedProgress: actualProgress,
           status: 'received'
         });
         
@@ -346,10 +351,14 @@ export const useFileTransfer = (websocket: any) => {
       } catch (error) {
         console.error(`[FileTransfer] Failed to process chunk ${data.chunkIndex}:`, error);
         // Send error ACK
+        const receivedChunksCount = receivedChunks.current.get(data.fileId)?.size || 0;
+        const actualProgress = totalChunks > 0 ? (receivedChunksCount / totalChunks) * 100 : 0;
+        
         websocket.send('chunk-ack', {
           toUserId: data.from,
           fileId: data.fileId,
           chunkIndex: data.chunkIndex,
+          receivedProgress: actualProgress,
           status: 'error',
           error: error.message
         });
