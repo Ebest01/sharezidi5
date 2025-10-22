@@ -43,7 +43,10 @@ class WebSocketManager {
       return;
     }
 
-    const host = window.location.host;
+    // For development, connect to backend server on port 3002
+    const isDevelopment = window.location.hostname === 'localhost' && window.location.port === '3001';
+    const host = isDevelopment ? 'localhost:3002' : window.location.host;
+    
     if (!host || host === "undefined") {
       console.error("[WebSocket] Invalid host:", host);
       return;
