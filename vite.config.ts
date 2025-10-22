@@ -33,5 +33,18 @@ export default defineConfig({
       strict: true,
       deny: ["**/.*"],
     },
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:3002',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/ws': {
+        target: 'ws://127.0.0.1:3002',
+        ws: true,
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
 });

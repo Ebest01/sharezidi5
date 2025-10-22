@@ -37,8 +37,7 @@ export default function DbTestPage() {
 
     setLoading(true);
     try {
-      const apiBase = window.location.hostname === 'localhost' ? 'https://sharezidi-app10.utztjw.easypanel.host' : '';
-      const response = await fetch(`${apiBase}/api/register`, {
+      const response = await fetch('/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

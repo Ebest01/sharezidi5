@@ -43,17 +43,13 @@ class WebSocketManager {
       return;
     }
 
-    // For development, connect to production server for database access
-    const isDevelopment = window.location.hostname === 'localhost';
-    const host = isDevelopment ? 'sharezidi-app10.utztjw.easypanel.host' : window.location.host;
-    
+    const host = window.location.host;
     if (!host || host === "undefined") {
       console.error("[WebSocket] Invalid host:", host);
       return;
     }
 
-    // Use HTTPS/WSS for production server
-    const protocol = isDevelopment ? "wss:" : (window.location.protocol === "https:" ? "wss:" : "ws:");
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${host}/ws`;
 
     console.log("[WebSocket] Connecting to:", wsUrl);
