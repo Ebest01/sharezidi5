@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useWebSocket } from "../hooks/useWebSocket";
-import { useFileTransfer } from "../hooks/useFileTransfer";
+import { useFileTransferV2 } from "../hooks/useFileTransferV2";
 import { useAuth } from "../hooks/useAuth";
 import { useAccessibility } from "../hooks/useAccessibility";
 import { useAriaAnnouncements } from "../hooks/useAriaAnnouncements";
@@ -19,13 +19,45 @@ import type { Device } from "@shared/types";
 
 export const ShareZidiApp: React.FC = () => {
   const websocket = useWebSocket();
-  const fileTransfer = useFileTransfer(websocket);
+  // V2 Configuration with all revolutionary features
+  const transferConfig = {
+    webrtc: {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+      ],
+      chunkSize: 1024 * 1024, // 1MB chunks
+      maxRetries: 3
+    },
+    pwa: {
+      appName: 'ShareZidi v2.0',
+      appShortName: 'ShareZidi',
+      appDescription: 'Revolutionary file transfer with WebRTC, encryption, and resume capability',
+      themeColor: '#3B82F6',
+      backgroundColor: '#FFFFFF',
+      display: 'standalone' as const,
+      orientation: 'any' as const,
+      startUrl: '/',
+      scope: '/'
+    },
+    sw: {
+      cacheName: 'sharezidi-v2.0',
+      cacheVersion: '2.0.0',
+      offlinePage: '/offline.html',
+      staticAssets: ['/', '/index.html', '/manifest.json'],
+      dynamicRoutes: ['/api/', '/transfer/', '/files/']
+    }
+  };
+
+  const fileTransfer = useFileTransferV2(websocket, transferConfig);
   const auth = useAuth();
   const accessibility = useAccessibility();
   const announcements = useAriaAnnouncements();
   const [showConnectionHelper, setShowConnectionHelper] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showAccessibilityPanel, setShowAccessibilityPanel] = useState(false);
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [qrCodeData, setQrCodeData] = useState<string>('');
 
   // Keyboard shortcuts for accessibility
   useEffect(() => {
@@ -76,6 +108,32 @@ export const ShareZidiApp: React.FC = () => {
     } catch (error) {
       console.error("Failed to start transfer:", error);
       announcements.announceTransferError("Failed to start transfer");
+    }
+  };
+
+  // V2 Features
+  const handleGenerateQR = async () => {
+    try {
+      const qrCode = await fileTransfer.generateDeviceQR();
+      setQrCodeData(qrCode);
+      setShowQRCode(true);
+    } catch (error) {
+      console.error("Failed to generate QR code:", error);
+    }
+  };
+
+  const handleGenerateTransferQR = async () => {
+    if (fileTransfer.selectedFiles.length === 0) {
+      announcements.announceTransferError("No files selected for QR transfer");
+      return;
+    }
+
+    try {
+      const qrCode = await fileTransfer.generateTransferQR(fileTransfer.selectedFiles[0]);
+      setQrCodeData(qrCode);
+      setShowQRCode(true);
+    } catch (error) {
+      console.error("Failed to generate transfer QR code:", error);
     }
   };
 
@@ -227,10 +285,10 @@ export const ShareZidiApp: React.FC = () => {
               </div>
               <div className="flex items-center space-x-1">
                 <button
-                  onClick={() => setShowConnectionHelper(true)}
+                  onClick={handleGenerateQR}
                   className="p-2 text-blue-600 hover:text-blue-700 rounded-lg hover:bg-blue-50 transition-colors"
-                  title="Connect Mobile Device"
-                  aria-label="Show QR code to connect mobile device"
+                  title="Generate QR Code for Device Discovery"
+                  aria-label="Generate QR code for device discovery"
                 >
                   <QrCode className="h-4 w-4" />
                 </button>
@@ -426,6 +484,50 @@ export const ShareZidiApp: React.FC = () => {
         isOpen={showAccessibilityPanel}
         onClose={() => setShowAccessibilityPanel(false)}
       />
+
+      {/* V2 QR Code Modal */}
+      {showQRCode && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">ShareZidi v2.0 QR Code</h3>
+              <button
+                onClick={() => setShowQRCode(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="text-center">
+              {qrCodeData && (
+                <img
+                  src={qrCodeData}
+                  alt="ShareZidi QR Code"
+                  className="mx-auto mb-4"
+                  style={{ maxWidth: '256px', maxHeight: '256px' }}
+                />
+              )}
+              <p className="text-sm text-gray-600 mb-4">
+                Scan this QR code with another device to connect and transfer files
+              </p>
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleGenerateTransferQR}
+                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Generate Transfer QR
+                </button>
+                <button
+                  onClick={() => setShowQRCode(false)}
+                  className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Skip Links for screen readers */}
       <a
