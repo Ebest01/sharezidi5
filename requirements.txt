@@ -1,4 +1,5 @@
 setuptools<70
 wheel
+av==10.0.0
 -r sharezidi-v3-python/requirements.txt
 
