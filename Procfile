@@ -1,1 +1,1 @@
-web: NODE_ENV=production npx tsx server/index.ts
+web: sh -c "cd sharezidi-v3-python && python -m uvicorn debug_server_final:app --host 0.0.0.0 --port $PORT"

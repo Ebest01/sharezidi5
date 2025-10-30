@@ -1,0 +1,2 @@
+-r sharezidi-v3-python/requirements.txt
+
