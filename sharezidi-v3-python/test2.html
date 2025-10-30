@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ShareZidi v3.0 - Clean Test (TEST2)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .connected { background-color: #d4edda; color: #155724; }
+        .disconnected { background-color: #f8d7da; color: #721c24; }
+        #messages { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>ShareZidi v3.0 - Clean Test (TEST2)</h1>
+    <div id="status" class="disconnected">Connecting...</div>
+    
+    <div>
+        <button onclick="sendPing()">Send Ping</button>
+        <button onclick="broadcastMessage()">Broadcast to All</button>
+        <button onclick="getStats()">Get Stats</button>
+        <button onclick="clearMessages()">Clear Messages</button>
+    </div>
+    
+    <div style="margin: 10px 0;">
+        <input type="text" id="messageInput" placeholder="Enter message to broadcast" style="width: 300px; padding: 5px;">
+        <button onclick="sendCustomMessage()">Send Custom Message</button>
+    </div>
+    
+    <div id="messages"></div>
+    
+    <script>
+        const clientId = 'test2-client-' + Math.random().toString(36).substr(2, 9);
+        console.log('TEST2: Connecting to WebSocket as', clientId);
+        // FIXED: Using correct port 8003
+        const ws = new WebSocket(`ws://localhost:8003/ws/${clientId}?device_type=desktop&supports_webrtc=true&supports_p2p=true`);
+        
+        ws.onopen = function(event) {
+            document.getElementById('status').textContent = 'Connected!';
+            document.getElementById('status').className = 'status connected';
+            console.log('TEST2: WebSocket connected successfully!');
+            log('WebSocket connected to port 8003');
+        };
+        
+        ws.onmessage = function(event) {
+            const message = JSON.parse(event.data);
+            console.log('TEST2: Received:', message);
+            log('Received: ' + JSON.stringify(message));
+        };
+        
+        ws.onclose = function(event) {
+            document.getElementById('status').textContent = 'Disconnected';
+            document.getElementById('status').className = 'status disconnected';
+            console.log('TEST2: WebSocket closed:', event.code, event.reason);
+            log('WebSocket closed: ' + event.code + ' - ' + event.reason);
+        };
+        
+        ws.onerror = function(error) {
+            console.log('TEST2: WebSocket error:', error);
+            log('WebSocket error: ' + error);
+        };
+        
+        function log(message) {
+            const messagesDiv = document.getElementById('messages');
+            const timestamp = new Date().toLocaleTimeString();
+            messagesDiv.innerHTML += `<div><strong>[${timestamp}]</strong> ${message}</div>`;
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function sendPing() {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'ping' }));
+                log('Sent ping');
+            } else {
+                log('WebSocket not connected');
+            }
+        }
+        
+        function getStats() {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'get_stats' }));
+                log('Requested stats');
+            } else {
+                log('WebSocket not connected');
+            }
+        }
+        
+        function clearMessages() {
+            document.getElementById('messages').innerHTML = '';
+        }
+        
+        function broadcastMessage() {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ 
+                    type: 'broadcast', 
+                    content: 'Hello from ' + clientId + '!'
+                }));
+                log('Broadcasted message to all clients');
+            } else {
+                log('WebSocket not connected');
+            }
+        }
+        
+        function sendCustomMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value;
+            if (message && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ 
+                    type: 'broadcast', 
+                    content: message
+                }));
+                log('Sent custom message: ' + message);
+                messageInput.value = '';
+            } else if (!message) {
+                log('Please enter a message');
+            } else {
+                log('WebSocket not connected');
+            }
+        }
+    </script>
+</body>
+</html>

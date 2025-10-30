@@ -1,0 +1,50 @@
+{
+  "name": "ShareZidi v3.0 - Ultimate P2P File Transfer",
+  "short_name": "ShareZidi",
+  "description": "Revolutionary P2P file transfer with WebRTC technology",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "features": [
+    "WebRTC P2P file transfer",
+    "Cross-platform compatibility",
+    "Mobile optimized",
+    "Real-time progress tracking",
+    "Zero server storage"
+  ]
+}
+
+
+
+

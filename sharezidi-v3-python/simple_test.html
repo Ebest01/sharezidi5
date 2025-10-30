@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ShareZidi v3.0 - Simple WebSocket Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .connected { background-color: #d4edda; color: #155724; }
+        .disconnected { background-color: #f8d7da; color: #721c24; }
+        #messages { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>ShareZidi v3.0 - Simple WebSocket Test</h1>
+    <div id="status" class="disconnected">Connecting...</div>
+    
+    <div>
+        <button onclick="connect()">Connect</button>
+        <button onclick="disconnect()">Disconnect</button>
+        <button onclick="sendPing()">Send Ping</button>
+        <button onclick="clearMessages()">Clear Messages</button>
+    </div>
+    
+    <div id="messages"></div>
+    
+    <script>
+        let ws = null;
+        const clientId = 'simple-test-' + Math.random().toString(36).substr(2, 9);
+        
+        function log(message) {
+            const messagesDiv = document.getElementById('messages');
+            const timestamp = new Date().toLocaleTimeString();
+            messagesDiv.innerHTML += `<div><strong>[${timestamp}]</strong> ${message}</div>`;
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function connect() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                log('Already connected');
+                return;
+            }
+            
+            log(`Connecting to WebSocket as ${clientId}...`);
+            ws = new WebSocket(`ws://localhost:8003/ws/${clientId}?device_type=desktop&supports_webrtc=true&supports_p2p=true`);
+            
+            ws.onopen = function(event) {
+                document.getElementById('status').textContent = 'Connected!';
+                document.getElementById('status').className = 'status connected';
+                log('WebSocket connected successfully!');
+            };
+            
+            ws.onmessage = function(event) {
+                log(`Received: ${event.data}`);
+            };
+            
+            ws.onclose = function(event) {
+                document.getElementById('status').textContent = 'Disconnected';
+                document.getElementById('status').className = 'status disconnected';
+                log(`WebSocket closed: Code=${event.code}, Reason=${event.reason}`);
+            };
+            
+            ws.onerror = function(error) {
+                log(`WebSocket error: ${error}`);
+            };
+        }
+        
+        function disconnect() {
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+        }
+        
+        function sendPing() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'ping', timestamp: new Date().toISOString() }));
+                log('Sent ping');
+            } else {
+                log('WebSocket not connected');
+            }
+        }
+        
+        function clearMessages() {
+            document.getElementById('messages').innerHTML = '';
+        }
+        
+        // Auto-connect on page load
+        window.onload = function() {
+            log('Page loaded, attempting to connect...');
+            connect();
+        };
+    </script>
+</body>
+</html>
+
+
+
+
